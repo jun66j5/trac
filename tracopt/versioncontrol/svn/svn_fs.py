@@ -76,14 +76,24 @@ application_pool_lock = threading.Lock()
 
 
 def _import_svn():
-    global fs, repos, core, delta, _kindmap, _svn_uri_canonicalize
+    global fs, repos, core, delta, _kindmap, _uri_canonicalize, \
+           _dirent_canonicalize
     from svn import fs, repos, core, delta
     _kindmap = {core.svn_node_dir: Node.DIRECTORY,
                 core.svn_node_file: Node.FILE}
     try:
-        _svn_uri_canonicalize = core.svn_uri_canonicalize  # Subversion 1.7+
+        core.svn_uri_canonicalize  # Subversion 1.7+
     except AttributeError:
-        _svn_uri_canonicalize = lambda v: v
+        _uri_canonicalize = _canonicalize_method(lambda v, p: v)
+    else:
+        _uri_canonicalize = _canonicalize_method(core.svn_uri_canonicalize)
+    try:
+        core.svn_dirent_canonicalize  # Subversion 1.6+
+    except AttributeError:
+        _dirent_canonicalize = _canonicalize_method(core.svn_path_canonicalize)
+    else:
+        _dirent_canonicalize = \
+            _canonicalize_method(core.svn_dirent_canonicalize)
     # Protect svn.core methods from GC
     Pool.apr_pool_clear = staticmethod(core.apr_pool_clear)
     Pool.apr_pool_destroy = staticmethod(core.apr_pool_destroy)
@@ -94,9 +104,7 @@ def _to_svn(pool, *args):
     Returns an UTF-8 encoded string suitable for the Subversion python
     bindings (the returned path never starts with a leading "/")
     """
-    return core.svn_path_canonicalize('/'.join(args).lstrip('/')
-                                                    .encode('utf-8'),
-                                      pool)
+    return _dirent_canonicalize('/'.join(args).lstrip('/'), pool)
 
 def _from_svn(path):
     """Expect an UTF-8 encoded string and transform it to an `unicode` object
@@ -104,7 +112,17 @@ def _from_svn(path):
     But Subversion repositories built from conversion utilities can have
     non-UTF-8 byte strings, so we have to convert using `to_unicode`.
     """
-    return path and to_unicode(path, 'utf-8')
+    return path.decode('utf-8') if isinstance(path, bytes) else path
+
+def _canonicalize_method(method):
+    def fn(arg, pool):
+        if isinstance(arg, unicode):
+            arg = arg.encode('utf-8')
+        result = method(arg, pool)
+        if isinstance(result, unicode):
+            result = result.encode('utf-8')
+        return result
+    return fn
 
 # The following 3 helpers deal with unicode paths
 
@@ -352,31 +370,25 @@ class SubversionRepository(Repository):
         self.pool = Pool()
 
         # Remove any trailing slash or else subversion might abort
-        if isinstance(path, unicode):
-            path_utf8 = path.encode('utf-8')
-        else: # note that this should usually not happen (unicode arg expected)
-            path_utf8 = to_unicode(path).encode('utf-8')
-
-        path_utf8 = core.svn_path_canonicalize(
-                                os.path.normpath(path_utf8).replace('\\', '/'))
+        path = six.ensure_text(path)
+        path_utf8 = _dirent_canonicalize(
+            os.path.normpath(path).replace('\\', '/'), self.pool())
         self.path = path_utf8.decode('utf-8')
 
         root_path_utf8 = repos.svn_repos_find_root_path(path_utf8, self.pool())
         if root_path_utf8 is None:
-            raise InvalidRepository(
-                _("%(path)s does not appear to be a Subversion repository.",
-                  path=to_unicode(path_utf8)))
-
+            raise InvalidRepository(_("%(path)s does not appear to be a "
+                                      "Subversion repository.", path=path))
+        root_path_utf8 = six.ensure_binary(root_path_utf8)
         try:
             self.repos = repos.svn_repos_open(root_path_utf8, self.pool())
         except core.SubversionException as e:
-            raise InvalidRepository(
-                _("Couldn't open Subversion repository %(path)s: "
-                  "%(svn_error)s", path=to_unicode(path_utf8),
-                  svn_error=exception_to_unicode(e)))
+            raise InvalidRepository(_("Couldn't open Subversion repository "
+                                      "%(path)s: %(svn_error)s", path=path,
+                                      svn_error=exception_to_unicode(e)))
         self.fs_ptr = repos.svn_repos_fs(self.repos)
 
-        self.uuid = fs.get_uuid(self.fs_ptr, self.pool())
+        self.uuid = six.ensure_text(fs.get_uuid(self.fs_ptr, self.pool()))
         self.base = 'svn:%s:%s' % (self.uuid, _from_svn(root_path_utf8))
         name = 'svn:%s:%s' % (self.uuid, self.path)
 
@@ -386,15 +398,15 @@ class SubversionRepository(Repository):
         # this scope (which always starts with a '/')
         if root_path_utf8 != path_utf8:
             self.scope = path_utf8[len(root_path_utf8):].decode('utf-8')
-            if not self.scope[-1] == '/':
+            if not self.scope.endswith('/'):
                 self.scope += '/'
         else:
             self.scope = '/'
         assert self.scope[0] == '/'
-        # we keep root_path_utf8 for  RA
+        # we keep root_path_utf8 for RA
         ra_prefix = 'file:///' if os.name == 'nt' else 'file://'
-        self.ra_url_utf8 = _svn_uri_canonicalize(ra_prefix +
-                                                 quote(root_path_utf8))
+        self.ra_url_utf8 = _uri_canonicalize(ra_prefix + quote(root_path_utf8),
+                                             self.pool())
         self.clear()
 
     def clear(self, youngest_rev=None):
@@ -857,11 +869,12 @@ class SubversionNode(Node):
             try:
                 rev = _svn_rev(self.rev)
                 start = _svn_rev(0)
-                file_url_utf8 = posixpath.join(self.repos.ra_url_utf8,
-                                               quote(self._scoped_path_utf8))
+                file_url_utf8 = posixpath.join(
+                    self.repos.ra_url_utf8,
+                    six.ensure_binary(quote(self._scoped_path_utf8)))
                 # svn_client_blame2() requires a canonical uri since
                 # Subversion 1.7 (#11167)
-                file_url_utf8 = _svn_uri_canonicalize(file_url_utf8)
+                file_url_utf8 = _uri_canonicalize(file_url_utf8, self.pool())
                 self.repos.log.info('opening ra_local session to %r',
                                     file_url_utf8)
                 from svn import client
@@ -882,11 +895,10 @@ class SubversionNode(Node):
         (wraps ``fs.node_proplist``)
         """
         props = fs.node_proplist(self.root, self._scoped_path_utf8, self.pool())
-        for name, value in six.iteritems(props):
-            # Note that property values can be arbitrary binary values
-            # so we can't assume they are UTF-8 strings...
-            props[_from_svn(name)] = to_unicode(value)
-        return props
+        # Note that property values can be arbitrary binary values
+        # so we can't assume they are UTF-8 strings...
+        return dict((_from_svn(name), to_unicode(value))
+                    for name, value in six.iteritems(props))
 
     def get_content_length(self):
         """Retrieve byte size of a file.
@@ -904,7 +916,8 @@ class SubversionNode(Node):
         """
         if self.isdir:
             return None
-        return self._get_prop(core.SVN_PROP_MIME_TYPE)
+        value = self._get_prop(core.SVN_PROP_MIME_TYPE)
+        return to_unicode(value) if isinstance(value, bytes) else value
 
     def get_last_modified(self):
         """Retrieve timestamp of last modification, in micro-seconds.
@@ -944,20 +957,20 @@ class SubversionNode(Node):
             root_path = fs.closest_copy(previous_root, previous_path)
             if root_path:
                 (root, path) = root_path
-                path = path.lstrip('/')
+                path = path.lstrip(b'/')
                 rev = fs.revision_root_revision(root)
                 relpath = None
                 if path != previous_path:
                     # `previous_path` is a subfolder of `path` and didn't
                     # change since `path` was copied
-                    relpath = previous_path[len(path):].strip('/')
+                    relpath = previous_path[len(path):].strip(b'/')
                 copied_from = fs.copied_from(root, path)
                 if copied_from:
                     (rev, path) = copied_from
-                    path = path.lstrip('/')
+                    path = path.lstrip(b'/')
                     root = fs.revision_root(self.fs_ptr, rev, self.pool())
                     if relpath:
-                        path += '/' + relpath
+                        path += b'/' + relpath
                     ui_path = _path_within_scope(self.scope, _from_svn(path))
                     if ui_path:
                         ancestors.append((ui_path, rev))
@@ -977,10 +990,7 @@ class SubversionChangeset(Changeset):
         except core.SubversionException:
             raise NoSuchChangeset(rev)
         author = self._get_prop(core.SVN_PROP_REVISION_AUTHOR)
-        # we _hope_ it's UTF-8, but can't be 100% sure (#4321)
-        message = message and to_unicode(message, 'utf-8')
-        author = author and to_unicode(author, 'utf-8')
-        _date = self._get_prop(core.SVN_PROP_REVISION_DATE)
+        _date = self._get_prop_raw(core.SVN_PROP_REVISION_DATE)
         if _date:
             ts = core.svn_time_from_cstring(_date, self.pool())
             date = from_utimestamp(ts)
@@ -1094,6 +1104,11 @@ class SubversionChangeset(Changeset):
             yield tuple(change)
 
     def _get_prop(self, name):
+        value = self._get_prop_raw(name)
+        # we _hope_ it's UTF-8, but can't be 100% sure (#4321)
+        return to_unicode(value) if isinstance(value, bytes) else value
+
+    def _get_prop_raw(self, name):
         return fs.revision_prop(self.fs_ptr, self.rev, name, self.pool())
 
 
@@ -1148,28 +1163,29 @@ def DiffChangeEditor():
 class FileContentStream(object):
 
     KEYWORD_GROUPS = {
-        'rev': ['LastChangedRevision', 'Rev', 'Revision'],
-        'date': ['LastChangedDate', 'Date'],
-        'author': ['LastChangedBy', 'Author'],
-        'url': ['HeadURL', 'URL'],
-        'id': ['Id'],
-        'header': ['Header'],
+        b'rev': [b'LastChangedRevision', b'Rev', b'Revision'],
+        b'date': [b'LastChangedDate', b'Date'],
+        b'author': [b'LastChangedBy', b'Author'],
+        b'url': [b'HeadURL', b'URL'],
+        b'id': [b'Id'],
+        b'header': [b'Header'],
         }
     KEYWORDS = reduce(set.union, map(set, six.itervalues(KEYWORD_GROUPS)))
-    KEYWORD_SPLIT_RE = re.compile(r'[ \t\v\n\b\r\f]+')
-    KEYWORD_EXPAND_RE = re.compile(r'%[abdDPrRu_%HI]')
-    NATIVE_EOL = '\r\n' if os.name == 'nt' else '\n'
-    NEWLINES = {'LF': '\n', 'CRLF': '\r\n', 'CR': '\r', 'native': NATIVE_EOL}
+    KEYWORD_SPLIT_RE = re.compile(b'[ \t\v\n\b\r\f]+')
+    KEYWORD_EXPAND_RE = re.compile(b'%[abdDPrRu_%HI]')
+    NATIVE_EOL = b'\r\n' if os.name == 'nt' else b'\n'
+    NEWLINES = {'LF': b'\n', 'CRLF': b'\r\n', 'CR': b'\r',
+                'native': NATIVE_EOL}
     KEYWORD_MAX_SIZE = 255
     CHUNK_SIZE = 4096
 
     keywords_re = None
     native_eol = None
-    newline = '\n'
+    newline = b'\n'
 
     def __init__(self, node, keyword_substitution=None, eol=None):
-        self.translated = ''
-        self.buffer = ''
+        self.translated = b''
+        self.buffer = b''
         self.repos = node.repos
         self.node = node
         self.fs_ptr = node.fs_ptr
@@ -1180,8 +1196,8 @@ class FileContentStream(object):
             self.keywords = self._get_keyword_values(
                                         node._get_prop(core.SVN_PROP_KEYWORDS))
             self.keywords_re = self._build_keywords_re(self.keywords)
-        if self.NEWLINES.get(eol, '\n') != '\n' and \
-           node._get_prop(core.SVN_PROP_EOL_STYLE) == 'native':
+        if self.NEWLINES.get(eol, b'\n') != b'\n' and \
+           node._get_prop(core.SVN_PROP_EOL_STYLE) == b'native':
             self.native_eol = True
             self.newline = self.NEWLINES[eol]
         self.stream = core.Stream(fs.file_contents(node.root,
@@ -1210,7 +1226,11 @@ class FileContentStream(object):
         return fs.revision_prop(self.fs_ptr, self.node.rev, name, self.pool())
 
     def _split_keywords(self, keywords):
-        return filter(None, self.KEYWORD_SPLIT_RE.split(keywords or ''))
+        if keywords:
+            return tuple(val for val in self.KEYWORD_SPLIT_RE.split(keywords)
+                             if val)
+        else:
+            return ()
 
     def _get_keyword_values(self, keywords):
         keywords = self._split_keywords(keywords)
@@ -1219,24 +1239,27 @@ class FileContentStream(object):
 
         node = self.node
         mtime = to_datetime(node.last_modified, utc)
-        shortdate = mtime.strftime('%Y-%m-%d %H:%M:%SZ')
-        longdate = mtime.strftime('%Y-%m-%d %H:%M:%S +0000 (%a, %d %b %Y)')
-        created_rev = unicode(node.created_rev)
-        # Note that the `to_unicode` has a small probability to mess-up binary
-        # properties, see #4321.
-        author = to_unicode(self._get_revprop(core.SVN_PROP_REVISION_AUTHOR))
+        shortdate = six.ensure_binary(mtime.strftime('%Y-%m-%d %H:%M:%SZ'))
+        longdate = six.ensure_binary(
+            mtime.strftime('%Y-%m-%d %H:%M:%S +0000 (%a, %d %b %Y)'))
+        created_rev = b'%d' % node.created_rev
+        author = self._get_revprop(core.SVN_PROP_REVISION_AUTHOR)
         path = node.path.lstrip('/')
-        url = node.repos.get_path_url(path, node.rev) or path
-        root_url = node.repos.get_path_url('', node.rev) or '/'
-        id_ = ' '.join((node.name, created_rev, shortdate, author))
+        b_path = six.ensure_binary(path)
+        b_name = six.ensure_binary(node.name)
+        url = six.ensure_binary(node.repos.get_path_url(path, node.rev) or
+                                path)
+        root_url = six.ensure_binary(node.repos.get_path_url('', node.rev) or
+                                     '/')
+        id_ = b' '.join((b_name, created_rev, shortdate, author))
         data = {
-            'rev': created_rev, 'author': author, 'url': url, 'date': longdate,
-            'id': id_,
-            'header': ' '.join((url, created_rev, shortdate, author)),
-            '%a': author, '%b': node.name, '%d': shortdate, '%D': longdate,
-            '%P': path, '%r': created_rev, '%R': root_url, '%u': url,
-            '%_': ' ', '%%': '%', '%I': id_,
-            '%H': ' '.join((path, created_rev, shortdate, author)),
+            b'rev': created_rev, b'author': author, b'url': url,
+            b'date': longdate, b'id': id_,
+            b'header': b' '.join((url, created_rev, shortdate, author)),
+            b'%a': author, b'%b': b_name, b'%d': shortdate, b'%D': longdate,
+            b'%P': b_path, b'%r': created_rev, b'%R': root_url, b'%u': url,
+            b'%_': b' ', b'%%': b'%', b'%I': id_,
+            b'%H': b' '.join((b_path, created_rev, shortdate, author)),
         }
 
         def expand(match):
@@ -1248,28 +1271,30 @@ class FileContentStream(object):
             if any(kw in keywords for kw in aliases):
                 values.update((kw, data[name]) for kw in aliases)
         for keyword in keywords:
-            if '=' not in keyword:
+            if b'=' not in keyword:
                 continue
-            name, definition = keyword.split('=', 1)
+            name, definition = keyword.split(b'=', 1)
             if name not in self.KEYWORDS:
                 values[name] = self.KEYWORD_EXPAND_RE.sub(expand, definition)
 
         if values:
-            return dict((key, value.encode('utf-8'))
+            return dict((six.ensure_binary(key), six.ensure_binary(value))
                         for key, value in six.iteritems(values))
         else:
             return None
 
     def _build_keywords_re(self, keywords):
         if keywords:
-            return re.compile("""
+            return re.compile(b"""
                 [$]
                 (?P<keyword>%s)
                 (?:
                     :[ ][^$\r\n]+?[ ]   |
                     ::[ ](?P<fixed>[^$\r\n]+?)[ #]
                 )?
-                [$]""" % '|'.join(map(re.escape, keywords)),
+                [$]
+                """ % b'|'.join(re.escape(six.ensure_binary(val))
+                                for val in keywords),
                 re.VERBOSE)
         else:
             return None
@@ -1290,17 +1315,17 @@ class FileContentStream(object):
                 return translated[:n]
 
             if len(buffer) < self.KEYWORD_MAX_SIZE:
-                buffer += stream.read(self.CHUNK_SIZE) or ''
+                buffer += stream.read(self.CHUNK_SIZE) or b''
                 if not buffer:
                     self.buffer = buffer
-                    self.translated = ''
+                    self.translated = b''
                     return translated
 
             # search first "$" character
-            pos = buffer.find('$') if self.keywords_re else -1
+            pos = buffer.find(b'$') if self.keywords_re else -1
             if pos == -1:
                 translated += self._translate_newline(buffer)
-                buffer = ''
+                buffer = b''
                 continue
             if pos > 0:
                 # move to the first "$" character
@@ -1310,10 +1335,10 @@ class FileContentStream(object):
             match = None
             while True:
                 # search second "$" character
-                pos = buffer.find('$', 1)
+                pos = buffer.find(b'$', 1)
                 if pos == -1:
                     translated += self._translate_newline(buffer)
-                    buffer = ''
+                    buffer = b''
                     break
                 if pos < self.KEYWORD_MAX_SIZE:
                     match = self.keywords_re.match(buffer)
@@ -1333,7 +1358,7 @@ class FileContentStream(object):
 
     def _translate_newline(self, data):
         if self.native_eol:
-            data = data.replace('\n', self.newline)
+            data = data.replace(b'\n', self.newline)
         return data
 
     def _translate_keyword(self, text, match):
@@ -1344,8 +1369,8 @@ class FileContentStream(object):
         fixed = match.group('fixed')
         if fixed is None:
             n = self.KEYWORD_MAX_SIZE - len(keyword) - 5
-            return '$%s: %.*s $' % (keyword, n, value) if n >= 0 else text
+            return b'$%s: %.*s $' % (keyword, n, value) if n >= 0 else text
         else:
             n = len(fixed)
-            return '$%s:: %-*.*s%s$' % \
-                   (keyword, n, n, value, '#' if n < len(value) else ' ')
+            return b'$%s:: %-*.*s%s$' % \
+                   (keyword, n, n, value, b'#' if n < len(value) else b' ')

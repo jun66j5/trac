@@ -51,7 +51,7 @@ URL = 'svn://test'
 HEAD = 30
 TETE = 26
 
-NATIVE_EOL = '\r\n' if os.name == 'nt' else '\n'
+NATIVE_EOL = b'\r\n' if os.name == 'nt' else b'\n'
 
 
 def _create_context():
@@ -65,7 +65,7 @@ class SubversionRepositoryTestSetup(TestSetup):
 
     def setUp(self):
         dumpfile = open(os.path.join(os.path.split(__file__)[0],
-                                     'svnrepos.dump'))
+                                     'svnrepos.dump'), 'rb')
 
         svn_fs._import_svn()
         core.apr_initialize()
@@ -83,6 +83,7 @@ class SubversionRepositoryTestSetup(TestSetup):
                                         repos.svn_repos_load_uuid_default, '',
                                         None, None, pool)
         finally:
+            dumpfile.close()
             if dumpstream:
                 core.svn_stream_close(dumpstream)
             core.svn_pool_destroy(pool)
@@ -227,13 +228,10 @@ class NormalTests(object):
     def test_get_dir_entries(self):
         node = self.repos.get_node(u'/tête')
         entries = node.get_entries()
-        self.assertEqual('dir1', next(entries).name)
-        self.assertEqual('mpp_proc', next(entries).name)
-        self.assertEqual('v2', next(entries).name)
-        self.assertEqual('README3.txt', next(entries).name)
-        self.assertEqual(u'R\xe9sum\xe9.txt', next(entries).name)
-        self.assertEqual('README.txt', next(entries).name)
-        self.assertRaises(StopIteration, next, entries)
+        self.assertEqual([u'README.txt', u'README3.txt', u'R\xe9sum\xe9.txt',
+                          u'dir1', u'mpp_proc', u'v2'],
+                         sorted(entry.name for entry in entries))
+        self.assertEqual([], list(entries))
 
     def test_get_file_entries(self):
         node = self.repos.get_node(u'/tête/README.txt')
@@ -250,7 +248,7 @@ class NormalTests(object):
         node = self.repos.get_node(u'/tête/README.txt')
         self.assertEqual(8, node.content_length)
         self.assertEqual('text/plain', node.content_type)
-        self.assertEqual('A test.\n', node.get_content().read())
+        self.assertEqual(b'A test.\n', node.get_content().read())
 
     def test_get_dir_properties(self):
         f = self.repos.get_node(u'/tête')
@@ -267,8 +265,8 @@ class NormalTests(object):
         f = self.repos.get_node(u'/tête/README.txt', 2)
         props = f.get_properties()
         self.assertIsNone(props.get('svn:eol-style'))
-        self.assertEqual('A text.\n', f.get_content().read())
-        self.assertEqual('A text.\n', f.get_processed_content().read())
+        self.assertEqual(b'A text.\n', f.get_content().read())
+        self.assertEqual(b'A text.\n', f.get_processed_content().read())
 
     def test_get_file_content_with_native_eol_style(self):
         f = self.repos.get_node(u'/tête/README.txt', 3)
@@ -276,23 +274,23 @@ class NormalTests(object):
         self.assertEqual('native', props.get('svn:eol-style'))
 
         self.repos.params['eol_style'] = 'native'
-        self.assertEqual('A test.\n', f.get_content().read())
-        self.assertEqual('A test.' + NATIVE_EOL,
+        self.assertEqual(b'A test.\n', f.get_content().read())
+        self.assertEqual(b'A test.' + NATIVE_EOL,
                          f.get_processed_content().read())
 
         self.repos.params['eol_style'] = 'LF'
-        self.assertEqual('A test.\n', f.get_content().read())
-        self.assertEqual('A test.\n', f.get_processed_content().read())
+        self.assertEqual(b'A test.\n', f.get_content().read())
+        self.assertEqual(b'A test.\n', f.get_processed_content().read())
 
         self.repos.params['eol_style'] = 'CRLF'
-        self.assertEqual('A test.\n', f.get_content().read())
-        self.assertEqual('A test.\r\n', f.get_processed_content().read())
+        self.assertEqual(b'A test.\n', f.get_content().read())
+        self.assertEqual(b'A test.\r\n', f.get_processed_content().read())
 
         self.repos.params['eol_style'] = 'CR'
-        self.assertEqual('A test.\n', f.get_content().read())
-        self.assertEqual('A test.\r', f.get_processed_content().read())
+        self.assertEqual(b'A test.\n', f.get_content().read())
+        self.assertEqual(b'A test.\r', f.get_processed_content().read())
         # check that the hint is stronger than the repos default
-        self.assertEqual('A test.\r\n',
+        self.assertEqual(b'A test.\r\n',
                          f.get_processed_content(eol_hint='CRLF').read())
 
     def test_get_file_content_with_native_eol_style_and_no_keywords_28(self):
@@ -302,19 +300,19 @@ class NormalTests(object):
         self.assertIsNone(props.get('svn:keywords'))
 
         self.assertEqual(
-            'A test.\n' +
-            '# $Rev$ is not substituted with no svn:keywords.\n',
+            b'A test.\n' +
+            b'# $Rev$ is not substituted with no svn:keywords.\n',
             f.get_content().read())
         self.assertEqual(
-            'A test.\r\n' +
-            '# $Rev$ is not substituted with no svn:keywords.\r\n',
+            b'A test.\r\n' +
+            b'# $Rev$ is not substituted with no svn:keywords.\r\n',
             f.get_processed_content(eol_hint='CRLF').read())
 
     def test_get_file_content_with_keyword_substitution_23(self):
         f = self.repos.get_node(u'/tête/Résumé.txt', 23)
         props = f.get_properties()
         self.assertEqual('Revision Author URL', props['svn:keywords'])
-        self.assertEqual('''\
+        self.assertEqual(b'''\
 # Simple test for svn:keywords property substitution (#717)
 # $Rev: 23 $:     Revision of last commit
 # $Author: cboos $:  Author of last commit
@@ -335,12 +333,12 @@ En r\xe9sum\xe9 ... \xe7a marche.
         f = self.repos.get_node(u'/tête/Résumé.txt', 24)
         props = f.get_properties()
         self.assertEqual('Revision Author URL Id', props['svn:keywords'])
-        self.assertEqual('''\
+        self.assertEqual(b'''\
 # Simple test for svn:keywords property substitution (#717)
 # $Rev: 24 $:     Revision of last commit
 # $Author: cboos $:  Author of last commit
 # $Date$:    Date of last commit (now substituted)
-# $Id: Résumé.txt 24 2013-04-27 14:38:50Z cboos $:      Combination
+# $Id: R\xc3\xa9sum\xc3\xa9.txt 24 2013-04-27 14:38:50Z cboos $:      Combination
 
 Now with fixed width fields:
 # $URL:: svn://test/t%C3%AAte/R%C3%A9sum%C3%A9.txt    $ the configured URL
@@ -356,12 +354,12 @@ En r\xe9sum\xe9 ... \xe7a marche.
         props = f.get_properties()
         self.assertEqual('Revision Author URL Date Id Header',
                          props['svn:keywords'])
-        self.assertEqual('''\
+        self.assertEqual(b'''\
 # Simple test for svn:keywords property substitution (#717)
 # $Rev: 25 $:     Revision of last commit
 # $Author: cboos $:  Author of last commit
 # $Date: 2013-04-27 14:43:15 +0000 (Sat, 27 Apr 2013) $:    Date of last commit (now really substituted)
-# $Id: Résumé.txt 25 2013-04-27 14:43:15Z cboos $:      Combination
+# $Id: R\xc3\xa9sum\xc3\xa9.txt 25 2013-04-27 14:43:15Z cboos $:      Combination
 
 Now with fixed width fields:
 # $URL:: svn://test/t%C3%AAte/R%C3%A9sum%C3%A9.txt    $ the configured URL
@@ -377,94 +375,94 @@ En r\xe9sum\xe9 ... \xe7a marche.
         f = self.repos.get_node(u'/branches/v4/Résumé.txt', 30)
         props = f.get_properties()
         expected = [
-            '# Simple test for svn:keywords property substitution (#717)',
-            '# $Rev: 30 $:     Revision of last commit',
-            '# $Author: jomae $:  Author of last commit',
-            '# $Date: 2015-06-15 14:09:13 +0000 (Mon, 15 Jun 2015) $:    ' \
-                'Date of last commit (now really substituted)',
-            '# $Id: Résumé.txt 30 2015-06-15 14:09:13Z jomae $:      ' \
-                'Combination',
-            '',
-            'Now with fixed width fields:',
-            '# $URL:: svn://test/branches/v4/R%C3%A9sum%C3%A9.txt  $ ' \
-                'the configured URL',
-            '# $HeadURL:: svn://test/branches/v4/R%C3%A9sum%C3%A9.#$ same',
-            '# $URL:: svn://test/bra#$ same, but truncated',
-            '# $Header:: svn://test/branches/v4/R%C3%A9sum%C3%A9.t#$ ' \
-                'combination with URL',
-            '',
-            'Overlapped keywords:',
-            '# $Xxx$Rev: 30 $Xxx$',
-            '# $Rev: 30 $Xxx$Rev: 30 $',
-            '# $Rev: 30 $Rev$Rev: 30 $',
-            '',
-            'Custom keyword definitions (#11364)',
-            '# $_Author: jomae $:',
-            '# $_Basename: R\xc3\xa9sum\xc3\xa9.txt $:',
-            '# $_ShortDate: 2015-06-15 14:09:13Z $:',
-            '# $_LongDate: 2015-06-15 14:09:13 +0000 (Mon, 15 Jun 2015) $:',
-            '# $_Path: branches/v4/R\xc3\xa9sum\xc3\xa9.txt $:',
-            '# $_Rev: 30 $:',
-            '# $_RootURL: svn://test $:',
-            '# $_URL: svn://test/branches/v4/R%C3%A9sum%C3%A9.txt $:',
-            '# $_Header: branches/v4/R\xc3\xa9sum\xc3\xa9.txt 30 ' \
-                '2015-06-15 14:09:13Z jomae $:',
-            '# $_Id: R\xc3\xa9sum\xc3\xa9.txt 30 ' \
-                '2015-06-15 14:09:13Z jomae $:',
-            '# $_Header2: branches/v4/R\xc3\xa9sum\xc3\xa9.txt 30 ' \
-                '2015-06-15 14:09:13Z jomae $:',
-            '# $_Id2: R\xc3\xa9sum\xc3\xa9.txt 30 ' \
-                '2015-06-15 14:09:13Z jomae $:',
-            '# $_t\xc3\xa9t\xc3\xa9: jomae $:',
-            '# $42: jomae $:',
-            '# $123456789012345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '123456789012345678901234567890123456789: j $:',
-            '# $123456789012345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '1234567890123456789012345678901234567890:  $:',
-            '# $123456789012345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901$:',
-            '# $_TooLong: branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
-                'br $:',
-            '',
-            'Custom keyword definitions with fixed width',
-            '# $123456789012345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '1234567890123456789012345678901234:: jomae $',
-            '# $123456789012345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '1234567890123456789012345678901234::        $',
-            '# $123456789012345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678:: j#$',
-            '# $123456789012345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678901234567890' \
-                '12345678901234567890123456789012345678::    $',
+            b'# Simple test for svn:keywords property substitution (#717)',
+            b'# $Rev: 30 $:     Revision of last commit',
+            b'# $Author: jomae $:  Author of last commit',
+            b'# $Date: 2015-06-15 14:09:13 +0000 (Mon, 15 Jun 2015) $:    ' \
+                b'Date of last commit (now really substituted)',
+            b'# $Id: R\xc3\xa9sum\xc3\xa9.txt 30 2015-06-15 14:09:13Z ' \
+                b'jomae $:      Combination',
+            b'',
+            b'Now with fixed width fields:',
+            b'# $URL:: svn://test/branches/v4/R%C3%A9sum%C3%A9.txt  $ ' \
+                b'the configured URL',
+            b'# $HeadURL:: svn://test/branches/v4/R%C3%A9sum%C3%A9.#$ same',
+            b'# $URL:: svn://test/bra#$ same, but truncated',
+            b'# $Header:: svn://test/branches/v4/R%C3%A9sum%C3%A9.t#$ ' \
+                b'combination with URL',
+            b'',
+            b'Overlapped keywords:',
+            b'# $Xxx$Rev: 30 $Xxx$',
+            b'# $Rev: 30 $Xxx$Rev: 30 $',
+            b'# $Rev: 30 $Rev$Rev: 30 $',
+            b'',
+            b'Custom keyword definitions (#11364)',
+            b'# $_Author: jomae $:',
+            b'# $_Basename: R\xc3\xa9sum\xc3\xa9.txt $:',
+            b'# $_ShortDate: 2015-06-15 14:09:13Z $:',
+            b'# $_LongDate: 2015-06-15 14:09:13 +0000 (Mon, 15 Jun 2015) $:',
+            b'# $_Path: branches/v4/R\xc3\xa9sum\xc3\xa9.txt $:',
+            b'# $_Rev: 30 $:',
+            b'# $_RootURL: svn://test $:',
+            b'# $_URL: svn://test/branches/v4/R%C3%A9sum%C3%A9.txt $:',
+            b'# $_Header: branches/v4/R\xc3\xa9sum\xc3\xa9.txt 30 ' \
+                b'2015-06-15 14:09:13Z jomae $:',
+            b'# $_Id: R\xc3\xa9sum\xc3\xa9.txt 30 ' \
+                b'2015-06-15 14:09:13Z jomae $:',
+            b'# $_Header2: branches/v4/R\xc3\xa9sum\xc3\xa9.txt 30 ' \
+                b'2015-06-15 14:09:13Z jomae $:',
+            b'# $_Id2: R\xc3\xa9sum\xc3\xa9.txt 30 ' \
+                b'2015-06-15 14:09:13Z jomae $:',
+            b'# $_t\xc3\xa9t\xc3\xa9: jomae $:',
+            b'# $42: jomae $:',
+            b'# $12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'1234567890123456789012345678901234567890123456789: j $:',
+            b'# $12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890:  $:',
+            b'# $12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'123456789012345678901234567890123456789012345678901$:',
+            b'# $_TooLong: branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'branches/v4/R\xc3\xa9sum\xc3\xa9.txt' \
+                b'br $:',
+            b'',
+            b'Custom keyword definitions with fixed width',
+            b'# $12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234:: jomae $',
+            b'# $12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234::        $',
+            b'# $12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'123456789012345678901234567890123456789012345678:: j#$',
+            b'# $12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'12345678901234567890123456789012345678901234567890' \
+                b'123456789012345678901234567890123456789012345678::    $',
         ]
         self.assertEqual(expected,
                          f.get_processed_content().read().splitlines())
@@ -798,21 +796,30 @@ En r\xe9sum\xe9 ... \xe7a marche.
         chgset = self.repos.get_changeset(19)
         self.assertEqual(19, chgset.rev)
         changes = chgset.get_changes()
-        self.assertEqual((u'tête/mpp_proc', Node.DIRECTORY,
-                          Changeset.MOVE, u'tête/Xprimary_proc', 18),
-                         next(changes))
-        self.assertEqual((u'tête/mpp_proc/Xprimary_pkg.vhd',
-                          Node.FILE, Changeset.DELETE,
+        changes_list = list(changes)
+
+        self.assertEqual((u'tête/mpp_proc', Node.DIRECTORY),
+                         changes_list[0][0:2])
+        self.assertIn(changes_list[0][2], [Changeset.MOVE, Changeset.COPY])
+        self.assertEqual((u'tête/Xprimary_proc', 18), changes_list[0][3:])
+
+        self.assertEqual((u'tête/mpp_proc/Xprimary_pkg.vhd', Node.FILE,
+                          Changeset.DELETE,
                           u'tête/Xprimary_proc/Xprimary_pkg.vhd', 18),
-                         next(changes))
-        self.assertEqual((u'tête/mpp_proc/Xprimary_proc', Node.DIRECTORY,
-                          Changeset.COPY, u'tête/Xprimary_proc', 18),
-                         next(changes))
+                         changes_list[1])
+
+        self.assertEqual((u'tête/mpp_proc/Xprimary_proc', Node.DIRECTORY),
+                         changes_list[2][0:2])
+        self.assertIn(changes_list[2][2], [Changeset.MOVE, Changeset.COPY])
+        self.assertEqual((u'tête/Xprimary_proc', 18), changes_list[2][3:])
+
         self.assertEqual((u'tête/mpp_proc/Xprimary_proc/Xprimary_pkg.vhd',
                           Node.FILE, Changeset.DELETE,
                           u'tête/Xprimary_proc/Xprimary_pkg.vhd', 18),
-                         next(changes))
-        self.assertRaises(StopIteration, next, changes)
+                         changes_list[3])
+
+        self.assertEqual(4, len(changes_list))
+        self.assertEqual([], list(changes))
 
     def test_copy_with_deletions_below_copy(self):
         """Regression test for #4900."""
@@ -1055,13 +1062,10 @@ class ScopedTests(object):
     def test_get_dir_entries(self):
         node = self.repos.get_node('/')
         entries = node.get_entries()
-        self.assertEqual('dir1', next(entries).name)
-        self.assertEqual('mpp_proc', next(entries).name)
-        self.assertEqual('v2', next(entries).name)
-        self.assertEqual('README3.txt', next(entries).name)
-        self.assertEqual(u'R\xe9sum\xe9.txt', next(entries).name)
-        self.assertEqual('README.txt', next(entries).name)
-        self.assertRaises(StopIteration, next, entries)
+        self.assertEqual([u'README.txt', u'README3.txt', u'R\xe9sum\xe9.txt',
+                          u'dir1', u'mpp_proc', u'v2'],
+                         sorted(entry.name for entry in entries))
+        self.assertEqual([], list(entries))
 
     def test_get_file_entries(self):
         node = self.repos.get_node('/README.txt')
@@ -1078,7 +1082,7 @@ class ScopedTests(object):
         node = self.repos.get_node('/README.txt')
         self.assertEqual(8, node.content_length)
         self.assertEqual('text/plain', node.content_type)
-        self.assertEqual('A test.\n', node.get_content().read())
+        self.assertEqual(b'A test.\n', node.get_content().read())
 
     def test_get_dir_properties(self):
         f = self.repos.get_node('/dir1')
