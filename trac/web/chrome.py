@@ -614,7 +614,7 @@ class Chrome(Component):
         'get_reporter_id': get_reporter_id,
         'gettext': translation.gettext,
         'group': presentation.group,
-        'groupby': compat.py_groupby,  # http://bugs.python.org/issue2246
+        'groupby': itertools.groupby,
         'http_date': http_date,
         'istext': presentation.istext,
         'javascript_quote': javascript_quote,
