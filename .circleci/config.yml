@@ -1,0 +1,110 @@
+version: 2
+workflows:
+  version: 2
+  build:
+    jobs:
+      - py27-pgsql9.1
+      - py27-pgsql9.2
+      - py27-pgsql9.3
+      - py27-pgsql9.4
+      - py27-pgsql9.5
+      - py27-pgsql9.6
+      - py27-pgsql10
+      - py27-pgsql11
+jobs:
+  py27-pgsql9.1:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:9.1
+      environment: &pgsqlenv
+        POSTGRES_PASSWORD: password
+    steps: &steps
+    - checkout
+    - restore_cache:
+        key: v1-dependencies-{{ checksum ".circleci/config.yml" }}
+    - run:
+        name: Install packages
+        command: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install python-subversion postgresql-client
+          [ -d ~/.cache/pip ] || mkdir -p ~/.cache/pip
+          [ -d ~/venv ] || virtualenv ~/venv
+          sudo chown -R "$(id -un):$(id -gn)" ~/.cache/pip ~/venv
+          . ~/venv/bin/activate
+          pip install --upgrade pip
+          pip install --upgrade \
+              Jinja2 Babel configobj Pygments docutils textile lxml \
+              pytz twill==0.9.1 psycopg2 PyMySQL
+          case "$CIRCLE_STAGE" in
+          py27-pgsql*)
+            tracdb_uri='postgres://tracuser:password@127.0.0.1/trac?schema=tractest'
+            echo '127.0.0.1:5432:postgres:postgres:password' >~/.pgpass
+            chmod go= ~/.pgpass
+            { echo "CREATE USER tracuser NOSUPERUSER NOCREATEDB CREATEROLE PASSWORD 'password';"
+              echo "CREATE DATABASE trac OWNER tracuser;"
+            } | psql -h 127.0.0.1 -U postgres -e
+            ;;
+          *)
+            tracdb_uri=
+            ;;
+          esac
+          echo ".uri = $tracdb_uri" >Makefile.cfg
+    - save_cache:
+        paths:
+          - ~/venv
+          - ~/.cache/pip
+        key: v1-dependencies-{{ checksum ".circleci/config.yml" }}
+    - run:
+        name: Run tests
+        command: |
+          . ~/venv/bin/activate
+          make Trac.egg-info compile unit-test functional-test
+
+  py27-pgsql9.2:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:9.2
+      environment: *pgsqlenv
+    steps: *steps
+
+  py27-pgsql9.3:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:9.3
+      environment: *pgsqlenv
+    steps: *steps
+
+  py27-pgsql9.4:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:9.4
+      environment: *pgsqlenv
+    steps: *steps
+
+  py27-pgsql9.5:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:9.5
+      environment: *pgsqlenv
+    steps: *steps
+
+  py27-pgsql9.6:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:9.6
+      environment: *pgsqlenv
+    steps: *steps
+
+  py27-pgsql10:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:10
+      environment: *pgsqlenv
+    steps: *steps
+
+  py27-pgsql11:
+    docker:
+    - image: circleci/python:2.7
+    - image: postgres:11
+      environment: *pgsqlenv
+    steps: *steps
