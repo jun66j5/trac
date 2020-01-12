@@ -286,18 +286,18 @@ class RequestDispatcher(Component):
                                    " request: %s",
                                    exception_to_unicode(e2, traceback=True))
             if isinstance(e, PermissionError):
-                raise HTTPForbidden(e)
+                raise HTTPForbidden(e) from e
             if isinstance(e, ResourceNotFound):
-                raise HTTPNotFound(e)
+                raise HTTPNotFound(e) from e
             if isinstance(e, NotImplementedError):
                 tb = traceback.extract_tb(err[2])[-1]
                 self.log.warning("%s caught from %s:%d in %s: %s",
                                  e.__class__.__name__, tb[0], tb[1], tb[2],
                                  to_unicode(e) or "(no message)")
-                raise HTTPInternalServerError(TracNotImplementedError(e))
+                raise HTTPInternalServerError(TracNotImplementedError(e)) from e
             if isinstance(e, TracError):
-                raise HTTPInternalServerError(e)
-            raise err[0], err[1], err[2]
+                raise HTTPInternalServerError(e) from e
+            raise e
 
     # ITemplateProvider methods
 
