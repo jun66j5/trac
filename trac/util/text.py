@@ -18,7 +18,6 @@
 #         Matthew Good <trac@matt-good.net>
 #         Christian Boos <cboos@edgewall.org>
 
-import __builtin__
 import locale
 import os
 import re
@@ -377,7 +376,7 @@ def raw_input(prompt):
     appropriate.
     """
     printout(prompt, newline=False)
-    return to_unicode(__builtin__.raw_input(), sys.stdin.encoding)
+    return to_unicode(__builtins__.input(), sys.stdin.encoding)
 
 
 _preferredencoding = locale.getpreferredencoding()
