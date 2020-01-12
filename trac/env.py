@@ -26,7 +26,7 @@ import time
 from configparser import RawConfigParser
 from subprocess import PIPE
 from tempfile import mkdtemp
-from urlparse import urlsplit
+from urllib.parse import urlsplit
 
 from trac import log
 from trac.admin.api import (AdminCommandError, IAdminCommandProvider,

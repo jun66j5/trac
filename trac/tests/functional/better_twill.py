@@ -19,8 +19,8 @@ It also handles twill's absense.
 import io
 import os
 import sys
-import urllib
-import urlparse
+import urllib.parse
+import urllib.request
 from os.path import abspath, dirname, join
 from pkg_resources import parse_version as pv
 
@@ -160,7 +160,8 @@ if twill:
         with open(filename, 'w') as html_file:
             html_file.write(b.get_html())
 
-        return urlparse.urljoin('file:', urllib.pathname2url(filename))
+        return urllib.parse.urljoin('file:',
+                                    urllib.request.pathname2url(filename))
 
     # Twill isn't as helpful with errors as I'd like it to be, so we replace
     # the formvalue function.  This would be better done as a patch to Twill.

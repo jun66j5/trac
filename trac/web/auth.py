@@ -23,7 +23,7 @@ import os
 import re
 import sys
 import urllib2
-import urlparse
+import urllib.parse
 
 from trac.config import BoolOption, IntOption, Option
 from trac.core import *
@@ -267,9 +267,9 @@ class LoginModule(Component):
         if referer:
             if not referer.startswith(('http://', 'https://')):
                 # Make URL absolute
-                scheme, host = urlparse.urlparse(req.base_url)[:2]
-                referer = urlparse.urlunparse((scheme, host, referer, None,
-                                               None, None))
+                scheme, host = urllib.parse.urlparse(req.base_url)[:2]
+                referer = urllib.parse.urlunparse((scheme, host, referer, None,
+                                                   None, None))
             pos = req.base_url.find(':')
             base_scheme = req.base_url[:pos]
             base_noscheme = req.base_url[pos:]
