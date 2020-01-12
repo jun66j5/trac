@@ -42,10 +42,7 @@ class DefaultWikiChecker(Formatter):
     def handle_match(self, fullmatch):
         rv = self.__super.handle_match(fullmatch)
         if rv:
-            if not isinstance(rv, basestring):
-                text = unicode(rv)
-            else:
-                text = rv
+            text = str(rv) if not isinstance(rv, basestring) else rv
             if text.startswith('<a ') and text.endswith('</a>') and \
                     'class="missing ' in text:
                 self.__marks.append((fullmatch.start(0), fullmatch.end(0)))

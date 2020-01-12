@@ -30,7 +30,7 @@ import jinja2
 
 CRLF = '\r\n'
 
-class Empty(unicode):
+class Empty(str):
     """A special tag object evaluating to the empty string"""
     __slots__ = []
 
@@ -89,60 +89,35 @@ def jinja2template(template, text=False, **kwargs):
 # -- Unicode
 
 def to_unicode(text, charset=None):
-    """Convert input to an `unicode` object.
+    """Convert input to a `str` object.
 
-    For a `str` object, we'll first try to decode the bytes using the given
+    For a `bytes` object, we'll first try to decode the bytes using the given
     `charset` encoding (or UTF-8 if none is specified), then we fall back to
     the latin1 encoding which might be correct or not, but at least preserves
     the original byte sequence by mapping each byte to the corresponding
     unicode code point in the range U+0000 to U+00FF.
 
-    For anything else, a simple `unicode()` conversion is attempted,
+    For anything else, a simple `str()` conversion is attempted,
     with special care taken with `Exception` objects.
     """
-    if isinstance(text, str):
+    if isinstance(text, bytes):
         try:
-            return unicode(text, charset or 'utf-8')
+            return str(text, charset or 'utf-8')
         except UnicodeDecodeError:
-            return unicode(text, 'latin1')
+            return str(text, 'latin1')
     elif isinstance(text, Exception):
-        if os.name == 'nt' and isinstance(text, EnvironmentError):
-            strerror = text.strerror
-            filename = text.filename
-            if isinstance(strerror, basestring) and \
-                    isinstance(filename, basestring):
-                try:
-                    if not isinstance(strerror, unicode):
-                        strerror = unicode(strerror, 'mbcs')
-                    if not isinstance(filename, unicode):
-                        filename = unicode(filename, 'mbcs')
-                except UnicodeError:
-                    pass
-                else:
-                    if isinstance(text, WindowsError):
-                        return u"[Error %s] %s: '%s'" % (text.winerror,
-                                                         strerror, filename)
-                    else:
-                        return u"[Errno %s] %s: '%s'" % (text.errno, strerror,
-                                                         filename)
-            # the exception might have a localized error string encoded with
-            # ANSI codepage if OSError and IOError on Windows
-            try:
-                return unicode(str(text), 'mbcs')
-            except UnicodeError:
-                pass
         # two possibilities for storing unicode strings in exception data:
         try:
             # custom __str__ method on the exception (e.g. PermissionError)
-            return unicode(text)
+            return str(text)
         except UnicodeError:
             # unicode arguments given to the exception (e.g. parse_date)
             return ' '.join(to_unicode(arg) for arg in text.args)
-    return unicode(text)
+    return str(text)
 
 
 def exception_to_unicode(e, traceback=False):
-    """Convert an `Exception` to an `unicode` object.
+    """Convert an `Exception` to a `str` object.
 
     In addition to `to_unicode`, this representation of the exception
     also contains the class name and optionally the traceback.
@@ -156,13 +131,13 @@ def exception_to_unicode(e, traceback=False):
 
 
 def path_to_unicode(path):
-    """Convert a filesystem path to unicode, using the filesystem encoding."""
-    if isinstance(path, str):
+    """Convert a filesystem path to str, using the filesystem encoding."""
+    if isinstance(path, bytes):
         try:
-            return unicode(path, sys.getfilesystemencoding())
+            return str(path, sys.getfilesystemencoding())
         except UnicodeDecodeError:
-            return unicode(path, 'latin1')
-    return unicode(path)
+            return str(path, 'latin1')
+    return str(path)
 
 
 _ws_leading_re = re.compile(u'\\A[\\s\u200b]+', re.UNICODE)
@@ -232,36 +207,36 @@ def to_js_string(text):
 def unicode_quote(value, safe='/'):
     """A unicode aware version of `urllib.quote`
 
-    :param value: anything that converts to a `str`. If `unicode`
+    :param value: anything that converts to a `bytes`. If `str`
                   input is given, it will be UTF-8 encoded.
     :param safe: as in `quote`, the characters that would otherwise be
                  quoted but shouldn't here (defaults to '/')
     """
-    return quote(value.encode('utf-8') if isinstance(value, unicode)
-                 else str(value), safe)
+    return quote(value if isinstance(value, bytes) else str(value), safe)
 
 
 def unicode_quote_plus(value, safe=''):
     """A unicode aware version of `urllib.quote_plus`.
 
-    :param value: anything that converts to a `str`. If `unicode`
+    :param value: anything that converts to a `bytes`. If `str`
                   input is given, it will be UTF-8 encoded.
     :param safe: as in `quote_plus`, the characters that would
                  otherwise be quoted but shouldn't here (defaults to
                  '/')
     """
-    return quote_plus(value.encode('utf-8') if isinstance(value, unicode)
-                      else str(value), safe)
+    return quote_plus(value if isinstance(value, bytes) else str(value), safe)
 
 
 def unicode_unquote(value):
     """A unicode aware version of `urllib.unquote`.
 
-    :param str: UTF-8 encoded `str` value (for example, as obtained by
-                `unicode_quote`).
-    :rtype: `unicode`
+    :param value: UTF-8 encoded `str` value (for example, as obtained by
+                  `unicode_quote`).
+    :rtype: `str`
     """
-    return unquote(value).decode('utf-8')
+    if isinstance(value, bytes):
+        value = value.decode('latin1')
+    return unquote(value, encoding='utf-8', errors='strict')
 
 
 def unicode_urlencode(params, safe=''):
@@ -291,22 +266,22 @@ def quote_query_string(text):
 
 
 def to_utf8(text, charset='latin1'):
-    """Convert input to a UTF-8 `str` object.
+    """Convert input to a UTF-8 `bytes` object.
 
-    If the input is not an `unicode` object, we assume the encoding is
+    If the input is not an `str` object, we assume the encoding is
     already UTF-8, ISO Latin-1, or as specified by the optional
     *charset* parameter.
     """
-    if isinstance(text, str):
+    if isinstance(text, bytes):
         try:
-            u = unicode(text, 'utf-8')
+            u = str(text, 'utf-8')
         except UnicodeError:
             try:
                 # Use the user supplied charset if possible
-                u = unicode(text, charset)
+                u = str(text, charset)
             except UnicodeError:
                 # This should always work
-                u = unicode(text, 'latin1')
+                u = str(text, 'latin1')
         else:
             # Do nothing if it's already utf-8
             return text
@@ -315,7 +290,7 @@ def to_utf8(text, charset='latin1'):
     return u.encode('utf-8')
 
 
-class unicode_passwd(unicode):
+class unicode_passwd(str):
     """Conceal the actual content of the string when `repr` is called."""
     def __repr__(self):
         return '*******'
@@ -462,7 +437,7 @@ def print_table(data, headers=None, sep='  ', out=None, ambiwidth=None):
     elif not data:
         return
 
-    # Convert to an unicode object with `to_unicode`. If None, convert to a
+    # Convert to a str object with `to_unicode`. If None, convert to a
     # empty string.
     def to_text(val):
         if val is None:
@@ -821,7 +796,7 @@ def unicode_to_base64(text, strip_newlines=True):
     return text.encode('utf-8').encode('base64')
 
 def unicode_from_base64(text):
-    """Safe conversion of ``text`` to unicode based on utf-8 bytes."""
+    """Safe conversion of ``text`` to str based on utf-8 bytes."""
     return text.decode('base64').decode('utf-8')
 
 

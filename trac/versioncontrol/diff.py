@@ -113,12 +113,12 @@ def filter_ignorable_lines(hunks, fromlines, tolines, context,
         if (ignore_case or ignore_space_changes) and tag == 'replace':
             if len(fromlines) != len(tolines):
                 return False
-            def f(str):
+            def f(value):
                 if ignore_case:
-                    str = str.lower()
+                    value = value.lower()
                 if ignore_space_changes:
-                    str = _norm_space_changes(str)
-                return str
+                    value = _norm_space_changes(value)
+                return value
             for i in xrange(len(fromlines)):
                 if f(fromlines[i]) != f(tolines[i]):
                     return False
@@ -234,11 +234,11 @@ def diff_blocks(fromlines, tolines, context=None, tabwidth=8,
                 for line in fromlines[i1:i2]:
                     line = line.expandtabs(tabwidth)
                     line = space_re.sub(htmlify, escape(line, quotes=False))
-                    blocks[-1]['base']['lines'].append(Markup(unicode(line)))
+                    blocks[-1]['base']['lines'].append(Markup(str(line)))
                 for line in tolines[j1:j2]:
                     line = line.expandtabs(tabwidth)
                     line = space_re.sub(htmlify, escape(line, quotes=False))
-                    blocks[-1]['changed']['lines'].append(Markup(unicode(line)))
+                    blocks[-1]['changed']['lines'].append(Markup(str(line)))
             else:
                 if tag in ('replace', 'delete'):
                     for line in fromlines[i1:i2]:
@@ -248,7 +248,7 @@ def diff_blocks(fromlines, tolines, context=None, tabwidth=8,
                                             for seg in line.split('\0'))
                         line = line.replace('\1', '</del>')
                         blocks[-1]['base']['lines'].append(
-                            Markup(unicode(line)))
+                            Markup(str(line)))
                 if tag in ('replace', 'insert'):
                     for line in tolines[j1:j2]:
                         line = expandtabs(line, tabwidth, '\0\1')
@@ -257,7 +257,7 @@ def diff_blocks(fromlines, tolines, context=None, tabwidth=8,
                                             for seg in line.split('\0'))
                         line = line.replace('\1', '</ins>')
                         blocks[-1]['changed']['lines'].append(
-                            Markup(unicode(line)))
+                            Markup(str(line)))
         changes.append(blocks)
     return changes
 

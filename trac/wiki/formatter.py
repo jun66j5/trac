@@ -240,7 +240,7 @@ class WikiProcessor(object):
             return self._sanitizer.sanitize(text)
         except HTMLParseError as e:
             self.env.log.warning(e)
-            line = unicode(text).splitlines()[e.lineno - 1].strip()
+            line = str(text).splitlines()[e.lineno - 1].strip()
             return system_message(_('HTML parsing error: %(message)s',
                                     message=escape(e.msg)), line)
 
@@ -660,7 +660,7 @@ class Formatter(object):
                 resource = get_relative_resource(self.resource, path)
                 path = get_resource_url(self.env, resource, self.href)
                 if resource.id:
-                    target = concat_path_query_fragment(unicode(resource.id),
+                    target = concat_path_query_fragment(str(resource.id),
                                                         query, fragment)
                     if resource.realm == 'wiki':
                         target = '/' + target   # Avoid wiki page scoping

@@ -73,7 +73,7 @@ def content_disposition(type=None, filename=None):
     """Generate a properly escaped Content-Disposition header."""
     type = type or ''
     if filename is not None:
-        if isinstance(filename, unicode):
+        if isinstance(filename, str):
             filename = filename.encode('utf-8')
         if type:
             type += '; '
@@ -136,8 +136,8 @@ _control_codes_re = re.compile(
 def normalize_filename(filepath):
     # We try to normalize the filename to unicode NFC if we can.
     # Files from OS X might be in NFD.
-    if not isinstance(filepath, unicode):
-        filepath = unicode(filepath, 'utf-8')
+    if not isinstance(filepath, str):
+        filepath = str(filepath, 'utf-8')
     filepath = unicodedata.normalize('NFC', filepath)
     # Replace control codes with spaces, e.g. NUL, LF, DEL, U+009F
     filepath = _control_codes_re.sub(' ', filepath)
@@ -162,10 +162,10 @@ if os.name == 'nt':
         MoveFileEx = ctypes.windll.kernel32.MoveFileExW
 
         def _rename(src, dst):
-            if not isinstance(src, unicode):
-                src = unicode(src, sys.getfilesystemencoding())
-            if not isinstance(dst, unicode):
-                dst = unicode(dst, sys.getfilesystemencoding())
+            if not isinstance(src, str):
+                src = str(src, sys.getfilesystemencoding())
+            if not isinstance(dst, str):
+                dst = str(dst, sys.getfilesystemencoding())
             if _rename_atomic(src, dst):
                 return True
             return MoveFileEx(src, dst, MOVEFILE_REPLACE_EXISTING
@@ -520,7 +520,7 @@ def copytree(src, dst, symlinks=False, skip=[], overwrite=False):
     which we don't want to copy.
     """
     def str_path(path):
-        if isinstance(path, unicode):
+        if isinstance(path, str):
             path = path.encode(sys.getfilesystemencoding() or
                                getpreferredencoding())
         return path
@@ -572,7 +572,7 @@ def is_path_below(path, parent):
     at any level.
     """
     def normalize(path):
-        if os.name == 'nt' and not isinstance(path, unicode):
+        if os.name == 'nt' and not isinstance(path, str):
             path = path.decode('mbcs')
         return os.path.normcase(os.path.abspath(path))
     path = normalize(path)
@@ -622,7 +622,7 @@ def arity(f):
 
 
 def get_last_traceback():
-    """Retrieve the last traceback as an `unicode` string."""
+    """Retrieve the last traceback as a `str` string."""
     import traceback
     tb = io.BytesIO()
     traceback.print_exc(file=tb)
@@ -930,11 +930,12 @@ except NotImplementedError:
 
     def urandom(n):
         result = []
-        hasher = hashlib.sha1(str(os.getpid()) + str(time_now()))
+        hasher = hashlib.sha1('{}{}'.format(os.getpid(), time_now())
+                              .encode('utf-8'))
         while len(result) * hasher.digest_size < n:
-            hasher.update(str(_entropy.random()))
+            hasher.update(str(_entropy.random()).encode('utf-8'))
             result.append(hasher.digest())
-        result = ''.join(result)
+        result = b''.join(result)
         return result[:n] if len(result) > n else result
 
 

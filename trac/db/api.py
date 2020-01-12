@@ -628,7 +628,7 @@ class DatabaseManager(Component):
 
 def get_column_names(cursor):
     """Retrieve column names from a cursor, if possible."""
-    return [unicode(d[0], 'utf-8') if isinstance(d[0], str) else d[0]
+    return [str(d[0], 'utf-8') if isinstance(d[0], bytes) else d[0]
             for d in cursor.description] if cursor.description else []
 
 

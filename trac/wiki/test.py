@@ -104,7 +104,7 @@ class WikiTestCase(unittest.TestCase):
     def test(self):
         """Testing WikiFormatter"""
         formatter = self.formatter()
-        v = unicode(formatter.generate(**self.generate_opts))
+        v = str(formatter.generate(**self.generate_opts))
         v = v.replace('\r', '').replace(u'\u200b', '')  # FIXME: keep ZWSP
         v = strip_line_ws(v, leading=False)
         try:

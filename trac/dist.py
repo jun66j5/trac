@@ -229,7 +229,7 @@ try:
                     # aid=617979&group_id=5470
                     value = eval('# coding=%s\n%s' % (encoding, value),
                                  {'__builtins__':{}}, {})
-                    if isinstance(value, str):
+                    if isinstance(value, bytes):
                         value = value.decode(encoding)
                     buf.append(value)
                 elif tok == OP and value == '=' and prev_tok == NAME:
@@ -272,7 +272,7 @@ try:
             return []
         out = io.StringIO()
         extractor = ScriptExtractor(out)
-        extractor.feed(unicode(fileobj.read(), 'utf-8'))
+        extractor.feed(str(fileobj.read(), 'utf-8'))
         extractor.close()
         out.seek(0)
         return extract_javascript(out, keywords, comment_tags, options)

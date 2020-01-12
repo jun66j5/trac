@@ -179,9 +179,9 @@ def MockRequest(env, **kwargs):
 
     def convert(val):
         if isinstance(val, bool):
-            return unicode(int(val))
+            return str(int(val))
         elif isinstance(val, numbers.Real):
-            return unicode(val)
+            return str(val)
         elif isinstance(val, (list, tuple)):
             return [convert(v) for v in val]
         else:
@@ -211,7 +211,7 @@ def MockRequest(env, **kwargs):
         'SERVER_PORT': kwargs.get('server_port', '80'),
     }
     for key in environ:
-        if isinstance(environ[key], unicode):
+        if isinstance(environ[key], str):
             environ[key] = environ[key].encode('utf-8')
 
     status_sent = []
@@ -542,10 +542,10 @@ def rmtree(path):
                 onerror(function, path, excinfo, retry + 1)
         else:
             raise
-    if os.name == 'nt' and isinstance(path, str):
+    if os.name == 'nt' and isinstance(path, bytes):
         # Use unicode characters in order to allow non-ansi characters
         # on Windows.
-        path = unicode(path, sys.getfilesystemencoding())
+        path = str(path, sys.getfilesystemencoding())
     shutil.rmtree(path, onerror=onerror)
 
 

@@ -193,7 +193,7 @@ def create_mime_text(body, format, charset):
         pass the subtype, like `plain` or `html`.
     :param charset: should be created using `create_charset()`.
     """
-    if isinstance(body, unicode):
+    if isinstance(body, str):
         body = body.encode('utf-8')
     msg = MIMEText(body, format)
     # Message class computes the wrong type from MIMEText constructor,

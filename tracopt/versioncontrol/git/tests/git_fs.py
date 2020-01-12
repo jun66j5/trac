@@ -66,7 +66,7 @@ class GitCommandMixin(object):
         return proc
 
     def _git_fast_import(self, data, **kwargs):
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             data = data.encode('utf-8')
         with self._spawn_git('fast-import', stdin=PIPE, **kwargs) as proc:
             stdout, stderr = proc.communicate(input=data)
@@ -372,11 +372,11 @@ class GitRepositoryTestCase(BaseTestCase):
 
         e = try_init('')
         self.assertEqual('"(default)" is not readable or not a Git '
-                         'repository.', unicode(e))
+                         'repository.', str(e))
 
         e = try_init('therepos')
         self.assertEqual('"therepos" is not readable or not a Git repository.',
-                         unicode(e))
+                         str(e))
 
     def test_repository_instance(self):
         self._git_init()

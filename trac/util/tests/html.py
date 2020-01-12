@@ -78,12 +78,7 @@ class FragmentTestCase(unittest.TestCase):
                          Markup(tag(0, tag.b(0), ' and ', tag.b(0.0))))
 
     def test_unicode(self):
-        self.assertEqual('<b>M</b>essäge',
-                         unicode(tag(tag.b('M'), 'essäge')))
-
-    def test_str(self):
-        self.assertEqual(b'<b>M</b>ess\xc3\xa4ge',
-                         str(tag(tag.b('M'), 'essäge')))
+        self.assertEqual('<b>M</b>essäge', str(tag(tag.b('M'), 'essäge')))
 
 
 class XMLElementTestCase(unittest.TestCase):
@@ -110,10 +105,6 @@ class ElementTestCase(unittest.TestCase):
 
     def test_unicode(self):
         self.assertEqual('<b>M<em>essäge</em></b>',
-                         unicode(tag.b('M', tag.em('essäge'))))
-
-    def test_str(self):
-        self.assertEqual(b'<b>M<em>ess\xc3\xa4ge</em></b>',
                          str(tag.b('M', tag.em('essäge'))))
 
 
@@ -151,7 +142,7 @@ class TracHTMLSanitizerTestCaseBase(unittest.TestCase):
     def sanitize(self, html):
         sanitizer = TracHTMLSanitizer(safe_schemes=self.safe_schemes,
                                       safe_origins=self.safe_origins)
-        return unicode(sanitizer.sanitize(html))
+        return str(sanitizer.sanitize(html))
 
     def test_input_type_password(self):
         html = '<input type="password" />'
@@ -448,22 +439,22 @@ class ToFragmentTestCase(unittest.TestCase):
     def test_unicode(self):
         rv = to_fragment('blah')
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('blah', unicode(rv))
+        self.assertEqual('blah', str(rv))
 
     def test_fragment(self):
         rv = to_fragment(tag('blah'))
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('blah', unicode(rv))
+        self.assertEqual('blah', str(rv))
 
     def test_element(self):
         rv = to_fragment(tag.p('blah'))
         self.assertEqual(Element, type(rv))
-        self.assertEqual('<p>blah</p>', unicode(rv))
+        self.assertEqual('<p>blah</p>', str(rv))
 
     def test_tracerror(self):
         rv = to_fragment(TracError('blah'))
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('blah', unicode(rv))
+        self.assertEqual('blah', str(rv))
 
     def test_tracerror_with_fragment(self):
         message = tag('Powered by ',
@@ -471,7 +462,7 @@ class ToFragmentTestCase(unittest.TestCase):
         rv = to_fragment(TracError(message))
         self.assertEqual(Fragment, type(rv))
         self.assertEqual('Powered by <a href="https://trac.edgewall.org/">Trac'
-                         '</a>', unicode(rv))
+                         '</a>', str(rv))
 
     def test_tracerror_with_element(self):
         message = tag.p('Powered by ',
@@ -479,7 +470,7 @@ class ToFragmentTestCase(unittest.TestCase):
         rv = to_fragment(TracError(message))
         self.assertEqual(Element, type(rv))
         self.assertEqual('<p>Powered by <a href="https://trac.edgewall.org/">'
-                         'Trac</a></p>', unicode(rv))
+                         'Trac</a></p>', str(rv))
 
     def test_tracerror_with_tracerror_with_fragment(self):
         message = tag('Powered by ',
@@ -487,7 +478,7 @@ class ToFragmentTestCase(unittest.TestCase):
         rv = to_fragment(TracError(TracError(message)))
         self.assertEqual(Fragment, type(rv))
         self.assertEqual('Powered by <a href="https://trac.edgewall.org/">Trac'
-                         '</a>', unicode(rv))
+                         '</a>', str(rv))
 
     def test_tracerror_with_tracerror_with_element(self):
         message = tag.p('Powered by ',
@@ -495,29 +486,29 @@ class ToFragmentTestCase(unittest.TestCase):
         rv = to_fragment(TracError(TracError(message)))
         self.assertEqual(Element, type(rv))
         self.assertEqual('<p>Powered by <a href="https://trac.edgewall.org/">'
-                         'Trac</a></p>', unicode(rv))
+                         'Trac</a></p>', str(rv))
 
     def test_error(self):
         rv = to_fragment(ValueError('invalid literal for int(): blah'))
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('invalid literal for int(): blah', unicode(rv))
+        self.assertEqual('invalid literal for int(): blah', str(rv))
 
     def test_error_with_fragment(self):
         rv = to_fragment(ValueError(tag('invalid literal for int(): ',
                                         tag.b('blah'))))
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('invalid literal for int(): <b>blah</b>', unicode(rv))
+        self.assertEqual('invalid literal for int(): <b>blah</b>', str(rv))
 
     def test_error_with_error_with_fragment(self):
         v1 = ValueError(tag('invalid literal for int(): ', tag.b('blah')))
         rv = to_fragment(ValueError(v1))
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('invalid literal for int(): <b>blah</b>', unicode(rv))
+        self.assertEqual('invalid literal for int(): <b>blah</b>', str(rv))
 
     def test_gettext(self):
         rv = to_fragment(gettext('%(size)s bytes', size=0))
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('0 bytes', unicode(rv))
+        self.assertEqual('0 bytes', str(rv))
 
     def test_tgettext(self):
         rv = to_fragment(tgettext('Back to %(parent)s',
@@ -525,13 +516,13 @@ class ToFragmentTestCase(unittest.TestCase):
                                                href='http://localhost/')))
         self.assertEqual(Fragment, type(rv))
         self.assertEqual('Back to <a href="http://localhost/">WikiStart</a>',
-                         unicode(rv))
+                         str(rv))
 
     def test_tracerror_with_gettext(self):
         e = TracError(gettext('%(size)s bytes', size=0))
         rv = to_fragment(e)
         self.assertEqual(Fragment, type(rv))
-        self.assertEqual('0 bytes', unicode(rv))
+        self.assertEqual('0 bytes', str(rv))
 
     def test_tracerror_with_tgettext(self):
         e = TracError(tgettext('Back to %(parent)s',
@@ -540,7 +531,7 @@ class ToFragmentTestCase(unittest.TestCase):
         rv = to_fragment(e)
         self.assertEqual(Fragment, type(rv))
         self.assertEqual('Back to <a href="http://localhost/">WikiStart</a>',
-                         unicode(rv))
+                         str(rv))
 
     def _ioerror(self, filename):
         try:
@@ -554,14 +545,14 @@ class ToFragmentTestCase(unittest.TestCase):
         rv = to_fragment(self._ioerror(b'./notfound'))
         self.assertEqual(Fragment, type(rv))
         self.assertEqual("[Errno 2] No such file or directory: './notfound'",
-                         unicode(rv))
+                         str(rv))
 
     def test_error_with_ioerror(self):
         e = self._ioerror(b'./notfound')
         rv = to_fragment(ValueError(e))
         self.assertEqual(Fragment, type(rv))
         self.assertEqual("[Errno 2] No such file or directory: './notfound'",
-                         unicode(rv))
+                         str(rv))
 
 
 def test_suite():

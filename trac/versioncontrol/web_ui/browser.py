@@ -72,7 +72,7 @@ class IPropertyRenderer(Interface):
 
         The rendered result can be one of the following:
          - `None`: the property will be skipped
-         - an `unicode` value: the property will be displayed as text
+         - a `str` value: the property will be displayed as text
          - a `RenderedProperty` instance: the property will only be displayed
            using the instance's `content` attribute, and the other attributes
            will also be used in some display contexts (like `revprop`)

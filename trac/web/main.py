@@ -534,7 +534,7 @@ def dispatch_request(environ, start_response):
             # the remaining path in the `PATH_INFO` variable.
             script_name = environ.get('SCRIPT_NAME', '')
             try:
-                script_name = unicode(script_name, 'utf-8')
+                script_name = str(script_name, 'utf-8')
             except UnicodeDecodeError:
                 errmsg = 'Invalid URL encoding (was %r)' % script_name
             else:
@@ -657,7 +657,7 @@ def _send_error(req, exc_info, template='error.html', content_type='text/html',
                                     data.get('type'),
                                     data.get('message'))
 
-    if isinstance(content, unicode):
+    if isinstance(content, str):
         content = content.encode('utf-8')
 
     try:

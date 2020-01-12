@@ -417,12 +417,12 @@ class TicketFormatter(Component):
                 fval = self._format_time_field(fval, format)
             if fname in ['owner', 'reporter']:
                 fval = self._format_author(fval)
-            if f['type'] == 'textarea' or '\n' in unicode(fval):
+            if f['type'] == 'textarea' or '\n' in str(fval):
                 big.append((f['label'], '\n'.join(fval.splitlines())))
             else:
                 # Note: f['label'] is a Babel's LazyObject, make sure its
                 # __str__ method won't be called.
-                str_tmp = u'%s:  %s' % (f['label'], unicode(fval))
+                str_tmp = u'%s:  %s' % (f['label'], str(fval))
                 idx = i % 2
                 initial_indent = ' ' * (width[2 * idx] -
                                         self._get_text_width(f['label']) +

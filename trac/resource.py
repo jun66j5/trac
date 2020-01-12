@@ -115,9 +115,9 @@ class Resource(object):
         while r:
             name = r.realm
             if r.id:
-                name += ':' + unicode(r.id)  # id can be numerical
+                name += ':' + str(r.id)  # id can be numerical
             if r.version is not None:
-                name += '@' + unicode(r.version)
+                name += '@' + str(r.version)
             path.append(name or '')
             r = r.parent
         return '<Resource %r>' % (', '.join(reversed(path)))
@@ -365,7 +365,7 @@ def get_relative_resource(resource, path=''):
     if path in (None, '', '.'):
         return resource
     else:
-        base = unicode(resource.id if path[0] != '/' else '').split('/')
+        base = str(resource.id if path[0] != '/' else '').split('/')
         for comp in path.split('/'):
             if comp == '..':
                 if base:

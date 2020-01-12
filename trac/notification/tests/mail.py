@@ -56,7 +56,7 @@ class TestFormatter(Component):
         if style == 'text/plain':
             if 'raise-text-plain' in text:
                 raise ValueError()
-            return unicode(text)
+            return str(text)
         if style == 'text/html':
             if 'raise-text-html' in text:
                 raise ValueError()

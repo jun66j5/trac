@@ -175,7 +175,7 @@ anonymous = !BROWSER_VIEW, !FILE_VIEW
             self.process_request(req)
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual('No node blah-blah-file', unicode(e))
+            self.assertEqual('No node blah-blah-file', str(e))
 
     def test_repository_without_browser_view(self):
         req = MockRequest(self.env, authname='anonymous',
@@ -343,13 +343,13 @@ anonymous = !BROWSER_VIEW, !FILE_VIEW
             self.process_request(req)
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual('No viewable repositories', unicode(e))
+            self.assertEqual('No viewable repositories', str(e))
         req = MockRequest(self.env, path_info='/browser/allow/')
         try:
             self.process_request(req)
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual('No node allow', unicode(e))
+            self.assertEqual('No node allow', str(e))
         req = MockRequest(self.env, authname='anonymous',
                           path_info='/browser/deny/')
         try:
@@ -368,13 +368,13 @@ anonymous = !BROWSER_VIEW, !FILE_VIEW
             self.process_request(req)
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual('No viewable repositories', unicode(e))
+            self.assertEqual('No viewable repositories', str(e))
         req = MockRequest(self.env, path_info='/browser/deny/')
         try:
             self.process_request(req)
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual('No node deny', unicode(e))
+            self.assertEqual('No node deny', str(e))
 
     def test_no_viewable_repositories_without_browser_view(self):
         provider = DbRepositoryProvider(self.env)

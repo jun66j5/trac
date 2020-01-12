@@ -178,7 +178,7 @@ class Href(object):
                 args = args[:-1]
 
         # build the path
-        path = '/'.join(unicode_quote(unicode(arg).strip('/'), self.path_safe)
+        path = '/'.join(unicode_quote(str(arg).strip('/'), self.path_safe)
                         for arg in args if arg is not None)
         if path:
             href += '/' + slashes_re.sub('/', path).lstrip('/')

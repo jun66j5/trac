@@ -157,7 +157,7 @@ class Query(object):
         cols = []
         report = None
         def as_str(s):
-            if isinstance(s, unicode):
+            if isinstance(s, str):
                 return s.encode('utf-8')
             return s
         for filter_ in cls._clause_splitter.split(string):
@@ -479,7 +479,7 @@ class Query(object):
                     try:
                         return user_time(req, parse_date, value)
                     except TracError as e:
-                        errors.append(unicode(e))
+                        errors.append(str(e))
                 return None
 
             def get_constraint_sql(name, value, mode, neg):
@@ -1096,7 +1096,7 @@ class QueryModule(Component):
         orig_time = datetime_now(utc)
         query_time = req.session.as_int('query_time', 0)
         query_time = datetime.fromtimestamp(query_time, utc)
-        query_constraints = unicode(query.constraints)
+        query_constraints = str(query.constraints)
         try:
             if query_constraints != req.session.get('query_constraints') \
                     or query_time < orig_time - timedelta(hours=1):
@@ -1173,7 +1173,7 @@ class QueryModule(Component):
             writer = csv.writer(out, delimiter=sep, quoting=csv.QUOTE_MINIMAL)
 
             def writerow(values):
-                writer.writerow([unicode(value).encode('utf-8')
+                writer.writerow([str(value).encode('utf-8')
                                  for value in values])
                 rv = out.getvalue()
                 out.truncate(0)
@@ -1249,7 +1249,7 @@ class QueryModule(Component):
                              href=query.get_href(formatter.context.href),
                              class_='query')
             except QuerySyntaxError as e:
-                return tag.em(_("[Error: %(error)s]", error=unicode(e)),
+                return tag.em(_("[Error: %(error)s]", error=str(e)),
                               class_='error')
 
 

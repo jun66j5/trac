@@ -69,8 +69,8 @@ class DatabaseFileTestCase(unittest.TestCase):
             self._db_query(self.env)
             self.fail('ConfigurationError not raised')
         except ConfigurationError as e:
-            self.assertIn('Database "', unicode(e))
-            self.assertIn('" not found.', unicode(e))
+            self.assertIn('Database "', str(e))
+            self.assertIn('" not found.', str(e))
 
     def test_no_permissions(self):
         self._create_env()
@@ -80,7 +80,7 @@ class DatabaseFileTestCase(unittest.TestCase):
             self._db_query(self.env)
             self.fail('ConfigurationError not raised')
         except ConfigurationError as e:
-            self.assertIn('requires read _and_ write permissions', unicode(e))
+            self.assertIn('requires read _and_ write permissions', str(e))
 
     if os.name == 'posix' and os.getuid() == 0:
         del test_no_permissions  # For root, os.access() always returns True
@@ -95,7 +95,7 @@ class DatabaseFileTestCase(unittest.TestCase):
             self._db_query(self.env)
             self.fail('ConfigurationError not raised')
         except ConfigurationError as e:
-            message = unicode(e)
+            message = str(e)
             self.assertIn('Database "', message)
             self.assertIn('" not found.', message)
         finally:

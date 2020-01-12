@@ -274,7 +274,7 @@ def groupattr_filter(_eval_ctx, iterable, num, attr, *args, **kwargs):
 
 
 def istext(text):
-    """`True` for text (`unicode` and `str`), but `False` for `Markup`."""
+    """`True` for text (`str` and `bytes`), but `False` for `Markup`."""
     return isinstance(text, basestring) and not isinstance(text, Markup)
 
 def prepared_paginate(items, num_items, max_per_page):
@@ -469,7 +469,7 @@ class TracJSONEncoder(JSONEncoder):
         elif isinstance(o, datetime):
             return to_utimestamp(o if o.tzinfo else o.replace(tzinfo=utc))
         elif isinstance(o, Fragment):
-            return '"%s"' % javascript_quote(unicode(o))
+            return '"%s"' % javascript_quote(str(o))
         return JSONEncoder.default(self, o)
 
 def to_json(value):

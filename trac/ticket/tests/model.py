@@ -242,12 +242,12 @@ class TicketTestCase(unittest.TestCase):
             Ticket(self.env, '42')
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual(u'Ticket 42 does not exist.', unicode(e))
+            self.assertEqual(u'Ticket 42 does not exist.', str(e))
         try:
             Ticket(self.env, 'blah')
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual(u'Ticket blah does not exist.', unicode(e))
+            self.assertEqual(u'Ticket blah does not exist.', str(e))
 
     def test_can_save_ticket_without_explicit_comment(self):
         ticket = insert_ticket(self.env)
@@ -1060,7 +1060,7 @@ class EnumTestCase(unittest.TestCase):
         names = ('blocker', 'critical', 'major', 'minor', 'trivial')
         for i, name in enumerate(names):
             self.assertEqual(name, priorities[i].name)
-            self.assertEqual(unicode(i + 1), priorities[i].value)
+            self.assertEqual(str(i + 1), priorities[i].value)
             self.assertEqual('', priorities[i].description)
 
 
@@ -1448,7 +1448,7 @@ class ComponentTestCase(unittest.TestCase):
             Component(self.env, 'none')
 
         self.assertEqual("Component none does not exist.",
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_repr(self):
         """Return string representation of object."""
@@ -1504,9 +1504,9 @@ class ComponentTestCase(unittest.TestCase):
             component1.delete()
 
         exc_message = "Cannot delete non-existent component."
-        self.assertEqual(exc_message, unicode(cm0.exception))
+        self.assertEqual(exc_message, str(cm0.exception))
         self.assertFalse(component0.exists)
-        self.assertEqual(exc_message, unicode(cm1.exception))
+        self.assertEqual(exc_message, str(cm1.exception))
         self.assertFalse(component1.exists)
 
     def test_insert(self):
@@ -1554,9 +1554,9 @@ class ComponentTestCase(unittest.TestCase):
             component3.insert()
 
         exc_message = "Invalid component name."
-        self.assertEqual(exc_message, unicode(cm1.exception))
-        self.assertEqual(exc_message, unicode(cm2.exception))
-        self.assertEqual(exc_message, unicode(cm3.exception))
+        self.assertEqual(exc_message, str(cm1.exception))
+        self.assertEqual(exc_message, str(cm2.exception))
+        self.assertEqual(exc_message, str(cm3.exception))
 
     def test_insert_existing_raises(self):
         """ResourceExistsError is raised when `insert`ing an existing
@@ -1569,7 +1569,7 @@ class ComponentTestCase(unittest.TestCase):
             component.insert()
 
         self.assertEqual('Component "component1" already exists.',
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_insert_existing_renamed_raises(self):
         """ResourceExistsError is raised when `insert`ing existing renamed
@@ -1582,7 +1582,7 @@ class ComponentTestCase(unittest.TestCase):
             component.insert()
 
         self.assertEqual('Component "component3" already exists.',
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_update(self):
         """Update existing component."""
@@ -1733,7 +1733,7 @@ class ReportTestCase(unittest.TestCase):
             report.insert()
         self.assertIsNone(report.id)
         self.assertEqual("Query cannot be empty.",
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_insert_existing_report(self):
         report = Report(self.env, 1)
@@ -1773,8 +1773,7 @@ class ReportTestCase(unittest.TestCase):
 
         with self.assertRaises(TracError) as cm:
             report.update()
-        self.assertEqual("Query cannot be empty.",
-                         unicode(cm.exception))
+        self.assertEqual("Query cannot be empty.", str(cm.exception))
 
     def test_select(self):
         reports = list(Report.select(self.env))

@@ -70,8 +70,8 @@ class TracAdmin(cmd.Cmd):
         pass
 
     def onecmd(self, line):
-        """`line` may be a `str` or an `unicode` object"""
-        if isinstance(line, str):
+        """`line` may be a `bytes` or a `str` object"""
+        if isinstance(line, bytes):
             if self.interactive:
                 encoding = sys.stdin.encoding
             else:
@@ -154,16 +154,12 @@ Type:  '?' or 'help' for help on commands.
         return AdminCommandManager(self.env)
 
     def arg_tokenize(self, argstr):
-        """`argstr` is an `unicode` string
-
-        ... but shlex is not unicode friendly.
-        """
-        lex = shlex(argstr.encode('utf-8'), posix=True)
+        lex = shlex(argstr, posix=True)
         lex.whitespace_split = True
         lex.commenters = ''
         if os.name == 'nt':
             lex.escape = ''
-        return [unicode(token, 'utf-8') for token in lex] or ['']
+        return list(lex) or ['']
 
     def word_complete(self, text, words):
         words = list({a for a in words if a.startswith(text)})
@@ -518,7 +514,7 @@ def _run(args):
         else:
             env_path = os.path.abspath(args[0])
             try:
-                unicode(env_path, 'ascii')
+                str(env_path, 'ascii')
             except UnicodeDecodeError:
                 printerr(_("Non-ascii environment path '%(path)s' not "
                            "supported.", path=to_unicode(env_path)))

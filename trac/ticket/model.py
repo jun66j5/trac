@@ -697,7 +697,7 @@ class Ticket(object):
 
     def _find_change(self, cnum):
         """Find a comment by its number."""
-        scnum = unicode(cnum)
+        scnum = str(cnum)
         with self.env.db_query as db:
             for row in db("""
                     SELECT time, author, newvalue FROM ticket_change
@@ -795,7 +795,7 @@ class AbstractEnum(object):
             for enum in self.select(self.env):
                 try:
                     if int(enum.value) > int(self._old_value):
-                        enum.value = unicode(int(enum.value) - 1)
+                        enum.value = str(int(enum.value) - 1)
                         enum.update()
                 except ValueError:
                     pass  # Ignore cast error for this non-essential operation

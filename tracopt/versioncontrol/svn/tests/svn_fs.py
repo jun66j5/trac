@@ -146,7 +146,7 @@ class NormalTests(object):
                     for td in tr.children:
                         if isinstance(td, Element) and td.tag == 'td':
                             if col_idx == col:
-                                return unicode(td)
+                                return str(td)
                             col_idx += 1
                 row_idx += 1
             else:
@@ -975,8 +975,8 @@ En r\xe9sum\xe9 ... \xe7a marche.
         self.assertIn(' href="/trac.cgi/changeset/21/repo/t%C3%AAte"', node)
         self.assertIn('>eligible</a>', node)
 
-        self.assertNotIn('(toggle deleted branches)', unicode(result))
-        self.assertNotIn('False', unicode(result))  # See #12125
+        self.assertNotIn('(toggle deleted branches)', str(result))
+        self.assertNotIn('False', str(result))  # See #12125
 
     def test_merge_prop_renderer_with_deleted_branches(self):
         context = _create_context(self.env)
@@ -1016,7 +1016,7 @@ En r\xe9sum\xe9 ... \xe7a marche.
                       '13-14%2C17-18%2C20-21%2C23-26"', node)
         self.assertIn('>eligible</a>', node)
 
-        self.assertIn('(toggle deleted branches)', unicode(result))
+        self.assertIn('(toggle deleted branches)', str(result))
         self.assertIn('<td>/branches/deleted</td>',
                       self._row_col(result, 3, 1))
         self.assertIn(u'<td colspan="2">1,\u200b3-5,\u200b22</td>',
@@ -1107,7 +1107,7 @@ En r\xe9sum\xe9 ... \xe7a marche.
         result = renderer.render_property('svn:needs-lock', None, context,
                                           {'svn:needs-lock': '*'})
         self.assertIn('src="http://assets.example.org/common/lock-locked.png"',
-                      unicode(result))
+                      str(result))
 
 
 class ScopedTests(object):
@@ -1437,7 +1437,7 @@ class ExternalsPropertyTests(object):
                     continue
                 href = a.attrib.get('href')
                 title = a.attrib.get('title')
-                text = Fragment.__unicode__(a)
+                text = Fragment.__str__(a)
                 items.append({'text()': text, '@href': href, '@title': title})
         return items
 

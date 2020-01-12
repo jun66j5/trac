@@ -144,7 +144,7 @@ class MimeviewConverterTestCase(unittest.TestCase):
                                           self.in_mimetype,
                                           content, 'text', iterable=iterable)
         if iterable:
-            self.assertNotIn(type(output[0]), (str, unicode))
+            self.assertNotIn(type(output[0]), (bytes, str))
             self.assertEqual(expected, ''.join(output[0]))
         else:
             self.assertEqual(type(expected), type(output[0]))

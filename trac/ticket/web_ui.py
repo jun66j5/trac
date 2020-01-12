@@ -1188,10 +1188,10 @@ class TicketModule(Component):
         content = io.BytesIO()
         content.write(b'\xef\xbb\xbf')   # BOM
         writer = csv.writer(content, delimiter=sep, quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['id'] + [unicode(f['name']) for f in fields])
+        writer.writerow(['id'] + [str(f['name']) for f in fields])
 
         context = web_context(req, ticket.resource)
-        cols = [unicode(ticket.id)]
+        cols = [str(ticket.id)]
         for f in fields:
             name = f['name']
             value = ticket[name] or ''

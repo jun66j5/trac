@@ -255,7 +255,7 @@ class PygmentsRenderer(Component):
         lexer = get_lexer_by_name(lexer_name, **lexer_options)
         out = io.StringIO()
         # Specify `lineseparator` to workaround exception with Pygments 2.2.0:
-        # "TypeError: unicode argument expected, got 'str'" with newline input
+        # "TypeError: str argument expected, got 'bytes'" with newline input
         formatter = HtmlFormatter(nowrap=True, lineseparator=u'\n')
         formatter.format(lexer.get_tokens(content), out)
         return Markup(out.getvalue())

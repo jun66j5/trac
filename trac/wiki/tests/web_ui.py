@@ -94,7 +94,7 @@ class WikiModuleTestCase(unittest.TestCase):
         with self.assertRaises(HTTPBadRequest) as cm:
             WikiModule(self.env).process_request(req)
         self.assertEqual("400 Bad Request (Invalid value for request argument "
-                         "<em>version</em>.)", unicode(cm.exception))
+                         "<em>version</em>.)", str(cm.exception))
 
         req = MockRequest(self.env, method='GET', action=None,
                           args=dict(version='2', old_version='a'))
@@ -102,7 +102,7 @@ class WikiModuleTestCase(unittest.TestCase):
         with self.assertRaises(HTTPBadRequest) as cm:
             WikiModule(self.env).process_request(req)
         self.assertEqual("400 Bad Request (Invalid value for request argument "
-                         "<em>old_version</em>.)", unicode(cm.exception))
+                         "<em>old_version</em>.)", str(cm.exception))
 
     def test_wiki_template_relative_path(self):
         self._insert_templates()

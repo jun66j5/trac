@@ -496,7 +496,7 @@ class PluginAdminPanel(Component):
         if 'plugin_file' not in req.args:
             raise TracError(_("No file uploaded"))
         upload = req.args['plugin_file']
-        if isinstance(upload, unicode) or not upload.filename:
+        if isinstance(upload, str) or not upload.filename:
             raise TracError(_("No file uploaded"))
         plugin_filename = upload.filename.replace('\\', '/').replace(':', '/')
         plugin_filename = os.path.basename(plugin_filename)

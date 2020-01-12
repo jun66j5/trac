@@ -76,7 +76,7 @@ class IPropertyDiffRenderer(Interface):
         The rendered result can be one of the following:
          - `None`: the property change will be shown the normal way
            (''changed from `old` to `new`'')
-         - an `unicode` value: the change will be shown as textual content
+         - an `str` value: the change will be shown as textual content
          - `Markup` or `Fragment`: the change will shown as block markup
         """
 
@@ -681,7 +681,7 @@ class ChangesetModule(Component):
     def _render_diff(self, req, filename, repos, data):
         """Raw Unified Diff version"""
 
-        output = (line.encode('utf-8') if isinstance(line, unicode) else line
+        output = (line.encode('utf-8') if isinstance(line, str) else line
                   for line in self._iter_diff_lines(req, repos, data))
         if Chrome(self.env).use_chunked_encoding:
             length = None

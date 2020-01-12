@@ -57,7 +57,7 @@ def _execute(func, strip_trailing_space=True, input=None):
         out.encoding = 'utf-8'  # fake output encoding
         return_val = func()
         value = out.getvalue()
-        if isinstance(value, str):  # reverse what print_listing did
+        if isinstance(value, bytes):  # reverse what print_listing did
             value = value.decode('utf-8')
         if strip_trailing_space:
             return return_val, STRIP_TRAILING_SPACE.sub('', value)

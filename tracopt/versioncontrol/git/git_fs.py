@@ -492,7 +492,7 @@ class CsetPropertyRenderer(Component):
             _str = "%s (%s)" % (
                 Chrome(self.env).format_author(context.req, user_),
                 format_datetime(time_, tzinfo=context.req.tz))
-            return unicode(_str)
+            return str(_str)
 
         raise TracError(_("Internal error"))
 

@@ -633,7 +633,7 @@ class RoadmapModule(Component):
                 write_prop('DESCRIPTION', ticket['description'])
                 priority = get_priority(ticket)
                 if priority:
-                    write_prop('PRIORITY', unicode(priority))
+                    write_prop('PRIORITY', str(priority))
                 write_prop('STATUS', get_status(ticket))
                 if ticket['status'] == 'closed':
                     for time, in self.env.db_query("""

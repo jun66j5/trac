@@ -331,7 +331,7 @@ class AttachmentTestCase(unittest.TestCase):
             attachment.move(attachment.parent_realm, attachment.parent_id,
                             attachment.filename)
         self.assertEqual("Cannot rename non-existent attachment",
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_move_attachment_not_modified_raises(self):
         """TracError is raised when attachment not modified on move."""
@@ -341,7 +341,7 @@ class AttachmentTestCase(unittest.TestCase):
         with self.assertRaises(TracError) as cm:
             attachment.move(attachment.parent_realm, attachment.parent_id,
                             attachment.filename)
-        self.assertEqual("Attachment not modified", unicode(cm.exception))
+        self.assertEqual("Attachment not modified", str(cm.exception))
 
     def test_move_attachment_to_nonexistent_resource_raises(self):
         """TracError is raised moving an attachment to nonexistent resource
@@ -352,7 +352,7 @@ class AttachmentTestCase(unittest.TestCase):
         with self.assertRaises(TracError) as cm:
             attachment.move('wiki', 'NonExistentPage')
         self.assertEqual("NonExistentPage doesn't exist, can't move attachment",
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_move_attachment_to_existing_path_raises(self):
         """TracError is raised if target already exists"""
@@ -364,7 +364,7 @@ class AttachmentTestCase(unittest.TestCase):
         with self.assertRaises(TracError) as cm:
             attachment1.move(new_filename=attachment2.filename)
         self.assertEqual('Cannot move attachment "foo.txt" to "wiki:SomePage: '
-                         'bar.txt" as it already exists', unicode(cm.exception))
+                         'bar.txt" as it already exists', str(cm.exception))
 
     def test_attachment_change_listeners_called(self):
         """The move method calls attachment change listeners"""
@@ -433,7 +433,7 @@ class AttachmentTestCase(unittest.TestCase):
             Attachment.reparent_all(self.env, 'wiki', 'SomePage',
                                     'unknown_realm', 'UnknownId')
         self.assertEqual("unknown_realm doesn't exist, can't move attachment",
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_reparent_all(self):
         """Change the parent realm and parent id of multiple attachments.
@@ -500,7 +500,7 @@ class AttachmentModuleTestCase(unittest.TestCase):
         self.assertTrue(module.match_request(req))
         with self.assertRaises(TracError) as cm:
             module.process_request(req)
-        self.assertEqual("No file uploaded", unicode(cm.exception))
+        self.assertEqual("No file uploaded", str(cm.exception))
 
     def test_post_request_with_empty_attachment_raises_exception(self):
         """TracError is raised for POST request with empty file."""
@@ -514,7 +514,7 @@ class AttachmentModuleTestCase(unittest.TestCase):
             self.assertTrue(module.match_request(req))
             with self.assertRaises(TracError) as cm:
                 module.process_request(req)
-        self.assertEqual("Can't upload empty file", unicode(cm.exception))
+        self.assertEqual("Can't upload empty file", str(cm.exception))
 
     def test_post_request_exceeding_max_size_raises_exception(self):
         """TracError is raised for file exceeding max size"""
@@ -532,7 +532,7 @@ class AttachmentModuleTestCase(unittest.TestCase):
             with self.assertRaises(TracError) as cm:
                 module.process_request(req)
         self.assertEqual("Maximum attachment size: 10 bytes",
-                         unicode(cm.exception))
+                         str(cm.exception))
 
     def test_attachment_parent_realm_raises_exception(self):
         """TracError is raised when 'attachment' is the resource parent
