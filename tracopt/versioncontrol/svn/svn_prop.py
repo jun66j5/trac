@@ -232,7 +232,7 @@ class SubversionMergePropertyRenderer(Component):
                         first_rev = branch_starts.get(spath)
                         if not first_rev:
                             first_rev = node.get_branch_origin()
-                        eligible = set(xrange(first_rev or 1, target_rev + 1))
+                        eligible = set(range(first_rev or 1, target_rev + 1))
                         eligible -= set(Ranges(revs))
                         blocked = _get_blocked_revs(props, name, spath)
                         if blocked:

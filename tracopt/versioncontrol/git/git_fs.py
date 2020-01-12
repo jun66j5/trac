@@ -101,7 +101,7 @@ class GitCachedRepository(CachedRepository):
             max_holders = 999
             revs = sorted(set(rev for refname, rev in repos.git.get_refs()))
             step = max_holders - 1
-            for idx in xrange(0, len(revs), step):
+            for idx in range(0, len(revs), step):
                 revs_ = revs[idx:idx + step]
                 holders = ','.join(('%s',) * len(revs_))
                 args = [self.id]
