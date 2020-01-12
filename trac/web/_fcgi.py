@@ -1236,8 +1236,7 @@ class WSGIServer(Server):
             if exc_info:
                 try:
                     if headers_sent:
-                        # Re-raise if too late
-                        raise exc_info[0], exc_info[1], exc_info[2]
+                        raise exc_info[1]  # Re-raise if too late
                 finally:
                     exc_info = None # avoid dangling circular ref
             else:

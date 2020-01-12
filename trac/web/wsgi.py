@@ -130,7 +130,7 @@ class WSGIGateway(object):
         if exc_info:
             try:
                 if self.headers_sent: # Re-raise original exception
-                    raise exc_info[0], exc_info[1], exc_info[2]
+                    raise exc_info[1]
             finally:
                 exc_info = None # avoid dangling circular ref
         else:
