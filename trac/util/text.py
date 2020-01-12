@@ -176,7 +176,7 @@ def strip_line_ws(text, leading=True, trailing=True):
 _js_quote = {'\\': '\\\\', '"': '\\"', '\b': '\\b', '\f': '\\f',
              '\n': '\\n', '\r': '\\r', '\t': '\\t', "'": "\\'"}
 for i in list(range(0x20)) + [ord(c) for c in u'&<>\u2028\u2029']:
-    _js_quote.setdefault(unichr(i), '\\u%04x' % i)
+    _js_quote.setdefault(chr(i), '\\u%04x' % i)
 _js_quote_re = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t\'&<>' + u'\u2028\u2029]')
 _js_string_re = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t&<>' + u'\u2028\u2029]')
 
@@ -536,21 +536,12 @@ class UnicodeTextWrapper(textwrap.TextWrapper):
     @classmethod
     def _init_patterns(cls):
         char_ranges = []
-        surrogate_pairs = []
         for val in cls.breakable_char_ranges:
-            try:
-                high = unichr(val[0])
-                low = unichr(val[1])
-                char_ranges.append(u'%s-%s' % (high, low))
-            except ValueError:
-                # Narrow build, `re` cannot use characters >= 0x10000
-                surrogate_pairs.append(val[2])
+            high = chr(val[0])
+            low = chr(val[1])
+            char_ranges.append(u'%s-%s' % (high, low))
         char_ranges = u''.join(char_ranges)
-        if surrogate_pairs:
-            pattern = u'(?:[%s]|%s)+' % (char_ranges,
-                                         u'|'.join(surrogate_pairs))
-        else:
-            pattern = u'[%s]+' % char_ranges
+        pattern = u'[%s]+' % char_ranges
 
         cls.split_re = re.compile(
             r'(\s+|' +                                  # any whitespace
