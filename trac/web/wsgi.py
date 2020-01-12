@@ -17,7 +17,7 @@
 from abc import ABCMeta, abstractmethod
 import errno
 import sys
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ForkingMixIn, ThreadingMixIn
 import urllib.parse
 
