@@ -246,7 +246,7 @@ class RegressionTestTicket11194(FunctionalTwillTestCaseSetup):
         tc.url(self._tester.url + '/admin/versioncontrol/repository')
 
         word = random_word()
-        names = ['%s_%d' % (word, n) for n in xrange(3)]
+        names = ['%s_%d' % (word, n) for n in range(3)]
         tc.formvalue('trac-addrepos', 'name', names[0])
         tc.formvalue('trac-addrepos', 'dir', '/var/svn/%s' % names[0])
         tc.submit()

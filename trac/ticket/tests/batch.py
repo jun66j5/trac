@@ -427,7 +427,7 @@ class BatchModifyTestCase(unittest.TestCase):
         self.assertTrue(all(ev[0] != 'batchmodify' for ev in events))
 
         prio_ids = {}
-        for i in xrange(20):
+        for i in range(20):
             priority = ('', 'minor', 'major', 'critical')[i % 4]
             t = insert_ticket(self.env, summary='Ticket %d' % i,
                               priority=priority)

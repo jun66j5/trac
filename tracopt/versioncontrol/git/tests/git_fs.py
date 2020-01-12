@@ -228,7 +228,7 @@ class HistoryTimeRangeTestCase(BaseTestCase):
         filename = os.path.join(self.repos_path, '.gitignore')
         start = datetime(2000, 1, 1, 0, 0, 0, 0, utc)
         ts = datetime(2014, 2, 5, 15, 24, 6, 0, utc)
-        for idx in xrange(3):
+        for idx in range(3):
             create_file(filename, 'commit-%d.txt' % idx)
             self._git_commit('-a', '-m', 'commit %d' % idx, date=ts)
         self._add_repository()
@@ -297,7 +297,7 @@ class GitNormalTestCase(BaseTestCase):
         repos = self._repomgr.get_repository('gitrepos')
         if cached_repository:
             # call sync() thrice with empty repository (#11851)
-            for i in xrange(3):
+            for i in range(3):
                 repos.sync()
                 rows = self.env.db_query("SELECT value FROM repository "
                                          "WHERE id=%s AND name=%s",
@@ -352,7 +352,7 @@ class GitRepositoryTestCase(BaseTestCase):
     def _create_merge_commit(self):
         for idx, branch in enumerate(('alpha', 'beta')):
             self._git('checkout', '-b', branch, 'master')
-            for n in xrange(2):
+            for n in range(2):
                 filename = 'file-%s-%d.txt' % (branch, n)
                 create_file(os.path.join(self.repos_path, filename))
                 self._git('add', filename)
@@ -952,7 +952,7 @@ class GitCachedRepositoryTestCase(GitRepositoryTestCase):
 
     def test_sync(self):
         self._git_init()
-        for idx in xrange(3):
+        for idx in range(3):
             filename = 'file%d.txt' % idx
             create_file(os.path.join(self.repos_path, filename))
             self._git('add', filename)
@@ -1112,7 +1112,7 @@ M 100644 :1 dev%(dev)08d.txt
 """
         data = io.BytesIO()
         data.write(init % {'timestamp': timestamp})
-        for idx in xrange(n):
+        for idx in range(n):
             data.write(merge % {'timestamp': timestamp,
                                 'dev': 4 + idx * 2,
                                 'merge': 5 + idx * 2,
@@ -1167,7 +1167,7 @@ from :2
 """
         data = io.BytesIO()
         data.write(to_utf8(root_commit % {'timestamp': timestamp}))
-        for idx in xrange(n):
+        for idx in range(n):
             data.write(to_utf8(ref_commit % {'timestamp': timestamp + idx,
                                              'mark': idx + 3, 'ref': idx}))
         return data.getvalue()

@@ -96,7 +96,7 @@ class QueryTestCase(unittest.TestCase):
         when = datetime(2008, 7, 1, 12, 34, 56, 987654, utc)
         with self.env.db_transaction:
             ids = []
-            for idx in xrange(self.n_tickets):
+            for idx in range(self.n_tickets):
                 t = insert_ticket(self.env, summary='Summary %d' % idx,
                                   owner=owner[idx % len(owner)],
                                   type=type[idx % len(type)],
@@ -493,7 +493,7 @@ ORDER BY COALESCE(t.id,0)=0,t.id""")
         self.assertEqual(ticket.id, tickets[0]['id'])
 
     def test_too_many_custom_fields(self):
-        fields = ['col_%02d' % i for i in xrange(100)]
+        fields = ['col_%02d' % i for i in range(100)]
         for f in fields:
             self.env.config.set('ticket-custom', f, 'text')
 
@@ -1038,7 +1038,7 @@ ORDER BY COALESCE(%(version)s.value,'')='',%(version)s.value,t.id""" % quoted)
             self.env.config.set('ticket-custom', field, 'text')
         tktids = []
         with self.env.db_transaction as db:
-            for idx in xrange(3):
+            for idx in range(3):
                 ticket = Ticket(self.env)
                 ticket.populate({'summary': 'test_ticket_custom_field',
                                  'reporter': 'anonymous', 'status': 'new',

@@ -393,7 +393,7 @@ def get_month_names_jquery_ui(req):
         month_names = {}
         for width in ('wide', 'abbreviated'):
             names = get_month_names(width, locale=locale)
-            month_names[width] = [names[i + 1] for i in xrange(12)]
+            month_names[width] = [names[i + 1] for i in range(12)]
         return month_names
 
     return {
@@ -414,7 +414,7 @@ def get_day_names_jquery_ui(req):
         day_names = {}
         for width in ('wide', 'abbreviated', 'narrow'):
             names = get_day_names(width, locale=locale)
-            day_names[width] = [names[(i + 6) % 7] for i in xrange(7)]
+            day_names[width] = [names[(i + 6) % 7] for i in range(7)]
         return day_names
 
     return {
@@ -687,11 +687,11 @@ def _i18n_parse_date_pattern(locale):
     # always allow using English names regardless of locale
     month_names = dict(zip(('jan', 'feb', 'mar', 'apr', 'may', 'jun',
                             'jul', 'aug', 'sep', 'oct', 'nov', 'dec',),
-                           xrange(1, 13)))
+                           range(1, 13)))
     period_names = {'am': 'am', 'pm': 'pm'}
 
     if locale is None:
-        for num in xrange(1, 13):
+        for num in range(1, 13):
             t = datetime(1999, num, 1, tzinfo=utc)
             names = format_date(t, '%b\t%B', utc).split('\t')
             month_names.update((name.lower(), num) for name in names
