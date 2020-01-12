@@ -25,7 +25,7 @@ import mimetypes
 import os
 import re
 import sys
-import urllib
+import urllib.parse
 import urlparse
 
 from trac.core import Interface, TracBaseError, TracError
@@ -452,10 +452,10 @@ def parse_arg_list(query_string):
             (name, value) = nv
         else:
             (name, value) = (nv[0], empty)
-        name = urllib.unquote(name.replace('+', ' '))
+        name = urllib.parse.unquote(name.replace('+', ' '))
         if isinstance(name, str):
             name = unicode(name, 'utf-8')
-        value = urllib.unquote(value.replace('+', ' '))
+        value = urllib.parse.unquote(value.replace('+', ' '))
         if isinstance(value, str):
             value = unicode(value, 'utf-8')
         args.append((name, value))

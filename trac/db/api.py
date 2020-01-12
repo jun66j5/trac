@@ -17,7 +17,7 @@
 import importlib
 import os
 import time
-import urllib
+import urllib.parse
 from abc import ABCMeta, abstractmethod
 
 from trac import db_default
@@ -690,9 +690,9 @@ def parse_connection_uri(db_str):
         else:
             password = None
         if user:
-            user = urllib.unquote(user)
+            user = urllib.parse.unquote(user)
         if password:
-            password = unicode_passwd(urllib.unquote(password))
+            password = unicode_passwd(urllib.parse.unquote(password))
     else:
         user = password = None
 
@@ -721,7 +721,7 @@ def parse_connection_uri(db_str):
                 name, value = param.split('=', 1)
             except ValueError:
                 raise _invalid_db_str(db_str)
-            value = urllib.unquote(value)
+            value = urllib.parse.unquote(value)
             params[name] = value
 
     args = zip(('user', 'password', 'host', 'port', 'path', 'params'),

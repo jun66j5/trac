@@ -19,7 +19,7 @@ import errno
 import sys
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SocketServer import ForkingMixIn, ThreadingMixIn
-import urllib
+import urllib.parse
 
 
 # winsock errors
@@ -166,7 +166,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
             path_info, query_string = self.path.split('?', 1)
         else:
             path_info, query_string = self.path, ''
-        environ['PATH_INFO'] = urllib.unquote(path_info)
+        environ['PATH_INFO'] = urllib.parse.unquote(path_info)
         environ['QUERY_STRING'] = query_string
 
         host = self.address_string()

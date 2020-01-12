@@ -24,7 +24,7 @@ import os
 import re
 import sys
 import textwrap
-from urllib import quote, quote_plus, unquote
+from urllib.parse import quote, quote_plus, unquote
 from unicodedata import east_asian_width
 
 import jinja2
