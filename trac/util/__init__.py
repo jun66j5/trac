@@ -130,7 +130,7 @@ def native_path(path):
 _control_codes_re = re.compile(
     '[' +
     ''.join(filter(lambda c: unicodedata.category(c) == 'Cc',
-                   map(unichr, range(0x10000)))) +
+                   map(chr, range(0x10000)))) +
     ']')
 
 def normalize_filename(filepath):

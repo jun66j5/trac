@@ -158,13 +158,13 @@ def stripentities(text, keepxmlentities=False):
                 ref = int(ref[1:], 16)
             else:
                 ref = int(ref, 10)
-            return _unichr(ref)
+            return chr(ref)
         else: # character entity
             ref = match.group(2)
             if keepxmlentities and ref in ('amp', 'apos', 'gt', 'lt', 'quot'):
                 return '&%s;' % ref
             try:
-                return _unichr(_name2codepoint[ref])
+                return chr(_name2codepoint[ref])
             except KeyError:
                 if keepxmlentities:
                     return '&amp;%s;' % ref
@@ -763,14 +763,14 @@ class TracHTMLSanitizer(object):
             t = match.group(1)
             if t:
                 code = int(t, 16)
-                chr = _unichr(code)
+                c = chr(code)
                 if code <= 0x1f:
                     # replace space character because IE ignores control
                     # characters
-                    chr = ' '
-                elif chr == '\\':
-                    chr = r'\\'
-                return chr
+                    c = ' '
+                elif c == '\\':
+                    c = r'\\'
+                return c
             t = match.group(2)
             if t == '\\':
                 return r'\\'
@@ -879,7 +879,7 @@ class HTMLTransform(HTMLParser):
         else:
             codepoint = int(name)
         if 0 <= codepoint <= 0x10ffff:
-            text = self._codepoint2ref.get(codepoint) or _unichr(codepoint)
+            text = self._codepoint2ref.get(codepoint) or chr(codepoint)
         else:
             text = '&amp;#%s;' % name
         self._write(text)
@@ -890,7 +890,7 @@ class HTMLTransform(HTMLParser):
         except KeyError:
             text = '&amp;%s;' % name
         else:
-            text = self._codepoint2ref.get(codepoint) or _unichr(codepoint)
+            text = self._codepoint2ref.get(codepoint) or chr(codepoint)
         self._write(text)
 
     def _write(self, data):
@@ -1072,27 +1072,11 @@ def valid_html_bytes(bytes):
     return bytes.translate(_translate_nop, _invalid_control_chars)
 
 
-if sys.maxunicode > 0xffff:
-    _unichr = unichr
-else:
-    def _unichr(codepoint):  # narrow Python build
-        try:
-            return unichr(codepoint)
-        except ValueError:
-            if not (0 <= codepoint <= 0x10ffff):
-                raise
-            s = r'\U%08x' % codepoint
-            try:
-                return s.decode('unicode-escape')
-            except Exception as e:
-                raise ValueError(e)
-
-
 _reference_re = re.compile(r'&(?:#[xX][0-9a-fA-F]+|#[0-9]+|\w{1,8});')
 
 def _html_parser_unescape(s):
     """This is to avoid an issue which HTMLParser.unescape() raises
-    ValueError or OverflowError from unichr() when character reference
+    ValueError or OverflowError from chr() when character reference
     with a large integer in the attribute.
     """
 
@@ -1109,7 +1093,7 @@ def _html_parser_unescape(s):
             except KeyError:
                 return match
         if 0 <= codepoint <= 0x10ffff:
-            return _unichr(codepoint)
+            return chr(codepoint)
         else:
             return match
 
