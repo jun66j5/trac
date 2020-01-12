@@ -18,7 +18,7 @@
 #         Christopher Lenz <cmlenz@gmx.de>
 #         Christian Boos <cboos@edgewall.org>
 
-from HTMLParser import HTMLParseError
+from html.parser import HTMLParseError
 import io
 import re
 

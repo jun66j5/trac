@@ -21,7 +21,7 @@ time during install.
 
 """
 
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 import io
 import os
 import re

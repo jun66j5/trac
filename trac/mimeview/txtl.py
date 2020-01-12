@@ -18,7 +18,7 @@
 See also: https://github.com/textile/python-textile
 """
 
-from HTMLParser import HTMLParseError
+from html.parser import HTMLParseError
 
 try:
     import textile
