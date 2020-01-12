@@ -51,7 +51,7 @@ import os.path
 import re
 import weakref
 import posixpath
-from urllib import quote
+from urllib.parse import quote
 
 from trac.api import ISystemInfoProvider
 from trac.config import ListOption, ChoiceOption

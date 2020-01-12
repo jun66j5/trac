@@ -38,7 +38,7 @@ import struct
 import tempfile
 import unicodedata
 import zipfile
-from urllib import quote, unquote, urlencode
+from urllib.parse import quote, unquote, urlencode
 
 from trac.util.datefmt import time_now, to_datetime, to_timestamp, utc
 from trac.util.text import exception_to_unicode, getpreferredencoding, \
