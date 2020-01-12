@@ -77,7 +77,7 @@ def shift(prefix, block):
 
 def print_status():
     warnings.filterwarnings('ignore', '', DeprecationWarning) # Twill 0.9...
-    buf = io.BytesIO()
+    buf = io.StringIO()
     package_versions(PACKAGES, buf)
     printout(shift('  ', buf.getvalue()))
 
