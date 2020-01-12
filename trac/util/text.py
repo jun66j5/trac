@@ -309,9 +309,7 @@ def console_print(out, *args, **kwargs):
     :param kwargs: ``newline`` controls whether a newline will be appended
                    (defaults to `True`)
     """
-    cons_charset = stream_encoding(out)
-    out.write(' '.join(to_unicode(a).encode(cons_charset, 'replace')
-                       for a in args))
+    out.write(' '.join(to_unicode(a) for a in args))
     if kwargs.get('newline', True):
         out.write('\n')
 
@@ -427,7 +425,6 @@ def print_table(data, headers=None, sep='  ', out=None, ambiwidth=None):
     """
     if out is None:
         out = sys.stdout
-    charset = getattr(out, 'encoding', None) or 'utf-8'
     if ambiwidth is None:
         ambiwidth = _default_ambiwidth
     data = list(data)
@@ -480,7 +477,6 @@ def print_table(data, headers=None, sep='  ', out=None, ambiwidth=None):
                     sp = sep
                 line = u'%-*s%s' % (col_width[cidx] - tw(cell) + len(cell),
                                     cell, sp)
-            line = line.encode(charset, 'replace')
             out.write(line)
 
         out.write('\n')
