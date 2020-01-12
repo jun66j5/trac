@@ -233,7 +233,7 @@ def parse_args(args, strict=True):
             if m:
                 kw = arg[:m.end()-1].strip()
                 if strict:
-                    kw = unicode(kw).encode('utf-8')
+                    kw = str(kw).encode('utf-8')
                 kwargs[kw] = arg[m.end():]
             else:
                 largs.append(arg)

@@ -68,7 +68,7 @@ class ConnectionPoolBackend(object):
     def get_cnx(self, connector, kwargs, timeout=None):
         cnx = None
         log = kwargs.get('log')
-        key = unicode(kwargs)
+        key = str(kwargs)
         start = time_now()
         tid = get_thread_id()
         # Get a Connection, either directly or a deferred one

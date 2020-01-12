@@ -41,7 +41,7 @@ except ImportError:
     raise DistributionNotFound('psycopg2>=2.0 or psycopg2-binary', ['Trac'])
 else:
     register_type(UNICODE)
-    register_adapter(Markup, lambda markup: QuotedString(unicode(markup)))
+    register_adapter(Markup, lambda markup: QuotedString(str(markup)))
     register_adapter(type(empty), lambda empty: AsIs("''"))
     psycopg2_version = get_pkginfo(psycopg).get('version',
                                                 psycopg.__version__)
@@ -83,7 +83,7 @@ def assemble_pg_dsn(path, user=None, password=None, host=None, port=None):
     """Quote the parameters and assemble the DSN."""
     def quote(value):
         if not isinstance(value, basestring):
-            value = unicode(value)
+            value = str(value)
         return "'%s'" % value.replace('\\', r'\\').replace("'", r"\'")
 
     dsn = {'dbname': path, 'user': user, 'password': password, 'host': host,

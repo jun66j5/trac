@@ -383,8 +383,8 @@ class ConnectionTestCase(unittest.TestCase):
     def test_get_column_names_non_existent_table(self):
         with self.assertRaises(self.env.db_exc.OperationalError) as cm:
             self.dbm.get_column_names('blah')
-        self.assertIn(unicode(cm.exception), ('Table "blah" not found',
-                                              'Table `blah` not found'))
+        self.assertIn(str(cm.exception), ('Table "blah" not found',
+                                          'Table `blah` not found'))
 
 
 class DatabaseManagerTestCase(unittest.TestCase):
@@ -552,8 +552,8 @@ class ModifyTableTestCase(unittest.TestCase):
     def test_drop_columns_non_existent_table(self):
         with self.assertRaises(self.env.db_exc.OperationalError) as cm:
             self.dbm.drop_columns('blah', ('col1',))
-        self.assertIn(unicode(cm.exception), ('Table "blah" not found',
-                                              'Table `blah` not found'))
+        self.assertIn(str(cm.exception), ('Table "blah" not found',
+                                          'Table `blah` not found'))
 
     def test_upgrade_tables_have_new_schema(self):
         """The upgraded tables have the new schema."""

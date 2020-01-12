@@ -143,7 +143,7 @@ class DbRepositoryProviderTestCase(unittest.TestCase):
             func(*args, **kwargs)
             self.fail('%s not raised' % exc.__name__)
         except exc as e:
-            self.assertEqual(message, unicode(e))
+            self.assertEqual(message, str(e))
 
     def do_remove(self, reponame, message):
         self.verify_raises(TracError, message,

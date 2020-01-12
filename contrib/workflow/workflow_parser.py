@@ -103,8 +103,7 @@ def main(filename, output, show_ops=False, show_perms=False):
     digraph_lines = actions2graphviz(actions, show_ops, show_perms)
 
     # And output
-    output.write(unicode.encode('\n'.join(digraph_lines),
-                                locale.getpreferredencoding()))
+    output.write('\n'.join(digraph_lines).encode(locale.getpreferredencoding()))
 
 
 def usage(output):

@@ -89,7 +89,7 @@ def index_diffs(path, diffs):
 
 def write_index_for(path):
     with open(path, 'rb') as f:
-        diffs = unicode(f.read(), 'utf-8')
+        diffs = str(f.read(), 'utf-8')
     changes = index_diffs(path, diffs)
     if changes:
         index = path + '.index'

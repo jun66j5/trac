@@ -44,7 +44,7 @@ _name2codepoint = entities.name2codepoint.copy()
 _name2codepoint['apos'] = 39  # single quote
 
 
-def escape(str, quotes=True):
+def escape(text, quotes=True):
     """Create a Markup instance from a string and escape special characters
     it may contain (<, >, & and \").
 
@@ -89,22 +89,22 @@ def escape(str, quotes=True):
     :rtype: `Markup`
 
     """
-    if isinstance(str, Markup):
-        return str
-    if isinstance(str, Fragment):
-        return Markup(str)
-    e = escape_quotes(str)
+    if isinstance(text, Markup):
+        return text
+    if isinstance(text, Fragment):
+        return Markup(text)
+    e = escape_quotes(text)
     if quotes:
         if '&#39;' not in e:
             return e
-        return Markup(unicode(e).replace('&#39;', "'"))
+        return Markup(str(e).replace('&#39;', "'"))
     elif '&#3' not in e:
         return e
-    return Markup(unicode(e).replace('&#34;', '"').replace('&#39;', "'"))
+    return Markup(str(e).replace('&#34;', '"').replace('&#39;', "'"))
 
 
 def unescape(text):
-    """Reverse-escapes &, <, >, and \" and returns a `unicode` object.
+    """Reverse-escapes &, <, >, and \" and returns a `str` object.
 
     >>> unescape(Markup('1 &lt; 2'))
     u'1 < 2'
@@ -117,7 +117,7 @@ def unescape(text):
 
     :param text: the text to unescape
     :return: the unescsaped string
-    :rtype: `unicode`
+    :rtype: `str`
     """
     if not text:
         return ''
@@ -148,8 +148,8 @@ def stripentities(text, keepxmlentities=False):
     >>> stripentities('1 &lt; 2 &hellip;', keepxmlentities=True)
     u'1 &lt; 2 \u2026'
 
-    :return: a `unicode` instance with entities removed
-    :rtype: `unicode`
+    :return: a `str` instance with entities removed
+    :rtype: `str`
     """
     def _replace_entity(match):
         if match.group(1): # numeric entity
@@ -171,7 +171,7 @@ def stripentities(text, keepxmlentities=False):
                 else:
                     return ref
     if isinstance(text, Markup):
-        text = unicode(text)
+        text = str(text)
     return _STRIPENTITIES_RE.sub(_replace_entity, text)
 
 
@@ -191,8 +191,8 @@ def striptags(text):
     u'test'
 
     :param text: the string to remove tags from
-    :return: a `unicode` instance with all tags removed
-    :rtype: `unicode`
+    :return: a `str` instance with all tags removed
+    :rtype: `str`
     """
     return Markup(text).striptags()
 
@@ -330,13 +330,10 @@ class Fragment(object):
             self.append(arg)
 
     def __html__(self):
-        return Markup(unicode(self))
-
-    def __unicode__(self):
-        return u''.join(escape(c, False) for c in self.children)
+        return Markup(str(self))
 
     def __str__(self):
-        return self.__unicode__().encode('utf-8')
+        return u''.join(escape(c, False) for c in self.children)
 
     def __add__(self, other):
         return Fragment(self, other)
@@ -356,7 +353,7 @@ class Fragment(object):
             self.children.append(u'0')
 
     def as_text(self):
-        return u''.join(c.as_text() if isinstance(c, Fragment) else unicode(c)
+        return u''.join(c.as_text() if isinstance(c, Fragment) else str(c)
                         for c in self.children)
 
 
@@ -376,7 +373,7 @@ class XMLElement(Fragment):
 
     def __init__(self, tag, *args, **kwargs):
         Fragment.__init__(self, *args)
-        self.tag = unicode(tag)
+        self.tag = str(tag)
         self.attrib = self._dict_from_kwargs(kwargs) \
                       if kwargs else self.EMPTY_ATTRIB
 
@@ -406,7 +403,7 @@ class XMLElement(Fragment):
             self.append(arg)
         return self
 
-    def __unicode__(self):
+    def __str__(self):
         elt = u'<' + self.tag
         if self.attrib:
             # Sorting the attributes makes the unit-tests more robust
@@ -419,7 +416,7 @@ class XMLElement(Fragment):
                 elt += u''.join(attrs)
         if self.children or (self.VOID_ELEMENTS and
                              self.tag not in self.VOID_ELEMENTS):
-            elt += u'>' + Fragment.__unicode__(self) + u'</' + self.tag + u'>'
+            elt += u'>' + Fragment.__str__(self) + u'</' + self.tag + u'>'
         else:
             elt += self.CLOSE_TAG
         return elt
@@ -728,7 +725,7 @@ class TracHTMLSanitizer(object):
         ... ''')
         [u'background: #fff', u'color: #000', u'width: e xpression(alert("F"))']
 
-        :param text: the CSS text; this is expected to be `unicode` and to not
+        :param text: the CSS text; this is expected to be `str` and to not
                      contain any character or numeric references
         :return: a list of declarations that are considered safe
         :rtype: `list`
@@ -840,7 +837,7 @@ class HTMLTransform(HTMLParser):
                                       if isinstance(v, bytes) else v
         elif isinstance(out, io.IOBase):
             self._convert = lambda v: v.encode('utf-8') \
-                                      if isinstance(v, unicode) else v
+                                      if isinstance(v, str) else v
         else:
             self._convert = lambda v: v
 

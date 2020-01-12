@@ -113,12 +113,12 @@ class GitCore(object):
             if os.name == 'nt':
                 # For Windows, Popen() accepts only ANSI encoding
                 def to_cmd_encoding(arg):
-                    if not isinstance(arg, unicode):
+                    if not isinstance(arg, str):
                         arg = arg.decode(fs_encoding, 'replace')
                     return arg.encode('mbcs', 'replace')
             else:
                 def to_cmd_encoding(arg):
-                    if isinstance(arg, unicode):
+                    if isinstance(arg, str):
                         arg = arg.encode(fs_encoding, 'replace')
                     return arg
             cmd = map(to_cmd_encoding, cmd)
@@ -831,7 +831,7 @@ class Storage(object):
 
             # cache miss
             raw = self.cat_file('commit', commit_id)
-            raw = unicode(raw, self.get_commit_encoding(), 'replace')
+            raw = str(raw, self.get_commit_encoding(), 'replace')
             result = parse_commit(raw)
 
             self.__commit_msg_cache[commit_id] = result

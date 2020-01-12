@@ -43,7 +43,7 @@ else:
 
     class MySQLUnicodeCursor(pymysql.cursors.Cursor):
         def _convert_row(self, row):
-            return tuple(v.decode('utf-8') if isinstance(v, str) else v
+            return tuple(v.decode('utf-8') if isinstance(v, bytes) else v
                          for v in row)
 
         def fetchone(self):
@@ -414,7 +414,7 @@ class MySQLConnection(ConnectionBase, ConnectionWrapper):
         self.schema = path
         if hasattr(cnx, 'encoders'):
             # 'encoders' undocumented but present since 1.2.1 (r422)
-            cnx.encoders[Markup] = cnx.encoders[unicode]
+            cnx.encoders[Markup] = cnx.encoders[str]
         ConnectionWrapper.__init__(self, cnx, log)
         self._is_closed = False
 

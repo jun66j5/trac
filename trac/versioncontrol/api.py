@@ -765,7 +765,7 @@ class RepositoryManager(Component):
         :param path: the repository-scoped path. The repository revision may
                      specified by appending `@` followed by the revision,
                      otherwise the HEAD revision is assumed.
-        :return: the file content as a unicode string. `None` is returned if
+        :return: the file content as a `str` string. `None` is returned if
                  the file is not found.
 
         :since: 1.2.2
@@ -1136,7 +1136,7 @@ class Node(object):
     def __repr__(self):
         name = u'%s:%s' % (self.repos.name, self.path)
         if self.rev is not None:
-            name += '@' + unicode(self.rev)
+            name += '@' + str(self.rev)
         return '<%s %r>' % (self.__class__.__name__, name)
 
     @abstractmethod

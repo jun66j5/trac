@@ -420,7 +420,7 @@ class ResourceTestCase(unittest.TestCase):
                                     format='compact')
         self.assertEqual('<a class="milestone" href="/trac.cgi/milestone/'
                          'milestone1" title="No date set">milestone1</a>',
-                         unicode(link))
+                         str(link))
 
     def test_resource_link_ticket_context_milestone_missing(self):
         """Resource link in ticket context for non-existent milestone.
@@ -431,7 +431,7 @@ class ResourceTestCase(unittest.TestCase):
         link = render_resource_link(self.env, context, resource,
                                     format='compact')
         self.assertEqual('<a class="milestone missing">milestone1</a>',
-                         unicode(link))
+                         str(link))
 
     def test_resource_link_ticket_context_milestone_no_view_perm(self):
         """Resource link in ticket context with no milestone view permission.
@@ -444,8 +444,7 @@ class ResourceTestCase(unittest.TestCase):
         context = web_context(req)
         link = render_resource_link(self.env, context, resource,
                                     format='compact')
-        self.assertEqual('<a class="milestone">milestone1</a>',
-                         unicode(link))
+        self.assertEqual('<a class="milestone">milestone1</a>', str(link))
 
 
 def in_tlist(ticket, list):

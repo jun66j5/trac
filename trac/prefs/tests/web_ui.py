@@ -69,8 +69,7 @@ class AdvancedPreferencePanelTestCase(unittest.TestCase):
         self.assertTrue(module.match_request(req))
         with self.assertRaises(TracValueError) as cm:
             module.process_request(req)
-        self.assertEqual("Session ID must be alphanumeric.",
-                         unicode(cm.exception))
+        self.assertEqual("Session ID must be alphanumeric.", str(cm.exception))
 
     def test_load_session_key(self):
         """Load session key."""
@@ -104,8 +103,7 @@ class AdvancedPreferencePanelTestCase(unittest.TestCase):
         self.assertTrue(module.match_request(req))
         with self.assertRaises(TracValueError) as cm:
             module.process_request(req)
-        self.assertEqual("Session ID must be alphanumeric.",
-                         unicode(cm.exception))
+        self.assertEqual("Session ID must be alphanumeric.", str(cm.exception))
 
 
 class UserInterfacePreferencePanelTestCase(unittest.TestCase):

@@ -1411,8 +1411,8 @@ class QueryLinksTestCase(unittest.TestCase):
                              status=status, **attrs)
 
     def _format_link(self, query, label):
-        return unicode(self.query_module._format_link(self.formatter, 'query',
-                                                      query, label))
+        return str(self.query_module._format_link(self.formatter, 'query',
+                                                  query, label))
 
     def test_empty_query(self):
         self.assertEqual(u'<em class="error">[Error: Query filter requires '

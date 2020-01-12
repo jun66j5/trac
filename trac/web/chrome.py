@@ -1447,7 +1447,7 @@ class Chrome(Component):
         If you don't need that and don't want the overhead, use
         `load_template` and `render_template_string` directly.
 
-        :rtype: the generated output is an `unicode` string if *text*
+        :rtype: the generated output is a `str` string if *text*
                 is ``True``, or a `Markup` string otherwise.
 
         See also `generate_fragment`, which produces an output
@@ -1489,7 +1489,7 @@ class Chrome(Component):
                                  iterable=None):
         """Returns the rendered template in a form that can be "sent".
 
-        This will be either a single UTF-8 encoded `str` object, or an
+        This will be either a single UTF-8 encoded `btyes` object, or an
         iterable made of chunks of the above.
 
         :param template: the Jinja2 template
@@ -1499,11 +1499,11 @@ class Chrome(Component):
                      not be sanitized (see `valid_html_bytes`).
 
         :param iterable: determine whether the output should be
-                         generated in chunks or as a single `str`; if
+                         generated in chunks or as a single `btyes`; if
                          `None`, the `use_chunked_encoding` property
                          will be used to determine this instead
 
-        :rtype: `str` or an iterable of `str`, depending on *iterable*
+        :rtype: `btyes` or an iterable of `btyes`, depending on *iterable*
 
         .. note:
 
@@ -1529,7 +1529,7 @@ class Chrome(Component):
             return b''.join(generate())
 
     def render_template_string(self, template, data, text=False):
-        """Renders the template as an unicode or Markup string.
+        """Renders the template as a str or Markup string.
 
         :param template: the Jinja2 template
         :type template: ``jinja2.Template``
@@ -1537,7 +1537,7 @@ class Chrome(Component):
         :param text: in text mode (``True``) the generated string
                      will not be wrapped in `Markup`
 
-        :rtype: `unicode` if *text* is ``True``, `Markup` otherwise.
+        :rtype: `str` if *text* is ``True``, `Markup` otherwise.
 
         .. note:
 
@@ -1551,7 +1551,7 @@ class Chrome(Component):
         return string if text else Markup(string)
 
     def iterable_content(self, stream, text=False, **kwargs):
-        """Generate an iterable object which iterates `str` instances
+        """Generate an iterable object which iterates `btyes` instances
         from the given stream instance.
 
         :param text: in text mode (``True``) XML/HTML auto-escape of

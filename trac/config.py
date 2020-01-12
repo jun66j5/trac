@@ -744,7 +744,7 @@ class Option(object):
             return 'enabled'
         if value is False:
             return 'disabled'
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             return value
         return to_unicode(value)
 
@@ -838,7 +838,7 @@ class ChoiceOption(Option):
         value = section.get(name, default)
         choices = self.choices[:]
         if not self.case_sensitive:
-            choices = map(unicode.lower, choices)
+            choices = [c.lower() for c in choices]
             value = value.lower()
         try:
             idx = choices.index(value)
@@ -1012,7 +1012,7 @@ def get_configinfo(env):
                 normalized = registered.normalize(value)
             else:
                 default = u''
-                normalized = unicode(value)
+                normalized = str(value)
             options.append({'name': name, 'value': value,
                             'modified': normalized != default})
         options.sort(key=lambda o: o['name'])

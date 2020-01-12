@@ -30,17 +30,17 @@ from trac.util.text import (
 class ToUnicodeTestCase(unittest.TestCase):
     def test_explicit_charset(self):
         uc = to_unicode('\xc3\xa7', 'utf-8')
-        self.assertIsInstance(uc, unicode)
+        self.assertIsInstance(uc, str)
         self.assertEqual(u'\xe7', uc)
 
     def test_explicit_charset_with_replace(self):
         uc = to_unicode('\xc3', 'utf-8')
-        self.assertIsInstance(uc, unicode)
+        self.assertIsInstance(uc, str)
         self.assertEqual(u'\xc3', uc)
 
     def test_implicit_charset(self):
         uc = to_unicode('\xc3\xa7')
-        self.assertIsInstance(uc, unicode)
+        self.assertIsInstance(uc, str)
         self.assertEqual(u'\xe7', uc)
 
     def test_from_exception_using_unicode_args(self):
@@ -62,7 +62,7 @@ class ToUnicodeTestCase(unittest.TestCase):
             os.stat('non\\existent\\file.txt')
         except OSError as e:
             uc = to_unicode(e)
-            self.assertIsInstance(uc, unicode, uc)
+            self.assertIsInstance(uc, str, uc)
             self.assertTrue(uc.startswith('[Error '), uc)
             self.assertIn(e.strerror.decode('mbcs'), uc)
             self.assertTrue(uc.endswith(u": 'non\\existent\\file.txt'"), uc)
@@ -72,7 +72,7 @@ class ToUnicodeTestCase(unittest.TestCase):
             os.stat(u'nön\\existént\\file.txt')
         except OSError as e:
             uc = to_unicode(e)
-            self.assertIsInstance(uc, unicode, uc)
+            self.assertIsInstance(uc, str, uc)
             self.assertTrue(uc.startswith('[Error '), uc)
             self.assertIn(e.strerror.decode('mbcs'), uc)
             self.assertTrue(uc.endswith(u": 'nön\\existént\\file.txt'"), uc)
@@ -86,7 +86,7 @@ class ToUnicodeTestCase(unittest.TestCase):
                 s.connect(sa)
             except socket.error as e:
                 uc = to_unicode(e)
-                self.assertIsInstance(uc, unicode, uc)
+                self.assertIsInstance(uc, str, uc)
                 if hasattr(e, 'strerror'):
                     self.assertIn(e.strerror.decode('mbcs'), uc)
 

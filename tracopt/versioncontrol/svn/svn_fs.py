@@ -24,8 +24,7 @@ Note about Unicode
 The Subversion bindings are not unicode-aware and they expect to
 receive UTF-8 encoded `string` parameters,
 
-On the other hand, all paths manipulated by Trac are `unicode`
-objects.
+On the other hand, all paths manipulated by Trac are `str` objects.
 
 Therefore:
 
@@ -86,7 +85,7 @@ def _import_svn():
     Pool.apr_pool_destroy = staticmethod(core.apr_pool_destroy)
 
 def _to_svn(pool, *args):
-    """Expect a pool and a list of `unicode` path components.
+    """Expect a pool and a list of `str` path components.
 
     Returns an UTF-8 encoded string suitable for the Subversion python
     bindings (the returned path never starts with a leading "/")
@@ -96,7 +95,7 @@ def _to_svn(pool, *args):
                                       pool)
 
 def _from_svn(path):
-    """Expect an UTF-8 encoded string and transform it to an `unicode` object
+    """Expect an UTF-8 encoded string and transform it to a `str` object
 
     But Subversion repositories built from conversion utilities can have
     non-UTF-8 byte strings, so we have to convert using `to_unicode`.
@@ -349,9 +348,9 @@ class SubversionRepository(Repository):
         self.pool = Pool()
 
         # Remove any trailing slash or else subversion might abort
-        if isinstance(path, unicode):
+        if isinstance(path, str):
             path_utf8 = path.encode('utf-8')
-        else: # note that this should usually not happen (unicode arg expected)
+        else: # note that this should usually not happen (str arg expected)
             path_utf8 = to_unicode(path).encode('utf-8')
 
         path_utf8 = core.svn_path_canonicalize(
@@ -543,9 +542,9 @@ class SubversionRepository(Repository):
         return path_revs
 
     def _history(self, path, start, end, pool):
-        """`path` is a unicode path in the scope.
+        """`path` is a str path in the scope.
 
-        Generator yielding `(path, rev)` pairs, where `path` is an `unicode`
+        Generator yielding `(path, rev)` pairs, where `path` is a `str`
         object. Must start with `(path, created rev)`.
 
         (wraps ``fs.node_history``)
@@ -1239,7 +1238,7 @@ class FileContentStream(object):
         mtime = to_datetime(node.last_modified, utc)
         shortdate = self._format_shortdate(mtime)
         longdate = self._format_longdate(mtime)
-        created_rev = unicode(node.created_rev)
+        created_rev = str(node.created_rev)
         # Note that the `to_unicode` has a small probability to mess-up binary
         # properties, see #4321.
         author = to_unicode(self._get_revprop(core.SVN_PROP_REVISION_AUTHOR,

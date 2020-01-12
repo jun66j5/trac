@@ -336,8 +336,8 @@ class FunctionalTestEnvironment(object):
         "authz-".
         """
         if filename is None:
-            filename = 'authz-' + \
-                       hashlib.md5(str(authz_content)).hexdigest()[:9]
+            filename = 'authz-' + hashlib.md5(repr(authz_content).
+                                              encode('utf-8')).hexdigest()[:9]
         env = self.get_trac_environment()
         authz_file = os.path.join(env.conf_dir, filename)
         if os.path.exists(authz_file):

@@ -264,7 +264,7 @@ class PreProcessRequestTestCase(unittest.TestCase):
             RequestDispatcher(self.env).dispatch(req)
         except HTTPInternalServerError as e:
             self.assertEqual("500 Trac Error (Raised in pre_process_request)",
-                             unicode(e))
+                             str(e))
         else:
             self.fail("HTTPInternalServerError not raised")
 
@@ -309,7 +309,7 @@ class ProcessRequestTestCase(unittest.TestCase):
             self.assertEqual(
                 "403 Forbidden (Raised in process_request "
                 "privileges are required to perform this operation. You "
-                "don't have the required permissions.)", unicode(e))
+                "don't have the required permissions.)", str(e))
         else:
             self.fail("HTTPForbidden not raised")
 
@@ -324,7 +324,7 @@ class ProcessRequestTestCase(unittest.TestCase):
             RequestDispatcher(self.env).dispatch(req)
         except HTTPNotFound as e:
             self.assertEqual("404 Trac Error (Raised in process_request)",
-                             unicode(e))
+                             str(e))
         else:
             self.fail("HTTPNotFound not raised")
 
@@ -339,7 +339,7 @@ class ProcessRequestTestCase(unittest.TestCase):
             RequestDispatcher(self.env).dispatch(req)
         except HTTPInternalServerError as e:
             self.assertEqual("500 Trac Error (Raised in process_request)",
-                             unicode(e))
+                             str(e))
         else:
             self.fail("HTTPInternalServerError not raised")
 
@@ -354,7 +354,7 @@ class ProcessRequestTestCase(unittest.TestCase):
             RequestDispatcher(self.env).dispatch(req)
         except HTTPInternalServerError as e:
             self.assertEqual("500 Not Implemented Error (Raised in "
-                             "process_request)", unicode(e))
+                             "process_request)", str(e))
         else:
             self.fail("HTTPInternalServerError not raised")
 

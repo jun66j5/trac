@@ -850,7 +850,7 @@ class NotificationTestCase(unittest.TestCase):
         try:
             if mime_decoder:
                 body = mime_decoder.decodestring(body)
-            body = unicode(body, charset)
+            body = str(body, charset)
         except Exception as e:
             raise AssertionError(e)
         # now processes each line of the body

@@ -497,13 +497,12 @@ class NavigationContributorTestCase(unittest.TestCase):
         item = self._get_navigation_item(mainnav, 'test1')
         self.assertEqual('Test 1', item['label'])
         item = self._get_navigation_item(mainnav, 'test2')
-        self.assertEqual(unicode(tag.a('Test 2', href='testtwo',
-                                       target='blank')),
-                         unicode(item['label']))
+        self.assertEqual(str(tag.a('Test 2', href='testtwo', target='blank')),
+                         str(item['label']))
         item = self._get_navigation_item(mainnav, 'test3')
-        self.assertEqual(unicode(tag.a('Test Three', href='testthree',
-                                       target='blank')),
-                         unicode(item['label']))
+        self.assertEqual(str(tag.a('Test Three', href='testthree',
+                                   target='blank')),
+                         str(item['label']))
 
     def test_attributes_preserved_in_navigation_item(self):
         req = MockRequest(self.env)
@@ -514,13 +513,12 @@ class NavigationContributorTestCase(unittest.TestCase):
         mainnav = req.chrome['nav']['mainnav']
 
         item = self._get_navigation_item(mainnav, 'test2')
-        self.assertEqual(unicode(tag.a('Test Two', href='test2',
-                                       target='blank')),
-                         unicode(item['label']))
+        self.assertEqual(str(tag.a('Test Two', href='test2', target='blank')),
+                         str(item['label']))
         item = self._get_navigation_item(mainnav, 'test3')
-        self.assertEqual(unicode(tag.a('Test Three', href='testthree',
-                                       target='blank')),
-                         unicode(item['label']))
+        self.assertEqual(str(tag.a('Test Three', href='testthree',
+                                   target='blank')),
+                         str(item['label']))
 
 
 class NavigationCustomizationTestCase(unittest.TestCase):
@@ -629,10 +627,10 @@ class NavigationCustomizationTestCase(unittest.TestCase):
 
         self.assertEqual('google', mainnav[0]['name'])
         self.assertEqual('<a href="https://google.com">google</a>',
-                         unicode(mainnav[0]['label']))
+                         str(mainnav[0]['label']))
         self.assertEqual('tracguide', items['metanav'][2]['name'])
         self.assertEqual('<a href="/trac.cgi/wiki/TracGuide">Trac Guide</a>',
-                         unicode(items['metanav'][2]['label']))
+                         str(items['metanav'][2]['label']))
 
     def test_move_metanav_to_mainnav(self):
         """Move items between metanav and mainnav."""
@@ -650,18 +648,18 @@ class NavigationCustomizationTestCase(unittest.TestCase):
         metanav = items['metanav']
 
         self.assertEqual(1, len(metanav))
-        self.assertEqual('test2', unicode(metanav[0]['name']))
+        self.assertEqual('test2', str(metanav[0]['name']))
         self.assertEqual('<a href="/trac.cgi/test/2">Test 2</a>',
-                         unicode(metanav[0]['label']))
+                         str(metanav[0]['label']))
         self.assertEqual(2, len(mainnav))
         self.assertNotIn('test1', metanav)
-        self.assertEqual('test3', unicode(mainnav[0]['name']))
+        self.assertEqual('test3', str(mainnav[0]['name']))
         self.assertEqual('<a href="/trac.cgi/test/3">Test 3</a>',
-                         unicode(mainnav[0]['label']))
+                         str(mainnav[0]['label']))
         self.assertFalse(mainnav[0]['active'])
-        self.assertEqual('test1', unicode(mainnav[1]['name']))
+        self.assertEqual('test1', str(mainnav[1]['name']))
         self.assertEqual('<a href="/trac.cgi/test/1">Test 1</a>',
-                         unicode(mainnav[1]['label']))
+                         str(mainnav[1]['label']))
 
     def test_disable_items(self):
         """Disable navigation items."""
@@ -675,7 +673,7 @@ class NavigationCustomizationTestCase(unittest.TestCase):
         metanav = items['metanav']
 
         self.assertEqual(1, len(metanav))
-        self.assertEqual('test2', unicode(metanav[0]['name']))
+        self.assertEqual('test2', str(metanav[0]['name']))
         self.assertEqual([], mainnav)
 
     def test_permission_attribute(self):
@@ -712,18 +710,18 @@ class NavigationCustomizationTestCase(unittest.TestCase):
         items = chrome.prepare_request(req, handler)['nav']
         mainnav = items['mainnav']
         self.assertEqual(2, len(mainnav))
-        self.assertEqual('test3', unicode(mainnav[0]['name']))
+        self.assertEqual('test3', str(mainnav[0]['name']))
         self.assertTrue(mainnav[0]['active'])
-        self.assertEqual('test4', unicode(mainnav[1]['name']))
+        self.assertEqual('test4', str(mainnav[1]['name']))
         self.assertFalse(mainnav[1]['active'])
 
         req = MockRequest(self.env, path_info='/test/3/1')
         items = chrome.prepare_request(req, handler)['nav']
         mainnav = items['mainnav']
         self.assertEqual(2, len(mainnav))
-        self.assertEqual('test3', unicode(mainnav[0]['name']))
+        self.assertEqual('test3', str(mainnav[0]['name']))
         self.assertFalse(mainnav[0]['active'])
-        self.assertEqual('test4', unicode(mainnav[1]['name']))
+        self.assertEqual('test4', str(mainnav[1]['name']))
         self.assertTrue(mainnav[1]['active'])
 
 
@@ -942,9 +940,9 @@ class AuthorInfoTestCase(unittest.TestCase):
         chrome = Chrome(self.env)
         req = MockRequest(self.env, authname='user1')
         self.assertEqual('<span class="trac-author">user@domain.com</span>',
-                         unicode(chrome.authorinfo(req, 'user@domain.com')))
+                         str(chrome.authorinfo(req, 'user@domain.com')))
         self.assertEqual('<span class="trac-author">User One &lt;user@example.org&gt;</span>',
-                         unicode(chrome.authorinfo(req, 'User One <user@example.org>')))
+                         str(chrome.authorinfo(req, 'User One <user@example.org>')))
         self.assertEqual('<span class="trac-author">user</span>',
                          str(chrome.authorinfo_short('User One <user@example.org>')))
         self.assertEqual('<span class="trac-author">user</span>',
@@ -954,25 +952,25 @@ class AuthorInfoTestCase(unittest.TestCase):
         req = MockRequest(self.env, authname='user2')
         authorinfo = Chrome(self.env).authorinfo
         self.assertEqual(u'<span class="trac-author">user@\u2026</span>',
-                         unicode(authorinfo(req, 'user@domain.com')))
+                         str(authorinfo(req, 'user@domain.com')))
         self.assertEqual(u'<span class="trac-author">User One &lt;user@\u2026&gt;</span>',
-                         unicode(authorinfo(req, 'User One <user@domain.com>')))
+                         str(authorinfo(req, 'User One <user@domain.com>')))
 
     def test_actor_no_email_view_show_email_addresses(self):
         self.env.config.set('trac', 'show_email_addresses', True)
         req = MockRequest(self.env, authname='user2')
         authorinfo = Chrome(self.env).authorinfo
         self.assertEqual('<span class="trac-author">user@domain.com</span>',
-                         unicode(authorinfo(req, 'user@domain.com')))
+                         str(authorinfo(req, 'user@domain.com')))
         self.assertEqual('<span class="trac-author">User One &lt;user@domain.com&gt;</span>',
-                         unicode(authorinfo(req, 'User One <user@domain.com>')))
+                         str(authorinfo(req, 'User One <user@domain.com>')))
 
     def test_actor_no_email_view_no_req(self):
         authorinfo = Chrome(self.env).authorinfo
         self.assertEqual(u'<span class="trac-author">user@\u2026</span>',
-                         unicode(authorinfo(None, 'user@domain.com')))
+                         str(authorinfo(None, 'user@domain.com')))
         self.assertEqual(u'<span class="trac-author">User One &lt;user@\u2026&gt;</span>',
-                         unicode(authorinfo(None, 'User One <user@domain.com>')))
+                         str(authorinfo(None, 'User One <user@domain.com>')))
 
     def test_actor_has_email_view_for_resource(self):
         authorinfo = Chrome(self.env).authorinfo
@@ -982,9 +980,9 @@ class AuthorInfoTestCase(unittest.TestCase):
         authorinfo = authorinfo(req, 'user@domain.com', resource=resource)
         author_short = authorinfo_short('user@domain.com')
         self.assertEqual(u'<span class="trac-author">user@domain.com</span>',
-                         unicode(authorinfo))
+                         str(authorinfo))
         self.assertEqual(u'<span class="trac-author">user</span>',
-                         unicode(author_short))
+                         str(author_short))
 
     def test_actor_has_email_view_for_resource_negative(self):
         authorinfo = Chrome(self.env).authorinfo
@@ -994,9 +992,9 @@ class AuthorInfoTestCase(unittest.TestCase):
         author = authorinfo(req,  'user@domain.com', resource=resource)
         author_short = authorinfo_short('user@domain.com')
         self.assertEqual(u'<span class="trac-author">user@\u2026</span>',
-                         unicode(author))
+                         str(author))
         self.assertEqual(u'<span class="trac-author">user</span>',
-                         unicode(author_short))
+                         str(author_short))
 
 
 class ChromeTemplateRenderingTestCase(unittest.TestCase):
@@ -1052,7 +1050,7 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
         content_text = self.chrome.render_template_string(t_text, data,
                                                           text=True)
         self.assertFalse(isinstance(content_text, Markup))
-        self.assertIsInstance(content_text, unicode)
+        self.assertIsInstance(content_text, str)
         self.assertEqual(textwrap.dedent(u"""\
             <!DOCTYPE html>
             <html>

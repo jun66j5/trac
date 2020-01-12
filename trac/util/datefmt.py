@@ -252,7 +252,7 @@ def _format_datetime_without_babel(t, format):
     text = t.strftime(str(format))
     encoding = getlocale(LC_TIME)[1] or getpreferredencoding() \
                or sys.getdefaultencoding()
-    return unicode(text, encoding, 'replace')
+    return str(text, encoding, 'replace')
 
 def _format_datetime_iso8601(t, format, hint):
     if format != 'full':
@@ -268,7 +268,7 @@ def _format_datetime_iso8601(t, format, hint):
         text = text.split('T', 1)[0]
     elif hint == 'time':
         text = text.split('T', 1)[1]
-    return unicode(text, 'ascii')
+    return str(text, 'ascii')
 
 def _format_datetime(t, format, tzinfo, locale, hint):
     t = to_datetime(t, tzinfo or localtz)
@@ -305,7 +305,7 @@ def _format_datetime(t, format, tzinfo, locale, hint):
     return _format_datetime_without_babel(t, format)
 
 def format_datetime(t=None, format='%x %X', tzinfo=None, locale=None):
-    """Format the `datetime` object `t` into an `unicode` string
+    """Format the `datetime` object `t` into a `str` string
 
     If `t` is None, the current time will be used.
 

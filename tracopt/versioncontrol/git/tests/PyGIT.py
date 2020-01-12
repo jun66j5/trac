@@ -322,8 +322,8 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
         storage = self._storage()
         filenames = sorted(fname for mode, type, sha, size, fname
                                  in storage.ls_tree('HEAD'))
-        self.assertEqual(unicode, type(filenames[0]))
-        self.assertEqual(unicode, type(filenames[1]))
+        self.assertEqual(str, type(filenames[0]))
+        self.assertEqual(str, type(filenames[1]))
         self.assertEqual(u'.gitignore', filenames[0])
         self.assertEqual(u'tickét.txt', filenames[1])
         # check commit author, for good measure
@@ -334,15 +334,15 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
         self._git('checkout', '-b', 'tickɇt10980', 'master')
         storage = self._storage()
         branches = sorted(storage.get_branches())
-        self.assertEqual(unicode, type(branches[0][0]))
-        self.assertEqual(unicode, type(branches[1][0]))
+        self.assertEqual(str, type(branches[0][0]))
+        self.assertEqual(str, type(branches[1][0]))
         self.assertEqual(u'master', branches[0][0])
         self.assertEqual(u'tickɇt10980', branches[1][0])
 
         contains = sorted(storage.get_branch_contains(branches[1][1],
                                                       resolve=True))
-        self.assertEqual(unicode, type(contains[0][0]))
-        self.assertEqual(unicode, type(contains[1][0]))
+        self.assertEqual(str, type(contains[0][0]))
+        self.assertEqual(str, type(contains[1][0]))
         self.assertEqual(u'master', contains[0][0])
         self.assertEqual(u'tickɇt10980', contains[1][0])
 
@@ -353,7 +353,7 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
         storage = self._storage()
 
         tags = storage.get_tags()
-        self.assertEqual(unicode, type(tags[0]))
+        self.assertEqual(str, type(tags[0]))
         self.assertEqual([u'tɐg-t10980', 'v0.42.1'], tags)
 
         rev = storage.verifyrev(u'tɐg-t10980')

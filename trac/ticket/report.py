@@ -51,7 +51,7 @@ def cell_value(v):
     >>> (cell_value(None), cell_value(0), cell_value(1), cell_value('v'))
     ('', '0', u'1', u'v')
     """
-    return '0' if v == 0 else unicode(v) if v else ''
+    return '0' if v == 0 else str(v) if v else ''
 
 
 _sql_re = re.compile(r'''

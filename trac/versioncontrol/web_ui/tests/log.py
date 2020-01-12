@@ -269,7 +269,7 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
             try:
                 self.process_request(req)
             except NoSuchChangeset as e:
-                self.assertEqual(message, unicode(e))
+                self.assertEqual(message, str(e))
 
         fn('No changeset 101 in the repository', args={'rev': '101'})
         fn('No changeset 0 in the repository', args={'rev': '0'})
@@ -456,7 +456,7 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
             try:
                 self.process_request(req)
             except NoSuchChangeset as e:
-                self.assertEqual(message, unicode(e))
+                self.assertEqual(message, str(e))
 
         fn('No changeset 101 in the repository', args={'revs': '101'})
         fn('No changeset 0 in the repository', args={'revs': '0'})
@@ -515,8 +515,7 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
     def _format_to_html(self, authname, wiki):
         resource = Resource('wiki', 'WikiStart')
         req = MockRequest(self.env, authname=authname)
-        return unicode(format_to_html(self.env, web_context(req, resource),
-                                      wiki))
+        return str(format_to_html(self.env, web_context(req, resource), wiki))
 
 
 def test_suite():

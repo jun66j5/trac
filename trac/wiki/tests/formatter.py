@@ -148,7 +148,7 @@ class ValueErrorWithUtf8Macro(WikiMacroBase):
 class TracErrorWithUnicodeMacro(WikiMacroBase):
 
     def expand_macro(self, formatter, name, content, args):
-        raise TracError(unicode(content))
+        raise TracError(str(content))
 
 
 class MacroErrorWithFragmentMacro(WikiMacroBase):

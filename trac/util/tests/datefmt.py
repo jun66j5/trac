@@ -324,8 +324,7 @@ class ParseISO8601TestCase(unittest.TestCase):
             datefmt.parse_date('2001-0a-01', locale=locale, hint='iso8601')
             raise self.failureException('TracError not raised')
         except TracError as e:
-            self.assertIn(u'Try "YYYY-MM-DDThh:mm:ss±hh:mm" instead.',
-                          unicode(e))
+            self.assertIn(u'Try "YYYY-MM-DDThh:mm:ss±hh:mm" instead.', str(e))
 
     def test_hint_iso8601_locale_none(self):
         self._test_hint_iso8601()
@@ -788,7 +787,7 @@ class ParseDateValidRangeTestCase(unittest.TestCase):
             datefmt.parse_date('9999-12-31T23:59:59-12:00')
             raise self.failureException('TracError not raised')
         except TracError as e:
-            self.assertIn('is outside valid range', unicode(e))
+            self.assertIn('is outside valid range', str(e))
 
     def test_min_timestamp(self):
         if os.name != 'nt':
@@ -802,7 +801,7 @@ class ParseDateValidRangeTestCase(unittest.TestCase):
             datefmt.parse_date('0001-01-01T00:00:00+14:00')
             raise self.failureException('TracError not raised')
         except TracError as e:
-            self.assertIn('is outside valid range', unicode(e))
+            self.assertIn('is outside valid range', str(e))
 
     def test_large_integer_in_date_part(self):
         def try_parse(text):
@@ -811,7 +810,7 @@ class ParseDateValidRangeTestCase(unittest.TestCase):
                 rv = datefmt.parse_date(text, datefmt.utc)
                 self.fail('TracError not raised: %r' % rv)
             except TracError as e:
-                self.assertIn('is an invalid date', unicode(e))
+                self.assertIn('is an invalid date', str(e))
 
             if locale_en:
                 try:
@@ -819,7 +818,7 @@ class ParseDateValidRangeTestCase(unittest.TestCase):
                     rv = datefmt.parse_date(text, datefmt.utc, locale_en)
                     self.fail('TracError not raised: %r' % rv)
                 except TracError as e:
-                    self.assertIn('is an invalid date', unicode(e))
+                    self.assertIn('is an invalid date', str(e))
 
         try_parse('Jan 2147483647, 2016')
         try_parse('Jan 2147483648, 2016')
@@ -1140,15 +1139,14 @@ class ISO8601TestCase(unittest.TestCase):
             datefmt.parse_date('***', locale='iso8601', hint='date')
             raise self.failureException('TracError not raised')
         except TracError as e:
-            self.assertIn('Try "YYYY-MM-DD" instead.', unicode(e))
+            self.assertIn('Try "YYYY-MM-DD" instead.', str(e))
 
     def test_hint_datetime(self):
         try:
             datefmt.parse_date('***', locale='iso8601', hint='datetime')
             raise self.failureException('TracError not raised')
         except TracError as e:
-            self.assertIn(u'Try "YYYY-MM-DDThh:mm:ss±hh:mm" instead.',
-                          unicode(e))
+            self.assertIn(u'Try "YYYY-MM-DDThh:mm:ss±hh:mm" instead.', str(e))
 
     def test_hint_foobar(self):
         try:
@@ -1156,7 +1154,7 @@ class ISO8601TestCase(unittest.TestCase):
             raise self.failureException('TracError not raised')
         except TracError as e:
             self.assertIn(u'Try "foobar" or "YYYY-MM-DDThh:mm:ss±hh:mm" '
-                          u'instead.', unicode(e))
+                          u'instead.', str(e))
 
 
 if Locale is None:
@@ -1520,7 +1518,7 @@ else:
             except TracError as e:
                 self.assertIn('Try "%s" or "YYYY-MM-DD" instead.'
                               % datefmt.get_date_format_hint(locale_en),
-                              unicode(e))
+                              str(e))
 
         def test_hint_datetime(self):
             try:
@@ -1530,7 +1528,7 @@ else:
                 self.assertIn(u'Try "%s" or "YYYY-MM-DDThh:mm:ss\xb1hh:mm" '
                               u'instead.'
                               % datefmt.get_datetime_format_hint(locale_en),
-                              unicode(e))
+                              str(e))
 
         def test_hint_foobar(self):
             try:
@@ -1538,7 +1536,7 @@ else:
                 raise self.failureException('TracError not raised')
             except TracError as e:
                 self.assertIn(u'Try "foobar" or "YYYY-MM-DDThh:mm:ss±hh:mm" '
-                              u'instead.', unicode(e))
+                              u'instead.', str(e))
 
 
 class HttpDateTestCase(unittest.TestCase):
@@ -1629,7 +1627,7 @@ class LocalTimezoneTestCase(unittest.TestCase):
             raise AssertionError('ValueError not raised')
         except ValueError as e:
             self.assertEqual('Non existent time "2012-03-25 02:15:42.123456"',
-                             unicode(e))
+                             str(e))
 
     def test_localized_ambiguous_time(self):
         self._tzset('Europe/Paris')
@@ -1641,7 +1639,7 @@ class LocalTimezoneTestCase(unittest.TestCase):
             raise AssertionError('ValueError not raised')
         except ValueError as e:
             self.assertEqual('Ambiguous time "2011-10-30 02:45:42.123456"',
-                             unicode(e))
+                             str(e))
 
     def test_normalized_non_existent_time(self):
         self._tzset('Europe/Paris')

@@ -68,14 +68,14 @@ class EnvironmentWithoutDataTestCase(unittest.TestCase):
         with self.assertRaises(TracError) as cm:
             self._create_env(env_path)
         self.assertEqual("Base directory '%s' does not exist. Please create "
-                         "it and retry." % base_dir, unicode(cm.exception))
+                         "it and retry." % base_dir, str(cm.exception))
 
     def test_create_in_existing_environment(self):
         """TracError raised creating Environment in existing Environment."""
         with self.assertRaises(TracError) as cm:
             self._create_env(self.env_path)
         self.assertEqual("Directory exists and is not empty.",
-                         unicode(cm.exception))
+                         str(cm.exception))
 
 
 class EnvironmentTestCase(unittest.TestCase):
@@ -114,15 +114,14 @@ class EnvironmentTestCase(unittest.TestCase):
             Environment(self.env.path)
         self.assertEqual(
             "Unknown Trac environment type 'Trac Environment Version 0'",
-            unicode(cm.exception))
+            str(cm.exception))
 
     def test_version_file_empty(self):
         """TracError raised when environment version is empty."""
         create_file(os.path.join(self.env.path, 'VERSION'), '')
         with self.assertRaises(TracError) as cm:
             Environment(self.env.path)
-        self.assertEqual("Unknown Trac environment type ''",
-                         unicode(cm.exception))
+        self.assertEqual("Unknown Trac environment type ''", str(cm.exception))
 
     def test_version_file_not_found(self):
         """TracError raised when environment version file not found."""
@@ -134,7 +133,7 @@ class EnvironmentTestCase(unittest.TestCase):
             "No Trac environment found at %s\n"
             "IOError: [Errno 2] No such file or directory: '%s'"
             % (self.env.path, version_file),
-            unicode(cm.exception))
+            str(cm.exception))
 
     def test_missing_config_file_raises_trac_error(self):
         """TracError is raised when config file is missing."""

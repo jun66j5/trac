@@ -58,7 +58,7 @@ class PygmentsRendererTestCase(unittest.TestCase):
                 if line.startswith('#'):
                     self.pygments_html[line[1:].strip()] = testcase = []
                 else:
-                    testcase.append(unicode(line.rstrip(), 'utf-8'))
+                    testcase.append(str(line.rstrip(), 'utf-8'))
 
     @property
     def python_mimetype(self):
@@ -72,7 +72,7 @@ class PygmentsRendererTestCase(unittest.TestCase):
 
     def _test(self, expected_id, result):
         expected = self._expected(expected_id)
-        result = unicode(result).splitlines()
+        result = str(result).splitlines()
         # from pprint import pformat
         # print("\nE: " + expected_id + "\n" + pformat(expected))
         # print("\nR: " + expected_id + "\n" + pformat(result))

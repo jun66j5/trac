@@ -57,8 +57,8 @@ class TracError(TracBaseError):
     message = property(lambda self: self._message,
                        lambda self, v: setattr(self, '_message', v))
 
-    def __unicode__(self):
-        return unicode(self.message)
+    def __str__(self):
+        return str(self.message)
 
 
 class TracValueError(TracError, ValueError):

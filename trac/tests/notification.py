@@ -364,7 +364,7 @@ def decode_header(header):
             val = base64.decodestring(mo.group('value'))
         else:
             raise AssertionError("unsupported encoding: %s" % encoding)
-        header = unicode(val, mo.group('charset'))
+        header = str(val, mo.group('charset'))
     except Exception as e:
         raise AssertionError(e)
     return header

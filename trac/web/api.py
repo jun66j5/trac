@@ -453,11 +453,11 @@ def parse_arg_list(query_string):
         else:
             (name, value) = (nv[0], empty)
         name = urllib.parse.unquote(name.replace('+', ' '))
-        if isinstance(name, str):
-            name = unicode(name, 'utf-8')
+        if isinstance(name, bytes):
+            name = str(name, 'utf-8')
         value = urllib.parse.unquote(value.replace('+', ' '))
-        if isinstance(value, str):
-            value = unicode(value, 'utf-8')
+        if isinstance(value, bytes):
+            value = str(value, 'utf-8')
         args.append((name, value))
     return args
 
@@ -601,7 +601,7 @@ class Request(object):
         """Path inside the application"""
         path_info = self.environ.get('PATH_INFO', '')
         try:
-            return unicode(path_info, 'utf-8')
+            return str(path_info, 'utf-8')
         except UnicodeDecodeError:
             raise HTTPNotFound(_("Invalid URL encoding (was %(path_info)r)",
                                  path_info=path_info))
@@ -674,12 +674,12 @@ class Request(object):
     def send_header(self, name, value):
         """Send the response header with the specified name and value.
 
-        `value` must either be an `unicode` string or can be converted to one
+        `value` must either be a `str` string or can be converted to one
         (e.g. numbers, ...)
         """
         if name.lower() == 'content-type':
             self._content_type = value.split(';', 1)[0]
-        self._outheaders.append((name, unicode(value).encode('utf-8')))
+        self._outheaders.append((name, str(value).encode('utf-8')))
 
     def end_headers(self, exc_info=None):
         """Must be called after all headers have been sent and before the
@@ -840,8 +840,8 @@ class Request(object):
     def write(self, data):
         """Write the given data to the response body.
 
-        *data* **must** be a `str` string or an iterable instance
-        which iterates `str` strings, encoded with the charset which
+        *data* **must** be a `bytes` string or an iterable instance
+        which iterates `bytes` strings, encoded with the charset which
         has been specified in the ``'Content-Type'`` header or UTF-8
         otherwise.
 
@@ -860,8 +860,8 @@ class Request(object):
             if isinstance(data, basestring):
                 data = [data]
             for chunk in data:
-                if isinstance(chunk, unicode):
-                    raise ValueError("Can't send unicode content")
+                if isinstance(chunk, str):
+                    raise ValueError("Can't send str content")
                 if not chunk:
                     continue
                 bufsize += len(chunk)
@@ -946,13 +946,13 @@ class Request(object):
             raise_if_null_bytes(name)
             try:
                 if name is not None:
-                    name = unicode(name, 'utf-8')
+                    name = str(name, 'utf-8')
                 if value.filename:
                     raise_if_null_bytes(value.filename)
                 else:
                     value = value.value
                     raise_if_null_bytes(value)
-                    value = unicode(value, 'utf-8')
+                    value = str(value, 'utf-8')
             except UnicodeDecodeError as e:
                 raise HTTPBadRequest(
                     _("Invalid encoding in form data: %(msg)s",

@@ -39,8 +39,8 @@ In some cases, only the `url` pointing to the file's content is
 actually needed, that's why we avoid to read the file's content when
 it's not needed.
 
-The actual `content` to be converted might be a `unicode` object, but
-it can also be the raw byte string (`str`) object, or simply an object
+The actual `content` to be converted might be a `str` object, but
+it can also be the raw byte string (`bytes`) object, or simply an object
 that can be `read()`.
 
 .. note:: (for plugin developers)
@@ -371,7 +371,7 @@ def get_mimetype(filename, content=None, mime_map=MIME_MAP,
     `filename` is either a filename (the lookup will then use the suffix)
     or some arbitrary keyword.
 
-    `content` is either a `str` or an `unicode` string.
+    `content` is either a `bytes` or a `str` string.
     """
     # 0) mimetype from filename pattern (most specific)
     for mimetype, regexp in mime_map_patterns.iteritems():
@@ -411,9 +411,9 @@ def ct_mimetype(content_type):
 def is_binary(data):
     """Detect binary content by checking the first thousand bytes for zeroes.
 
-    Operate on either `str` or `unicode` strings.
+    Operate on either `bytes` or `str` strings.
     """
-    if isinstance(data, str) and detect_unicode(data):
+    if isinstance(data, bytes) and detect_unicode(data):
         return False
     return '\0' in data[:1000]
 
@@ -421,20 +421,20 @@ def is_binary(data):
 def detect_unicode(data):
     """Detect different unicode charsets by looking for BOMs (Byte Order Mark).
 
-    Operate obviously only on `str` objects.
+    Operate obviously only on `bytes` objects.
     """
-    if data.startswith('\xff\xfe'):
+    if data.startswith(b'\xff\xfe'):
         return 'utf-16-le'
-    elif data.startswith('\xfe\xff'):
+    elif data.startswith(b'\xfe\xff'):
         return 'utf-16-be'
-    elif data.startswith('\xef\xbb\xbf'):
+    elif data.startswith(b'\xef\xbb\xbf'):
         return 'utf-8'
     else:
         return None
 
 
 def content_to_unicode(env, content, mimetype):
-    """Retrieve an `unicode` object from a `content` to be previewed.
+    """Retrieve an `str` object from a `content` to be previewed.
 
     In case the raw content had an unicode BOM, we remove it.
 
@@ -511,7 +511,7 @@ class IHTMLPreviewRenderer(Interface):
         `RenderingContext`.
 
         The `content` might be:
-         * a `str` object
+         * a `bytes` object
          * an `unicode` string
          * any object with a `read` method, returning one of the above
 
@@ -582,8 +582,8 @@ class IContentConverter(Interface):
         represented by key. Returns a tuple in the form (content,
         output_mime_type) or None if conversion is not possible.
 
-        content must be a `str` instance or an iterable instance which
-        iterates `str` instances."""
+        content must be a `bytes` instance or an iterable instance which
+        iterates `bytes` instances."""
 
 
 class Content(object):
@@ -835,7 +835,7 @@ class Mimeview(Component):
                 annotators[atype] = annotator
         annotations = [a for a in annotations if a in annotators]
 
-        if isinstance(lines, unicode):
+        if isinstance(lines, str):
             lines = lines.splitlines(True)
         # elif isinstance(lines, list):
         #    pass # assume these are lines already
@@ -880,7 +880,7 @@ class Mimeview(Component):
     def get_charset(self, content='', mimetype=None):
         """Infer the character encoding from the `content` or the `mimetype`.
 
-        `content` is either a `str` or an `unicode` object.
+        `content` is either a `bytes` or a `str` object.
 
         The charset will be determined using this order:
          * from the charset information present in the `mimetype` argument
@@ -891,7 +891,7 @@ class Mimeview(Component):
             ctpos = mimetype.find('charset=')
             if ctpos >= 0:
                 return mimetype[ctpos + 8:].strip()
-        if isinstance(content, str):
+        if isinstance(content, bytes):
             utf = detect_unicode(content)
             if utf is not None:
                 return utf
@@ -920,7 +920,7 @@ class Mimeview(Component):
     def get_mimetype(self, filename, content=None):
         """Infer the MIME type from the `filename` or the `content`.
 
-        `content` is either a `str` or an `unicode` object.
+        `content` is either a `bytes` or a `str` object.
 
         Return the detected MIME type, augmented by the
         charset information (i.e. "<mimetype>; charset=..."),
@@ -965,7 +965,7 @@ class Mimeview(Component):
         return False
 
     def to_unicode(self, content, mimetype=None, charset=None):
-        """Convert `content` (an encoded `str` object) to an `unicode` object.
+        """Convert `content` (an encoded `bytes` object) to a `str` object.
 
         This calls `trac.util.to_unicode` with the `charset` provided,
         or the one obtained by `Mimeview.get_charset()`.
@@ -1020,13 +1020,13 @@ class Mimeview(Component):
         if iterable:
             def encoder(content):
                 for chunk in content:
-                    if isinstance(chunk, unicode):
+                    if isinstance(chunk, str):
                         chunk = chunk.encode('utf-8')
                     yield chunk
             content = encoder(content)
             length = None
         else:
-            if isinstance(content, unicode):
+            if isinstance(content, str):
                 content = content.encode('utf-8')
             length = len(content)
         req.send_response(200)
