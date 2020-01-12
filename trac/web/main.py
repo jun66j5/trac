@@ -30,7 +30,7 @@ from pprint import pformat, pprint
 import re
 import sys
 import traceback
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from jinja2 import FileSystemLoader
 

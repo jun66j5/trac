@@ -26,7 +26,6 @@ import os
 import re
 import sys
 import urllib.parse
-import urlparse
 
 from trac.core import Interface, TracBaseError, TracError
 from trac.util import as_bool, as_int, get_last_traceback, lazy, \
@@ -744,8 +743,9 @@ class Request(object):
         self.send_response(status)
         if not url.startswith(('http://', 'https://')):
             # Make sure the URL is absolute
-            scheme, host = urlparse.urlparse(self.base_url)[:2]
-            url = urlparse.urlunparse((scheme, host, url, None, None, None))
+            scheme, host = urllib.parse.urlparse(self.base_url)[:2]
+            url = urllib.parse.urlunparse((scheme, host, url, None, None,
+                                           None))
 
         # Workaround #10382, IE6-IE9 bug when post and redirect with hash
         if status == 303 and '#' in url:
@@ -1007,8 +1007,8 @@ class Request(object):
                 host = '%s:%d' % (self.server_name, self.server_port)
             else:
                 host = self.server_name
-        return urlparse.urlunparse((self.scheme, host, self.base_path, None,
-                                    None, None))
+        return urllib.parse.urlunparse((self.scheme, host, self.base_path,
+                                        None, None, None))
 
     def _send_configurable_headers(self):
         sent_headers = [name.lower() for name, val in self._outheaders]
