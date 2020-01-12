@@ -292,7 +292,7 @@ def create_file(path, data='', mode='w'):
     """
     with open(path, mode) as f:
         if data:
-            if isinstance(data, basestring):
+            if isinstance(data, str):
                 f.write(data)
             else:  # Assume iterable
                 f.writelines(data)
@@ -900,7 +900,7 @@ def get_module_metadata(module):
               'maintainer_email', 'home_page', 'url', 'license',
               'summary', 'trac'):
         v = getattr(module, k, '')
-        if v and isinstance(v, basestring):
+        if v and isinstance(v, str):
             if k in ('home_page', 'url'):
                 k = 'home_page'
                 v = v.replace('$', '').replace('URL: ', '').strip()
@@ -1133,7 +1133,7 @@ class Ranges(object):
         if not r:
             return
         p = self.pairs
-        if isinstance(r, basestring):
+        if isinstance(r, str):
             r = re.split(u',\u200b?', r)
         for x in r:
             try:
@@ -1379,7 +1379,7 @@ def as_bool(value, default=False):
 
     :since 1.2: the `default` argument can be specified.
     """
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         try:
             return bool(float(value))
         except ValueError:

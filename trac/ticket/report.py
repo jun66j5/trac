@@ -518,7 +518,7 @@ class ReportModule(Component):
                         if sort_values:
                             return sort_values.get(val)
                         # otherwise, continue with string comparison:
-                        if isinstance(val, basestring):
+                        if isinstance(val, str):
                             val = val.lower()
                         return val
                     results = sorted(results, key=sortkey, reverse=not asc)

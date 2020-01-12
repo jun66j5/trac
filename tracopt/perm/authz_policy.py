@@ -264,7 +264,7 @@ class AuthzPolicy(Component):
                             who in self.groups_by_user.get(username, []):
                         self.log.debug("%s matched section %s for user %s",
                                        resource_key, resource_glob, username)
-                        if isinstance(permissions, basestring):
+                        if isinstance(permissions, str):
                             return [permissions]
                         else:
                             return permissions

@@ -84,7 +84,7 @@ class GitCommandMixin(object):
                                    hours, rem / 60)
 
     def _set_committer_date(self, env, dt):
-        if not isinstance(dt, basestring):
+        if not isinstance(dt, str):
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=utc)
             dt = self._git_date_format(dt)

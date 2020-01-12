@@ -1952,7 +1952,7 @@ class LocalTimezoneTestCase(unittest.TestCase):
             dt_naive += delta
 
     def _compare_pytz(self, tz, value, localize=True):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = datefmt.parse_date(value + 'Z', datefmt.utc)
         dt_naive = value.replace(tzinfo=None)
         self._compare_pytz_arithmetic(tz, dt_naive)

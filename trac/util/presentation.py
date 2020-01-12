@@ -275,7 +275,7 @@ def groupattr_filter(_eval_ctx, iterable, num, attr, *args, **kwargs):
 
 def istext(text):
     """`True` for text (`str` and `bytes`), but `False` for `Markup`."""
-    return isinstance(text, basestring) and not isinstance(text, Markup)
+    return isinstance(text, str) and not isinstance(text, Markup)
 
 def prepared_paginate(items, num_items, max_per_page):
     if max_per_page == 0:

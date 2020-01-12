@@ -857,7 +857,7 @@ class Request(object):
             bufsize = 0
             buf = []
             buf_append = buf.append
-            if isinstance(data, basestring):
+            if isinstance(data, str):
                 data = [data]
             for chunk in data:
                 if isinstance(chunk, str):
@@ -896,7 +896,7 @@ class Request(object):
         self.send_header('Cache-Control', 'must-revalidate')
         self.send_header('Expires', 'Fri, 01 Jan 1999 00:00:00 GMT')
         self.send_header('Content-Type', content_type + ';charset=utf-8')
-        if isinstance(content, basestring):
+        if isinstance(content, str):
             self.send_header('Content-Length', len(content))
         self.end_headers(exc_info)
 

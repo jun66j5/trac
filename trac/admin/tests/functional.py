@@ -31,7 +31,7 @@ class AuthorizationTestCaseSetup(FunctionalTwillTestCaseSetup):
         self._tester.go_to_front()
         self._tester.logout()
         self._tester.login('user')
-        if isinstance(perms, basestring):
+        if isinstance(perms, str):
             perms = (perms, )
 
         h2 = r'<h2>[ \t\n]*%s[ \t\n]*' \
