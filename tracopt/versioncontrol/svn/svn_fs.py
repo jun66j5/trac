@@ -423,7 +423,7 @@ class SubversionRepository(Repository):
         """Take any revision specification and produce a revision suitable
         for the rest of the API
         """
-        if rev is None or isinstance(rev, basestring) and \
+        if rev is None or isinstance(rev, str) and \
                rev.lower() in ('', 'head', 'latest', 'youngest'):
             return self.youngest_rev
         else:

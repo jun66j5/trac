@@ -82,7 +82,7 @@ min_postgresql_version = (9, 1, 0)
 def assemble_pg_dsn(path, user=None, password=None, host=None, port=None):
     """Quote the parameters and assemble the DSN."""
     def quote(value):
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             value = str(value)
         return "'%s'" % value.replace('\\', r'\\').replace("'", r"\'")
 

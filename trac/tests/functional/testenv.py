@@ -336,7 +336,7 @@ class FunctionalTestEnvironment(object):
         authz_file = os.path.join(env.conf_dir, filename)
         if os.path.exists(authz_file):
             wait_for_file_mtime_change(authz_file)
-        if isinstance(authz_content, basestring):
+        if isinstance(authz_content, str):
             authz_content = [line.strip() + '\n'
                              for line in authz_content.strip().splitlines()]
             authz_content = ['# -*- coding: utf-8 -*-\n'] + authz_content

@@ -706,10 +706,10 @@ class Mimeview(Component):
             if output:
                 content, content_type = output
                 if iterable:
-                    if isinstance(content, basestring):
+                    if isinstance(content, str):
                         content = (content,)
                 else:
-                    if not isinstance(content, basestring):
+                    if not isinstance(content, str):
                         content = ''.join(content)
                 return content, content_type, conversion.extension
         raise TracError(
@@ -806,8 +806,8 @@ class Mimeview(Component):
                 if not (force_source or getattr(renderer, 'returns_source',
                                                 False)):
                     # Direct rendering of content
-                    if isinstance(result, basestring):
-                        return Markup(to_unicode(result))
+                    if isinstance(result, str):
+                        return Markup(result)
                     elif isinstance(result, Fragment):
                         return result.__html__()
                     else:

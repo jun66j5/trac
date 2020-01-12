@@ -460,7 +460,7 @@ class CachedRepository(Repository):
         return self.repos.normalize_path(path)
 
     def normalize_rev(self, rev):
-        if rev is None or isinstance(rev, basestring) and \
+        if rev is None or isinstance(rev, str) and \
                rev.lower() in ('', 'head', 'latest', 'youngest'):
             return self.rev_db(self.youngest_rev or 0)
         else:

@@ -340,7 +340,7 @@ class Fragment(object):
 
     def append(self, arg):
         if arg: # ignore most false values (None, False, [], (), ''), except 0!
-            if isinstance(arg, (Fragment, basestring, int, float, long)):
+            if isinstance(arg, (Fragment, str, int, float, long)):
                 self.children.append(arg)
             else:
                 # support iterators and generators
@@ -601,7 +601,7 @@ class TracHTMLSanitizer(object):
         unsafe.
 
         :param html: the input HTML
-        :type: basestring
+        :type: str
         :return: the sanitized content
         :rtype: Markup
 
@@ -631,7 +631,7 @@ class TracHTMLSanitizer(object):
         inclusion in the output.
 
         :param tag: the tag name of the element
-        :type tag: basestring
+        :type tag: str
         :param attrs: the element attributes
         :type attrs: list
         :return: whether the element should be considered safe

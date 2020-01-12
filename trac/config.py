@@ -44,7 +44,7 @@ def _getfloat(value):
 def _getlist(value, sep, keep_empty):
     if not value:
         return []
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         if isinstance(sep, (list, tuple)):
             splitted = re.split('|'.join(map(re.escape, sep)), value)
         else:

@@ -1472,7 +1472,7 @@ class TicketModule(Component):
     def _query_link_words(self, context, name, value, query=None):
         """Splits a list of words and makes a query link to each separately"""
         from trac.ticket.query import QueryModule
-        if not (isinstance(value, basestring) and  # None or other non-splitable
+        if not (isinstance(value, str) and  # None or other non-splitable
                 self.env.is_component_enabled(QueryModule)):
             return value
         if query is None:

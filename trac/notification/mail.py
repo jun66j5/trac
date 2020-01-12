@@ -112,7 +112,7 @@ def create_header(key, value, charset):
     email = None
     if isinstance(value, (tuple, list)):
         value, email = value
-    if not isinstance(value, basestring):
+    if not isinstance(value, str):
         value = to_unicode(value)
     if not value:
         return email

@@ -171,7 +171,7 @@ def parse_subscriber_config(rawsubscriptions):
         else:
             attribute = parts[1]
             known = known_attrs.get(attribute)
-            if known is None or isinstance(known, basestring):
+            if known is None or isinstance(known, str):
                 pass
             elif isinstance(known, int):
                 value = int(value)
