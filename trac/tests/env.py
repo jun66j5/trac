@@ -11,7 +11,7 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
-from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 from glob import glob
 from subprocess import PIPE, Popen
 import inspect

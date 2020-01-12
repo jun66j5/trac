@@ -17,7 +17,7 @@
 # Author: Eli Carter
 
 import io
-from ConfigParser import ParsingError, RawConfigParser
+from configparser import ParsingError, RawConfigParser
 from collections import defaultdict
 from functools import partial
 from pkg_resources import resource_filename

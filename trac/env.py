@@ -23,7 +23,7 @@ import setuptools
 import shutil
 import sys
 import time
-from ConfigParser import RawConfigParser
+from configparser import RawConfigParser
 from subprocess import PIPE
 from tempfile import mkdtemp
 from urlparse import urlsplit
