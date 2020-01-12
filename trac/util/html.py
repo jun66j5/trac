@@ -21,8 +21,8 @@
 import io
 import re
 import sys
+from html import entities
 from html.parser import HTMLParser
-import htmlentitydefs as entities
 
 from markupsafe import Markup, escape as escape_quotes
 
