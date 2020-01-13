@@ -314,8 +314,8 @@ class TracHTMLSanitizerTestCaseBase(unittest.TestCase):
         test("<p>&amp;#x110000;</p>",   '<p>&#x110000;</p>')
         test("<p>&amp;#X110000;</p>",   '<p>&#X110000;</p>')
         test("<p>&amp;#abcd;</p>",      '<p>&#abcd;</p>')
-        test('<p>&amp;#%d;</p>' % (sys.maxint + 1),
-             '<p>&#%d;</p>' % (sys.maxint + 1))
+        test('<p>&amp;#%d;</p>' % (sys.maxsize + 1),
+             '<p>&#%d;</p>' % (sys.maxsize + 1))
 
     def test_special_characters_attribute(self):
         self._assert_sanitize('<img title="&amp;"/>', '<img title="&amp;"/>')
@@ -347,8 +347,8 @@ class TracHTMLSanitizerTestCaseBase(unittest.TestCase):
                               '<img title="&#X110000;"/>')
         self._assert_sanitize('<img title="&amp;#abcd;"/>',
                               '<img title="&#abcd;"/>')
-        self._assert_sanitize('<img title="&amp;#%d;"/>' % (sys.maxint + 1),
-                              '<img title="&#%d;"/>' % (sys.maxint + 1))
+        self._assert_sanitize('<img title="&amp;#%d;"/>' % (sys.maxsize + 1),
+                              '<img title="&#%d;"/>' % (sys.maxsize + 1))
 
     def _assert_sanitize(self, expected, content):
         self.assertEqual(expected, self.sanitize(content))
