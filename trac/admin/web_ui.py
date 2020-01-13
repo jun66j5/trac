@@ -92,8 +92,8 @@ class AdminModule(Component):
         path_info = req.args.get('path_info')
         if not panel_id:
             try:
-                panel_id = \
-                    filter(lambda panel: panel[0] == cat_id, panels)[0][2]
+                panel_id = list(filter(lambda panel: panel[0] == cat_id,
+                                       panels))[0][2]
             except IndexError:
                 raise HTTPNotFound(_("Unknown administration panel"))
 

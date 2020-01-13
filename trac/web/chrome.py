@@ -743,11 +743,11 @@ class Chrome(Component):
                 ('site', self.env.htdocs_dir)]
 
     def get_templates_dirs(self):
-        return filter(None, [
+        return list(filter(None, [
             self.env.templates_dir,
             self.shared_templates_dir,
             pkg_resources.resource_filename('trac', 'templates'),
-        ])
+        ]))
 
     # IWikiSyntaxProvider methods
 

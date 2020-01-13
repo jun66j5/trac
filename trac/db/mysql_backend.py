@@ -181,7 +181,7 @@ class MySQLConnector(Component):
                     limit_col)
         for c in columns:
             name = _quote(c)
-            table_col = filter((lambda x: x.name == c), table.columns)
+            table_col = list(filter((lambda x: x.name == c), table.columns))
             if len(table_col) == 1 and table_col[0].type.lower() == 'text':
                 if table_col[0].key_size is not None:
                     name += '(%d)' % min(table_col[0].key_size, limit_col)

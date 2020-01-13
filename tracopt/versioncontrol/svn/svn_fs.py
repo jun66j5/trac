@@ -1228,7 +1228,7 @@ class FileContentStream(object):
         return fs.revision_prop(self.fs_ptr, rev, name, self.pool())
 
     def _split_keywords(self, keywords):
-        return filter(None, self.KEYWORD_SPLIT_RE.split(keywords or ''))
+        return list(filter(None, self.KEYWORD_SPLIT_RE.split(keywords or '')))
 
     def _get_keyword_values(self, keywords):
         keywords = self._split_keywords(keywords)
