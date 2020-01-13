@@ -206,8 +206,8 @@ def wikisyntax_test_suite(data=None, setup=None, file=None, teardown=None,
         add_test_cases(data, file)
     else:
         if os.path.exists(file):
-            with open(file, 'r') as fobj:
-                data = fobj.read().decode('utf-8')
+            with open(file, 'r', encoding='utf-8') as fobj:
+                data = fobj.read()
             add_test_cases(data, file)
         else:
             print('no ' + file)
