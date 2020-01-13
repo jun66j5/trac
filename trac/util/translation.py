@@ -98,10 +98,10 @@ class NullTranslationsBabel(NullTranslations):
     """NullTranslations doesn't have the domain related methods."""
 
     def dugettext(self, domain, string):
-        return self.ugettext(string)
+        return self.gettext(string)
 
     def dungettext(self, domain, singular, plural, num):
-        return self.ungettext(singular, plural, num)
+        return self.ngettext(singular, plural, num)
 
 has_babel = False
 
@@ -196,7 +196,7 @@ try:
 
         def gettext(self, string, **kwargs):
             def _gettext():
-                return safefmt(self.active.ugettext(string), kwargs)
+                return safefmt(self.active.gettext(string), kwargs)
             if not self.isactive:
                 return LazyProxy(_gettext)
             return _gettext()
@@ -212,7 +212,7 @@ try:
             kwargs = kwargs.copy()
             kwargs.setdefault('num', num)
             def _ngettext():
-                trans = self.active.ungettext(singular, plural, num)
+                trans = self.active.ngettext(singular, plural, num)
                 return safefmt(trans, kwargs)
             if not self.isactive:
                 return LazyProxy(_ngettext)
@@ -230,7 +230,7 @@ try:
 
         def tgettext(self, string, **kwargs):
             def _tgettext():
-                trans = self.active.ugettext(string)
+                trans = self.active.gettext(string)
                 return _tag_kwargs(trans, kwargs) if kwargs else trans
             if not self.isactive:
                 return LazyProxy(_tgettext)
@@ -248,7 +248,7 @@ try:
             kwargs = kwargs.copy()
             kwargs.setdefault('num', num)
             def _tngettext():
-                trans = self.active.ungettext(singular, plural, num)
+                trans = self.active.ngettext(singular, plural, num)
                 return _tag_kwargs(trans, kwargs)
             if not self.isactive:
                 return LazyProxy(_tngettext)
