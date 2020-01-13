@@ -823,7 +823,7 @@ def get_pkginfo(dist):
     from trac.util.translation import _
 
     def parse_pkginfo(dist, name):
-        return email.message_from_string(to_utf8(dist.get_metadata(name)))
+        return email.message_from_string(dist.get_metadata(name))
 
     if isinstance(dist, types.ModuleType):
         def has_resource(dist, module, resource_name):
