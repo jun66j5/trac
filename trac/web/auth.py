@@ -22,8 +22,8 @@ from hashlib import md5, sha1
 import os
 import re
 import sys
-import urllib2
 import urllib.parse
+import urllib.request
 
 from trac.config import BoolOption, IntOption, Option
 from trac.core import *
@@ -414,7 +414,7 @@ class DigestAuthentication(PasswordFileAuthentication):
 
     def parse_auth_header(self, authorization):
         values = {}
-        for value in urllib2.parse_http_list(authorization):
+        for value in urllib.request.parse_http_list(authorization):
             n, v = value.split('=', 1)
             if v[0] == '"' and v[-1] == '"':
                 values[n] = v[1:-1]
