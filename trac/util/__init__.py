@@ -798,10 +798,11 @@ def get_sources(path):
                            if any(src.startswith(top) for top in toplevels))
             continue
         if dist.has_metadata('RECORD'):  # *.dist-info/RECORD
-            reader = csv.reader(io.BytesIO(dist.get_metadata('RECORD')))
-            sources.update((row[0], dist)
-                           for row in reader if any(row[0].startswith(top)
-                                                    for top in toplevels))
+            with io.StringIO(dist.get_metadata('RECORD')) as f:
+                reader = csv.reader(f)
+                sources.update((row[0], dist)
+                               for row in reader if any(row[0].startswith(top)
+                                                        for top in toplevels))
             continue
     return sources
 
@@ -838,8 +839,9 @@ def get_pkginfo(dist):
                 return any(resource_name == os.path.normpath(name)
                            for name in dist.get_metadata_lines('SOURCES.txt'))
             if dist.has_metadata('RECORD'):  # *.dist-info/RECORD
-                reader = csv.reader(io.BytesIO(dist.get_metadata('RECORD')))
-                return any(resource_name == row[0] for row in reader)
+                with io.StringIO(dist.get_metadata('RECORD')) as f:
+                    reader = csv.reader(f)
+                    return any(resource_name == row[0] for row in reader)
             if dist.has_metadata('PKG-INFO'):
                 try:
                     pkginfo = parse_pkginfo(dist, 'PKG-INFO')
