@@ -15,7 +15,8 @@
 import copy
 import os.path
 import re
-from configparser import ConfigParser, ParsingError
+from configparser import (ConfigParser, NoOptionError, NoSectionError,
+                          ParsingError)
 
 from trac.admin import AdminCommandError, IAdminCommandProvider
 from trac.core import Component, ExtensionPoint, TracError, implements
@@ -98,50 +99,46 @@ class UnicodeConfigParser(ConfigParser):
         return option
 
     def sections(self):
-        return map(to_unicode, ConfigParser.sections(self))
+        return ConfigParser.sections(self)
 
     def add_section(self, section):
-        section_str = to_utf8(section)
-        ConfigParser.add_section(self, section_str)
+        ConfigParser.add_section(self, section)
 
     def has_section(self, section):
-        section_str = to_utf8(section)
-        return ConfigParser.has_section(self, section_str)
+        return ConfigParser.has_section(self, section)
 
     def options(self, section):
-        section_str = to_utf8(section)
-        return map(to_unicode, ConfigParser.options(self, section_str))
+        return ConfigParser.options(self, section)
 
-    def get(self, section, option, raw=False, vars=None):
-        section_str = to_utf8(section)
-        option_str = to_utf8(option)
-        return to_unicode(ConfigParser.get(self, section_str,
-                                           option_str, raw, vars))
+    def get(self, section, option, raw=False, vars=None,
+            fallback=_use_default):
+        try:
+            return ConfigParser.get(self, section, option, raw=raw, vars=vars)
+        except (NoSectionError, NoOptionError):
+            if fallback is _use_default:
+                raise
+            return fallback
 
-    def items(self, section, raw=False, vars=None):
-        section_str = to_utf8(section)
-        return [(to_unicode(k), to_unicode(v))
-                for k, v in ConfigParser.items(self, section_str, raw, vars)]
+    def items(self, section, raw=False, vars=None, fallback=_use_default):
+        try:
+            return ConfigParser.items(self, section, raw=raw, vars=vars)
+        except NoSectionError:
+            if fallback is _use_default:
+                raise
+            return fallback
 
     def has_option(self, section, option):
-        section_str = to_utf8(section)
-        option_str = to_utf8(option)
-        return ConfigParser.has_option(self, section_str, option_str)
+        return ConfigParser.has_option(self, section, option)
 
     def set(self, section, option, value=None):
-        section_str = to_utf8(section)
-        option_str = to_utf8(option)
-        value_str = to_utf8(value) if value is not None else ''
-        ConfigParser.set(self, section_str, option_str, value_str)
+        value_str = to_unicode(value if value is not None else '')
+        ConfigParser.set(self, section, option, value_str)
 
     def remove_option(self, section, option):
-        section_str = to_utf8(section)
-        option_str = to_utf8(option)
-        ConfigParser.remove_option(self, section_str, option_str)
+        ConfigParser.remove_option(self, section, option)
 
     def remove_section(self, section):
-        section_str = to_utf8(section)
-        ConfigParser.remove_section(self, section_str)
+        ConfigParser.remove_section(self, section)
 
     def __copy__(self):
         parser = self.__class__()
