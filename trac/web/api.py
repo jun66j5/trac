@@ -191,9 +191,7 @@ HTTP_STATUS = {code: reason.title()
                in list(BaseHTTPRequestHandler.responses.items())}
 
 
-class HTTPException(TracBaseError):
-
-    __metaclass__ = ABCMeta
+class HTTPException(TracBaseError, metaclass=ABCMeta):
 
     code = None
 

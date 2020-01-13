@@ -75,10 +75,8 @@ class _FileWrapper(object):
     next = __next__
 
 
-class WSGIGateway(object):
+class WSGIGateway(object, metaclass=ABCMeta):
     """Abstract base class for WSGI servers or gateways."""
-
-    __metaclass__ = ABCMeta
 
     wsgi_version = (1, 0)
     wsgi_multithread = True

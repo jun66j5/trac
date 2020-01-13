@@ -110,10 +110,8 @@ class QueryContextManager(DbContextManager):
                 self.db.close()
 
 
-class ConnectionBase(object):
+class ConnectionBase(object, metaclass=ABCMeta):
     """Abstract base class for database connection classes."""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def cast(self, column, type):

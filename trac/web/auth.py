@@ -288,9 +288,7 @@ class LoginModule(Component):
         return req.args.get('referer') or req.get_header('Referer')
 
 
-class HTTPAuthentication(object):
-
-    __metaclass__ = ABCMeta
+class HTTPAuthentication(object, metaclass=ABCMeta):
 
     @abstractmethod
     def do_auth(self, environ, start_response):
