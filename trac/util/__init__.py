@@ -201,7 +201,7 @@ if os.name == 'nt':
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
-            old = "%s-%08x" % (dst, random.randint(0, sys.maxint))
+            old = "%s-%08x" % (dst, random.randint(0, 0xffffffff))
             os.rename(dst, old)
             os.rename(src, dst)
             try:
@@ -1203,7 +1203,7 @@ class Ranges(object):
         if self.a is None or self.b is None:
             return 0
         # Result must fit an int
-        return min(self.b - self.a + 1, sys.maxint)
+        return min(self.b - self.a + 1, sys.maxsize)
 
     def __nonzero__(self):
         """Return True iff the range is not empty.
