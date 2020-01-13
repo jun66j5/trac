@@ -18,6 +18,7 @@
 #         Matthew Good <trac@matt-good.net>
 #         Christian Boos <cboos@edgewall.org>
 
+import base64
 import locale
 import os
 import re
@@ -778,13 +779,16 @@ def unicode_to_base64(text, strip_newlines=True):
     Strips newlines from output unless ``strip_newlines`` is `False`.
     """
     text = to_unicode(text)
+    text = text.encode('utf-8')
     if strip_newlines:
-        return text.encode('utf-8').encode('base64').replace('\n', '')
-    return text.encode('utf-8').encode('base64')
+        rv = base64.b64encode(text)
+    else:
+        rv = base64.encodebytes(text)
+    return str(rv, 'ascii')
 
 def unicode_from_base64(text):
     """Safe conversion of ``text`` to str based on utf-8 bytes."""
-    return text.decode('base64').decode('utf-8')
+    return str(base64.b64decode(text), 'utf-8')
 
 
 def levenshtein_distance(lhs, rhs):
