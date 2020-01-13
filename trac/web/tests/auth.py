@@ -19,7 +19,7 @@ from trac.util.compat import crypt
 from trac.test import EnvironmentStub, MockRequest, rmtree
 from trac.web.auth import BasicAuthentication, DigestAuthentication, LoginModule
 
-from Cookie import SimpleCookie as Cookie
+from http.cookies import SimpleCookie as Cookie
 import unittest
 
 

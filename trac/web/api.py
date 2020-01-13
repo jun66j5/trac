@@ -15,8 +15,8 @@
 # Author: Christopher Lenz <cmlenz@gmx.de>
 
 from abc import ABCMeta
+from http.cookies import CookieError, BaseCookie, SimpleCookie
 from http.server import BaseHTTPRequestHandler
-from Cookie import CookieError, BaseCookie, SimpleCookie
 import cgi
 from datetime import datetime
 import hashlib
