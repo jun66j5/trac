@@ -84,9 +84,9 @@ class FragmentTestCase(unittest.TestCase):
 class XMLElementTestCase(unittest.TestCase):
 
     def test_xml(self):
-        self.assertEqual(Markup('0<a>0</a> and <b>0</b> and <c/> and'
-                                ' <d class="[\'a\', \'\', \'b\']"'
-                                ' more_="[\'a\']"/>'),
+        self.assertEqual(Markup('''0<a>0</a> and <b>0</b> and <c/> and'''
+                                ''' <d class="[b'a', b'', b'b']"'''
+                                ''' more_="[b'a']"/>'''),
                          Markup(xml(0, xml.a(0), ' and ', xml.b(0.0),
                                     ' and ', xml.c(None), ' and ',
                                     xml.d('', class_=[b'a', b'', b'b'],
@@ -96,8 +96,8 @@ class XMLElementTestCase(unittest.TestCase):
 class ElementTestCase(unittest.TestCase):
 
     def test_tag(self):
-        self.assertEqual(Markup('0<a>0</a> and <b>0</b> and <c></c>'
-                                ' and <d class="a b" more_="[\'a\']"></d>'),
+        self.assertEqual(Markup('''0<a>0</a>b' and '<b>0</b> and <c></c>'''
+                                ''' and <d class="a b" more_="[b'a']"></d>'''),
                          Markup(tag(0, tag.a(0, href=''), b' and ', tag.b(0.0),
                                     ' and ', tag.c(None), ' and ',
                                     tag.d('', class_=['a', '', 'b'],
@@ -542,13 +542,13 @@ class ToFragmentTestCase(unittest.TestCase):
             self.fail('IOError not raised')
 
     def test_ioerror(self):
-        rv = to_fragment(self._ioerror(b'./notfound'))
+        rv = to_fragment(self._ioerror('./notfound'))
         self.assertEqual(Fragment, type(rv))
         self.assertEqual("[Errno 2] No such file or directory: './notfound'",
                          str(rv))
 
     def test_error_with_ioerror(self):
-        e = self._ioerror(b'./notfound')
+        e = self._ioerror('./notfound')
         rv = to_fragment(ValueError(e))
         self.assertEqual(Fragment, type(rv))
         self.assertEqual("[Errno 2] No such file or directory: './notfound'",

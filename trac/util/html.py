@@ -54,36 +54,36 @@ def escape(text, quotes=True):
                    addition to the other special characters
 
     >>> escape('"1 < 2"')
-    Markup(u'&#34;1 &lt; 2&#34;')
+    Markup('&#34;1 &lt; 2&#34;')
 
     >>> escape(['"1 < 2"'])
-    Markup(u"['&#34;1 &lt; 2&#34;']")
+    Markup("['&#34;1 &lt; 2&#34;']")
 
     If the `quotes` parameter is set to `False`, the \" character is left
     as is. Escaping quotes is generally only required for strings that are
     to be used in attribute values.
 
     >>> escape('"1 < 2"', quotes=False)
-    Markup(u'"1 &lt; 2"')
+    Markup('"1 &lt; 2"')
 
     >>> escape(['"1 < 2"'], quotes=False)
-    Markup(u'[\\'"1 &lt; 2"\\']')
+    Markup('[\\'"1 &lt; 2"\\']')
 
     However, `escape` behaves slightly differently with `Markup` and
     `Fragment` behave instances, as they are passed through
     unmodified.
 
     >>> escape(Markup('"1 < 2 &#39;"'))
-    Markup(u'"1 < 2 &#39;"')
+    Markup('"1 < 2 &#39;"')
 
     >>> escape(Markup('"1 < 2 &#39;"'), quotes=False)
-    Markup(u'"1 < 2 &#39;"')
+    Markup('"1 < 2 &#39;"')
 
     >>> escape(tag.b('"1 < 2"'))
-    Markup(u'<b>"1 &lt; 2"</b>')
+    Markup('<b>"1 &lt; 2"</b>')
 
     >>> escape(tag.b('"1 < 2"'), quotes=False)
-    Markup(u'<b>"1 &lt; 2"</b>')
+    Markup('<b>"1 &lt; 2"</b>')
 
     :return: the escaped `Markup` string
     :rtype: `Markup`
@@ -107,7 +107,7 @@ def unescape(text):
     """Reverse-escapes &, <, >, and \" and returns a `str` object.
 
     >>> unescape(Markup('1 &lt; 2'))
-    u'1 < 2'
+    '1 < 2'
 
     If the provided `text` object is not a `Markup` instance, it is returned
     unchanged.
@@ -132,21 +132,21 @@ def stripentities(text, keepxmlentities=False):
     replaced by the equivalent UTF-8 characters.
 
     >>> stripentities('1 &lt; 2')
-    u'1 < 2'
+    '1 < 2'
     >>> stripentities('more &hellip;')
-    u'more \u2026'
+    'more \u2026'
     >>> stripentities('&#8230;')
-    u'\u2026'
+    '\u2026'
     >>> stripentities('&#x2026;')
-    u'\u2026'
+    '\u2026'
     >>> stripentities(Markup(u'\u2026'))
-    u'\u2026'
+    '\u2026'
 
     If the `keepxmlentities` parameter is provided and is a truth value, the
     core XML entities (&amp;, &apos;, &gt;, &lt; and &quot;) are left intact.
 
     >>> stripentities('1 &lt; 2 &hellip;', keepxmlentities=True)
-    u'1 &lt; 2 \u2026'
+    '1 &lt; 2 \u2026'
 
     :return: a `str` instance with entities removed
     :rtype: `str`
@@ -179,16 +179,16 @@ def striptags(text):
     """Return a copy of the text with any XML/HTML tags removed.
 
     >>> striptags('<span>Foo</span> bar')
-    u'Foo bar'
+    'Foo bar'
     >>> striptags('<span class="bar">Foo</span>')
-    u'Foo'
+    'Foo'
     >>> striptags('Foo<br />')
-    u'Foo'
+    'Foo'
 
     HTML/XML comments are stripped, too:
 
     >>> striptags('<!-- <blub>hehe</blah> -->test')
-    u'test'
+    'test'
 
     :param text: the string to remove tags from
     :return: a `str` instance with all tags removed
@@ -261,21 +261,21 @@ def classes(*args, **kwargs):
     positional arguments must be strings:
 
     >>> classes('foo', 'bar')
-    u'foo bar'
+    'foo bar'
 
     In addition, the names of any supplied keyword arguments are added
     if they have a truth value:
 
     >>> classes('foo', bar=True)
-    u'foo bar'
+    'foo bar'
     >>> classes('foo', bar=False)
-    u'foo'
+    'foo'
 
     If none of the arguments are added to the list, this function
     returns `''`:
 
     >>> classes(bar=False)
-    u''
+    ''
 
     """
     classes = list(filter(None, args)) + [k for k, v in list(kwargs.items()) if v]
@@ -289,21 +289,21 @@ def styles(*args, **kwargs):
     positional arguments must be strings or dicts:
 
     >>> styles('foo: bar', 'fu: baz', {'bottom-right': '1em'})
-    u'foo: bar; fu: baz; bottom-right: 1em'
+    'foo: bar; fu: baz; bottom-right: 1em'
 
     In addition, the names of any supplied keyword arguments are added
     if they have a string value:
 
     >>> styles(foo='bar', fu='baz')
-    u'foo: bar; fu: baz'
+    'foo: bar; fu: baz'
     >>> styles(foo='bar', bar=False)
-    u'foo: bar'
+    'foo: bar'
 
     If none of the arguments are added to the list, this function
     returns `''`:
 
     >>> styles(bar=False)
-    u''
+    ''
 
     """
     args = list(filter(None, args))
@@ -340,7 +340,7 @@ class Fragment(object):
 
     def append(self, arg):
         if arg: # ignore most false values (None, False, [], (), ''), except 0!
-            if isinstance(arg, (Fragment, str, int, float)):
+            if isinstance(arg, (Fragment, str, bytes, int, float)):
                 self.children.append(arg)
             else:
                 # support iterators and generators
@@ -713,7 +713,7 @@ class TracHTMLSanitizer(object):
         ...   background: url(javascript:alert("foo"));
         ...   color: #000;
         ... ''')
-        [u'color: #000']
+        ['color: #000']
 
         Also, the proprietary Internet Explorer function
         ``expression()`` is always stripped:
@@ -723,7 +723,7 @@ class TracHTMLSanitizer(object):
         ...   color: #000;
         ...   width: e/**/xpression(alert("F"));
         ... ''')
-        [u'background: #fff', u'color: #000', u'width: e xpression(alert("F"))']
+        ['background: #fff', 'color: #000', 'width: e xpression(alert("F"))']
 
         :param text: the CSS text; this is expected to be `str` and to not
                      contain any character or numeric references
@@ -980,15 +980,15 @@ def plaintext(text, keeplinebreaks=True):
     """Extract the text elements from (X)HTML content
 
     >>> plaintext('<b>1 &lt; 2</b>')
-    u'1 < 2'
+    '1 < 2'
 
     >>> plaintext(tag('1 ', tag.b('<'), ' 2'))
-    u'1 < 2'
+    '1 < 2'
 
     >>> plaintext('''<b>1
     ... &lt;
     ... 2</b>''', keeplinebreaks=False)
-    u'1 < 2'
+    '1 < 2'
 
     :param text: `unicode` or `Fragment`
     :param keeplinebreaks: optionally keep linebreaks
