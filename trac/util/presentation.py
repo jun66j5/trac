@@ -319,7 +319,7 @@ def paginate(items, page=0, max_per_page=10):
     The `max_per_page` parameter can be used to set the number of items that
     should be displayed per page:
 
-    >>> items = range(12)
+    >>> items = list(range(12))
     >>> paginate(items, page=0, max_per_page=6)
     ([0, 1, 2, 3, 4, 5], 12, 2)
     >>> paginate(items, page=1, max_per_page=6)
@@ -406,7 +406,7 @@ class Paginator(object):
 
     def get_shown_pages(self, page_index_count = 11):
         if not self.has_more_pages:
-            return range(1, 2)
+            return list(range(1, 2))
 
         min_page = 1
         max_page = int(ceil(float(self.num_items) / self.max_per_page))
@@ -420,7 +420,7 @@ class Paginator(object):
         if end_page > max_page:
             end_page = max_page
 
-        return range(start_page, end_page + 1)
+        return list(range(start_page, end_page + 1))
 
     def displayed_items(self):
         from trac.util.translation import _

@@ -74,7 +74,7 @@ class PaginatorTestCase(unittest.TestCase):
 
     def test_paginate(self):
         """List of objects is paginated."""
-        items = range(20)
+        items = list(range(20))
         paginator = presentation.Paginator(items, 1)
 
         self.assertEqual(1, paginator.page)
