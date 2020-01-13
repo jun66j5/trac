@@ -29,7 +29,7 @@ import pkg_resources
 import socket
 import ssl
 import sys
-from SocketServer import ThreadingMixIn
+from socketserver import ThreadingMixIn
 
 from trac import __version__ as VERSION
 from trac.util import autoreload, daemon
