@@ -31,17 +31,17 @@ from trac.util.text import (
 
 class ToUnicodeTestCase(unittest.TestCase):
     def test_explicit_charset(self):
-        uc = to_unicode('\xc3\xa7', 'utf-8')
+        uc = to_unicode(b'\xc3\xa7', 'utf-8')
         self.assertIsInstance(uc, str)
         self.assertEqual(u'\xe7', uc)
 
     def test_explicit_charset_with_replace(self):
-        uc = to_unicode('\xc3', 'utf-8')
+        uc = to_unicode(b'\xc3', 'utf-8')
         self.assertIsInstance(uc, str)
         self.assertEqual(u'\xc3', uc)
 
     def test_implicit_charset(self):
-        uc = to_unicode('\xc3\xa7')
+        uc = to_unicode(b'\xc3\xa7')
         self.assertIsInstance(uc, str)
         self.assertEqual(u'\xe7', uc)
 
@@ -51,13 +51,6 @@ class ToUnicodeTestCase(unittest.TestCase):
             raise ValueError('%s is not a number.' % u)
         except ValueError as e:
             self.assertEqual(u'\uB144 is not a number.', to_unicode(e))
-
-    def test_from_exception_using_str_args(self):
-        u = u'Das Ger\xe4t oder die Ressource ist belegt'
-        try:
-            raise ValueError(u.encode('utf-8'))
-        except ValueError as e:
-            self.assertEqual(u, to_unicode(e))
 
     def test_from_windows_error(self):
         try:
@@ -177,27 +170,29 @@ class QuoteQueryStringTestCase(unittest.TestCase):
 
 class ToUtf8TestCase(unittest.TestCase):
     def test_unicode(self):
-        self.assertEqual('à', to_utf8('à'))
-        self.assertEqual('ç', to_utf8('ç'))
+        self.assertEqual('à'.encode('utf-8'), to_utf8('à'))
+        self.assertEqual('ç'.encode('utf-8'), to_utf8('ç'))
 
     def test_boolean(self):
-        self.assertEqual('True', to_utf8(True))
-        self.assertEqual('False', to_utf8(False))
+        self.assertEqual(b'True', to_utf8(True))
+        self.assertEqual(b'False', to_utf8(False))
 
     def test_int(self):
-        self.assertEqual('-1', to_utf8(-1))
-        self.assertEqual('0', to_utf8(0))
-        self.assertEqual('1', to_utf8(1))
+        self.assertEqual(b'-1', to_utf8(-1))
+        self.assertEqual(b'0', to_utf8(0))
+        self.assertEqual(b'1', to_utf8(1))
 
     def test_utf8(self):
-        self.assertEqual('à', to_utf8(u'à'))
-        self.assertEqual('ç', to_utf8(u'ç'))
+        self.assertEqual('à'.encode('utf-8'), to_utf8(u'à'))
+        self.assertEqual('ç'.encode('utf-8'), to_utf8(u'ç'))
 
     def test_exception_with_utf8_message(self):
-        self.assertEqual('thė mèssägē', to_utf8(Exception('thė mèssägē')))
+        self.assertEqual('thė mèssägē'.encode('utf-8'),
+                         to_utf8(Exception('thė mèssägē')))
 
     def test_exception_with_unicode_message(self):
-        self.assertEqual('thė mèssägē', to_utf8(Exception(u'thė mèssägē')))
+        self.assertEqual('thė mèssägē'.encode('utf-8'),
+                         to_utf8(Exception(u'thė mèssägē')))
 
 
 class WhitespaceTestCase(unittest.TestCase):
@@ -332,10 +327,10 @@ class PrintTableTestCase(unittest.TestCase):
         self._validate_print_table(expected, data, headers=headers, sep=' | ')
 
     def _validate_print_table(self, expected, data, **kwargs):
-        out = io.BytesIO()
+        out = io.StringIO()
         kwargs['out'] = out
         print_table(data, **kwargs)
-        self.assertEqual(expected.encode('utf-8'),
+        self.assertEqual(expected,
                          strip_line_ws(out.getvalue(), leading=False))
 
 
