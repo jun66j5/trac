@@ -18,7 +18,6 @@
 #         Christopher Lenz <cmlenz@gmx.de>
 #         Christian Boos <cboos@edgewall.org>
 
-from html.parser import HTMLParseError
 import io
 import re
 
@@ -236,13 +235,7 @@ class WikiProcessor(object):
     def _html_processor(self, text):
         if WikiSystem(self.env).render_unsafe_content:
             return Markup(text)
-        try:
-            return self._sanitizer.sanitize(text)
-        except HTMLParseError as e:
-            self.env.log.warning(e)
-            line = str(text).splitlines()[e.lineno - 1].strip()
-            return system_message(_('HTML parsing error: %(message)s',
-                                    message=escape(e.msg)), line)
+        return self._sanitizer.sanitize(text)
 
     def _htmlcomment_processor(self, text):
         if "--" in text:
