@@ -46,6 +46,7 @@ Warning:
   those properties...
 """
 
+import functools
 import os.path
 import re
 import weakref
@@ -1166,7 +1167,7 @@ class FileContentStream(object):
         'id': ['Id'],
         'header': ['Header'],
         }
-    KEYWORDS = reduce(set.union, map(set, KEYWORD_GROUPS.values()))
+    KEYWORDS = functools.reduce(set.union, map(set, KEYWORD_GROUPS.values()))
     KEYWORD_SPLIT_RE = re.compile(r'[ \t\v\n\b\r\f]+')
     KEYWORD_EXPAND_RE = re.compile(r'%[abdDPrRu_%HI]')
     NATIVE_EOL = '\r\n' if os.name == 'nt' else '\n'
