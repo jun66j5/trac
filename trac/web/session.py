@@ -156,7 +156,7 @@ class DetachedSession(SessionDict):
     def save(self):
         authenticated = int(self.authenticated)
         now = int(time_now())
-        items = self.items()
+        items = list(self.items())
         if not authenticated and not self._old and not items:
             # The session for anonymous doesn't have associated data,
             # so there's no need to persist it

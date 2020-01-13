@@ -736,10 +736,10 @@ def send_internal_error(env, req, exc_info):
             enabled_plugins = "".join("|| '''`%s`''' || `%s` ||\n"
                                       % (p['name'], p['version'] or _('N/A'))
                                       for p in plugins)
-            files = Chrome(env).get_interface_customization_files().items()
+            files = Chrome(env).get_interface_customization_files()
             interface_files = "".join("|| **%s** || %s ||\n"
                                       % (k, ", ".join("`%s`" % f for f in v))
-                                      for k, v in sorted(files))
+                                      for k, v in sorted(files.items()))
         else:
             sys_info = _("''System information not available''\n")
             enabled_plugins = _("''Plugin information not available''\n")

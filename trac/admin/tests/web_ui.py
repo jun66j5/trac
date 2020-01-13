@@ -216,7 +216,7 @@ class SingleFilePlugin(Component):
             if item['name'] == 'single-file-plugin':
                 discovered_metadata = item['info']
 
-        for key, value in plugin_metadata.items():
+        for key in plugin_metadata:
             self.assertEqual(discovered_metadata[key], plugin_metadata[key])
 
 

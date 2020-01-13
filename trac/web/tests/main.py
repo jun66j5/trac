@@ -101,7 +101,8 @@ class AuthenticateTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         from trac.core import ComponentMeta
-        for component in cls.authenticators.values() + cls.request_handlers:
+        for component in list(cls.authenticators.values()) + \
+                         cls.request_handlers:
             ComponentMeta.deregister(component)
 
     def setUp(self):
@@ -408,7 +409,7 @@ class PostProcessRequestTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         from trac.core import ComponentMeta
-        for component in cls.request_filter.values():
+        for component in list(cls.request_filter.values()):
             ComponentMeta.deregister(component)
 
     def setUp(self):
