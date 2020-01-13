@@ -58,7 +58,7 @@ else:
                             (?:/[^/\0]+)*/?
                             libpq\.(?:so\.[0-9]+|[0-9]+\.dylib)
                             )\0
-                        ''',
+                        '''.encode('utf-8'),
                         _f.read(), re.VERBOSE)
                     if _match:
                         _libpq_pathname = _match.group(1)
