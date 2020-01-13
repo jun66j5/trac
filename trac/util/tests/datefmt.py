@@ -1012,18 +1012,18 @@ class DateFormatTestCase(unittest.TestCase):
         tz_t = datetime.datetime(2010, 8, 28, 13, 45, 56, 123456, tz)
 
         # Converting babel's format to strftime format
-        self.assertEqual(tz_t.strftime('%x %H:%M').decode('utf-8'),
+        self.assertEqual(tz_t.strftime('%x %H:%M'),
                          datefmt.format_datetime(t, 'short', tz))
-        self.assertEqual(tz_t.strftime('%x').decode('utf-8'),
+        self.assertEqual(tz_t.strftime('%x'),
                          datefmt.format_date(t, 'short', tz))
-        self.assertEqual(tz_t.strftime('%H:%M').decode('utf-8'),
+        self.assertEqual(tz_t.strftime('%H:%M'),
                          datefmt.format_time(t, 'short', tz))
         for f in ('medium', 'long', 'full'):
-            self.assertEqual(tz_t.strftime('%x %X').decode('utf-8'),
+            self.assertEqual(tz_t.strftime('%x %X'),
                              datefmt.format_datetime(t, f, tz))
-            self.assertEqual(tz_t.strftime('%x').decode('utf-8'),
+            self.assertEqual(tz_t.strftime('%x'),
                              datefmt.format_date(t, f, tz))
-            self.assertEqual(tz_t.strftime('%X').decode('utf-8'),
+            self.assertEqual(tz_t.strftime('%X'),
                              datefmt.format_time(t, f, tz))
 
 
@@ -1912,7 +1912,7 @@ class LocalTimezoneTestCase(unittest.TestCase):
         pytz's timezone"""
         localtz = datefmt.localtz
         delta = datetime.timedelta(minutes=20)
-        n = datetime.timedelta(hours=3).seconds / delta.seconds
+        n = datetime.timedelta(hours=3).seconds // delta.seconds
         # create timezone-aware datetime instances
         dt_localtz = datefmt.to_datetime(dt_naive - delta * n, localtz)
         dt_tz = datefmt.to_datetime(dt_naive - delta * n, tz)
@@ -1928,7 +1928,7 @@ class LocalTimezoneTestCase(unittest.TestCase):
         timezone"""
         localtz = datefmt.localtz
         delta = datetime.timedelta(minutes=20)
-        n = datetime.timedelta(hours=3).seconds / delta.seconds
+        n = datetime.timedelta(hours=3).seconds // delta.seconds
         dt_naive -= delta * n
         # compare localize and normalize with naive datetime
         # between -3 hours and +3 hours
