@@ -278,7 +278,8 @@ def classes(*args, **kwargs):
     ''
 
     """
-    classes = list(filter(None, args)) + [k for k, v in list(kwargs.items()) if v]
+    classes = list(filter(None, args)) + \
+              [k for k, v in list(kwargs.items()) if v]
     return u' '.join(classes)
 
 def styles(*args, **kwargs):

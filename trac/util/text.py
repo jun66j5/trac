@@ -560,8 +560,7 @@ class UnicodeTextWrapper(textwrap.TextWrapper):
 
     def _split(self, text):
         chunks = self.split_re.split(to_unicode(text))
-        chunks = filter(None, chunks)
-        return chunks
+        return list(filter(None, chunks))
 
     def _text_width(self, text):
         return text_width(text, ambiwidth=self.ambiwidth)

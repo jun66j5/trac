@@ -198,7 +198,7 @@ class Query(object):
             else:
                 constraints[-1].setdefault(synonyms.get(field, field),
                                            []).extend(processed_values)
-        constraints = filter(None, constraints)
+        constraints = list(filter(None, constraints))
         report = kw.pop('report', report)
         return cls(env, report, constraints=constraints, cols=cols, **kw)
 
@@ -619,7 +619,7 @@ class Query(object):
                     elif v:
                         constraint_sql = [get_constraint_sql(k, val, mode, neg)
                                           for val in v]
-                        constraint_sql = filter(None, constraint_sql)
+                        constraint_sql = list(filter(None, constraint_sql))
                         if not constraint_sql:
                             continue
                         if neg:
@@ -634,8 +634,7 @@ class Query(object):
 
             args = []
             errors = []
-            clauses = filter(None,
-                             (get_clause_sql(c) for c in self.constraints))
+            clauses = list(filter(None, map(get_clause_sql, self.constraints)))
             if clauses:
                 sql.append("\nWHERE ")
                 sql.append(" OR ".join('(%s)' % c for c in clauses))
@@ -1086,7 +1085,7 @@ class QueryModule(Component):
                 clauses.append({})
             elif field in fields:
                 clauses[-1].setdefault(field, []).append(val)
-        clauses = filter(None, clauses)
+        clauses = list(filter(None, clauses))
 
         return clauses
 
@@ -1340,7 +1339,7 @@ class TicketQueryMacro(WikiMacroBase):
                 clauses.append({})
             else:
                 argv.append(arg)
-        clauses = filter(None, clauses)
+        clauses = list(filter(None, clauses))
 
         if len(argv) > 0 and 'format' not in kwargs:  # 0.10 compatibility hack
             kwargs['format'] = argv[0]

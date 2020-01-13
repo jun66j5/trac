@@ -783,7 +783,7 @@ class Storage(object):
         except KeyError:
             return None
 
-        srevs = filter(lambda s: s.startswith(srev), srevs)
+        srevs = list(filter(lambda s: s.startswith(srev), srevs))
         if len(srevs) == 1:
             return srevs[0]
 

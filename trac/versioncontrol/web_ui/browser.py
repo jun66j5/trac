@@ -757,8 +757,9 @@ class BrowserModule(Component):
 
     def render_properties(self, mode, context, props):
         """Prepare rendering of a collection of properties."""
-        return filter(None, [self.render_property(name, mode, context, props)
-                             for name in sorted(props)])
+        return list(filter(None,
+                           [self.render_property(name, mode, context, props)
+                            for name in sorted(props)]))
 
     def render_property(self, name, mode, context, props):
         """Renders a node property to HTML."""

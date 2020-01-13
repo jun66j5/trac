@@ -1,0 +1,110 @@
+--- trac/ticket/tests/query.py
++++ trac/ticket/tests/query.py
+@@ -1250,99 +1268,29 @@ FROM ticket AS t
+   LEFT OUTER JOIN enum AS priority ON (priority.type='priority' AND priority.name=t.priority)
+ ORDER BY COALESCE(%(due)s.value,'')='',%(due)s.value,t.id""" % quoted)
+ 
++        def process_request(req):
++            mod = QueryModule(self.env)
++            self.assertTrue(mod.match_request(req))
++            return mod.process_request(req)
++
+         req = MockRequest(self.env, path_info='/query',
+                           args={'id': '1-3', 'order': 'due'})
+-        data = self._process_request(req)[1]
++        data = process_request(req)[1]
+         tickets = data['tickets']
+         self.assertEqual([2, 1, 3], [t['id'] for t in tickets])
+ 
+         req = MockRequest(self.env, path_info='/query',
+                           args={'id': '1-3', 'order': 'time'})
+-        data = self._process_request(req)[1]
++        data = process_request(req)[1]
+         tickets = data['tickets']
+         self.assertEqual([1, 2, 3], [t['id'] for t in tickets])
+ 
+         req = MockRequest(self.env, path_info='/query',
+                           args={'id': '1-3', 'order': 'changetime'})
+-        data = self._process_request(req)[1]
++        data = process_request(req)[1]
+         tickets = data['tickets']
+         self.assertEqual([1, 3, 2], [t['id'] for t in tickets])
+ 
+-    def test_time_fields_constrained_by_time_range(self):
+-        self.env.config.set('ticket-custom', 'due', 'time')
+-        with self.env.db_transaction as db:
+-            quoted = {'due': db.quote('due')}
+-            tkt = Ticket(self.env, 1)
+-            tkt['due'] = ''
+-            tkt.save_changes()
+-            db("""INSERT INTO ticket_custom (ticket,name,value)
+-                  VALUES (2,'due','blahblah')""")
+-            tkt = Ticket(self.env, 3)
+-            tkt['due'] = datetime(2018, 9, 13, 12, 34, 56, 987654, utc)
+-            tkt.save_changes()
+-            tkt = Ticket(self.env, 4)
+-            tkt['due'] = datetime(2018, 9, 12, 12, 34, 56, 987654, utc)
+-            tkt.save_changes()
+-            tkt = Ticket(self.env, 5)
+-            tkt['due'] = datetime(2018, 9, 11, 12, 34, 56, 987654, utc)
+-            tkt.save_changes()
+-            tkt = Ticket(self.env, 6)
+-            tkt['due'] = datetime(2018, 9, 10, 12, 34, 56, 987654, utc)
+-            tkt.save_changes()
+-
+-        query = Query.from_string(
+-            self.env, 'col=due&due=2018-09-11Z..2018-09-13Z&order=id')
+-        sql, args = query.get_sql()
+-        self.assertEqualSQL(sql, """\
+-SELECT t.id AS id,t.status AS status,t.priority AS priority,t.time AS time,\
+-t.changetime AS changetime,priority.value AS _priority_value,\
+-{due}.value AS {due}
+-FROM ticket AS t
+-  LEFT OUTER JOIN ticket_custom AS {due} ON ({due}.ticket=t.id AND {due}.name='due')
+-  LEFT OUTER JOIN enum AS priority ON (priority.type='priority' AND priority.name=t.priority)
+-WHERE ((({due}.value>=%s AND {due}.value<%s)))
+-ORDER BY COALESCE(t.id,0)=0,t.id""".format(**quoted))
+-        self.assertEqual(['001536624000000000', '001536796800000000'], args)
+-
+-        req = MockRequest(self.env, path_info='/query',
+-                          args={'due': '2018-09-11Z..2018-09-13Z',
+-                                'order': 'id', 'desc': '1'})
+-        data = self._process_request(req)[1]
+-        tickets = data['tickets']
+-        self.assertEqual([5, 4], [t['id'] for t in tickets])
+-
+-    def test_time_fields_constrained_by_empty(self):
+-        self.env.config.set('ticket-custom', 'due', 'time')
+-        with self.env.db_transaction as db:
+-            quoted = {'due': db.quote('due')}
+-            tkt = Ticket(self.env, 1)
+-            tkt['due'] = ''
+-            tkt.save_changes()
+-            for tktid in (2, 4, 6):
+-                tkt = Ticket(self.env, tktid)
+-                tkt['due'] = datetime(2018, 9, 8, 12, 34, 56, 987654, utc)
+-                tkt.save_changes()
+-
+-        query = Query.from_string(self.env, 'col=due&id=1-6&due=&order=id')
+-        sql, args = query.get_sql()
+-        self.assertEqualSQL(sql, """\
+-SELECT t.id AS id,t.status AS status,t.priority AS priority,t.time AS time,\
+-t.changetime AS changetime,priority.value AS _priority_value,\
+-{due}.value AS {due}
+-FROM ticket AS t
+-  LEFT OUTER JOIN ticket_custom AS {due} ON ({due}.ticket=t.id AND {due}.name='due')
+-  LEFT OUTER JOIN enum AS priority ON (priority.type='priority' AND priority.name=t.priority)
+-WHERE ((t.id BETWEEN %s AND %s) AND (COALESCE({due}.value,'')=%s))
+-ORDER BY COALESCE(t.id,0)=0,t.id""".format(**quoted))
+-        self.assertEqual([1, 6, ''], args)
+-
+-        req = MockRequest(self.env, path_info='/query',
+-                          args={'id': '1-6', 'due': '', 'order': 'id',
+-                                'desc': '1'})
+-        data = self._process_request(req)[1]
+-        tickets = data['tickets']
+-        self.assertEqual([5, 3, 1], [t['id'] for t in tickets])
+-
+ 
+ class QueryLinksTestCase(unittest.TestCase):
+ 
