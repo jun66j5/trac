@@ -285,14 +285,15 @@ def read_file(path, mode='r'):
         return f.read()
 
 
-def create_file(path, data='', mode='w'):
+def create_file(path, data='', mode='w', encoding='utf-8', errors='strict'):
     """Create a new file with the given data.
 
     :data: string or iterable of strings.
     """
-    with open(path, mode) as f:
+    kwargs = {} if 'b' in mode else {'encoding': encoding, 'errors': errors}
+    with open(path, mode, **kwargs) as f:
         if data:
-            if isinstance(data, str):
+            if isinstance(data, (str, bytes)):
                 f.write(data)
             else:  # Assume iterable
                 f.writelines(data)
