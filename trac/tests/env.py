@@ -627,11 +627,11 @@ class ConvertDatabaseTestCase(unittest.TestCase):
         self._convert_db(env, dburi, None)
 
     def _compare_records(self, expected, actual):
-        self.assertEqual(expected.keys(), actual.keys())
+        self.assertEqual(list(expected), list(actual))
         for table in db_default.schema:
             name = table.name
             if name == 'report':
-                self.assertEqual(expected[name].keys(), actual[name].keys())
+                self.assertEqual(list(expected[name]), list(actual[name]))
             else:
                 self.assertEqual(expected[name], actual[name])
 

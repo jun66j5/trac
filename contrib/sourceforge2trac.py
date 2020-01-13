@@ -525,8 +525,7 @@ def importData(f, env):
 
     used_cat_names = set(project.used_categories.values())
     #: make names unique, forget about competing owners (the last one wins)
-    components = dict(project.get_categories(noid=True)).items()
-    components.sort()
+    components = sorted(dict(project.get_categories(noid=True)).items())
     components = [x for x in components if x[0] in used_cat_names]
     print("%d out of %d categories are used and will be converted to the"
           " following components:\n  %s"

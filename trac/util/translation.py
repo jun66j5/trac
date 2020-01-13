@@ -152,7 +152,7 @@ try:
                 if env_path:
                     with self._plugin_domains_lock:
                         domains = self._plugin_domains.get(env_path, {})
-                        domains = domains.items()
+                        domains = list(domains.items())
                     for domain, dirname in domains:
                         self._add(t, Translations.load(dirname, locale,
                                                        domain))
