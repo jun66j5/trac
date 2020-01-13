@@ -624,9 +624,9 @@ def arity(f):
 def get_last_traceback():
     """Retrieve the last traceback as a `str` string."""
     import traceback
-    tb = io.BytesIO()
+    tb = io.StringIO()
     traceback.print_exc(file=tb)
-    return to_unicode(tb.getvalue())
+    return tb.getvalue()
 
 
 _egg_path_re = re.compile(r'build/bdist\.[^/]+/egg/(.*)')
