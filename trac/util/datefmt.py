@@ -159,7 +159,7 @@ def to_datetime(t, tzinfo=None):
             dt = tz.localize(t)
     elif isinstance(t, date):
         dt = tz.localize(datetime(t.year, t.month, t.day))
-    elif isinstance(t, (int, long, float)):
+    elif isinstance(t, (int, float)):
         if not (_min_ts <= t <= _max_ts):
             # Handle microsecond timestamps for 0.11 compatibility
             t *= 0.000001
@@ -175,7 +175,7 @@ def to_datetime(t, tzinfo=None):
         dt = None
     if dt:
         return tz.normalize(dt)
-    raise TypeError('expecting datetime, int, long, float, or None; got %s' %
+    raise TypeError('expecting datetime, int, float, or None; got %s' %
                     type(t))
 
 

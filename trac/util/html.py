@@ -340,7 +340,7 @@ class Fragment(object):
 
     def append(self, arg):
         if arg: # ignore most false values (None, False, [], (), ''), except 0!
-            if isinstance(arg, (Fragment, str, int, float, long)):
+            if isinstance(arg, (Fragment, str, int, float)):
                 self.children.append(arg)
             else:
                 # support iterators and generators
