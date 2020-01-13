@@ -500,8 +500,7 @@ class RevRanges(object):
         self._reduce()
 
     def _reduce(self):
-        if all(isinstance(pair[0], (int, long)) and
-               isinstance(pair[1], (int, long))
+        if all(isinstance(pair[0], int) and isinstance(pair[1], int)
                for pair in self.pairs):
             try:
                 ranges = Ranges(str(self), reorder=True)
