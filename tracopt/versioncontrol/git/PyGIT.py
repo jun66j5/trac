@@ -289,12 +289,12 @@ class Storage(object):
 
         def iter_branches(self):
             head = self.refs_dict.get('HEAD')
-            for refname, rev in self.refs_dict.iteritems():
+            for refname, rev in self.refs_dict.items():
                 if refname.startswith('refs/heads/'):
                     yield refname[11:], rev, refname == head
 
         def iter_tags(self):
-            for refname, rev in self.refs_dict.iteritems():
+            for refname, rev in self.refs_dict.items():
                 if refname.startswith('refs/tags/'):
                     yield refname[10:], rev
 
@@ -481,8 +481,8 @@ class Storage(object):
         def _rev_reuse(rev):
             return revs_seen.setdefault(rev, rev)
 
-        refs = {refname: _rev_reuse(rev) for refname, rev in refs.iteritems()}
-        head_revs = {rev for refname, rev in refs.iteritems()
+        refs = {refname: _rev_reuse(rev) for refname, rev in refs.items()}
+        head_revs = {rev for refname, rev in refs.items()
                          if refname.startswith('refs/heads/')}
         rev_list = [map(_rev_reuse, line.split())
                     for line in self.repo.rev_list('--parents', '--topo-order',
@@ -572,7 +572,7 @@ class Storage(object):
                 tags[refname[:-3]] = rev
             else:
                 refs[refname] = rev
-        refs.update(tags.iteritems())
+        refs.update(iter(tags.items()))
 
         if refs:
             refname = (self.repo.symbolic_ref('-q', 'HEAD') or '').strip()
@@ -594,7 +594,7 @@ class Storage(object):
         return [(name, rev) for name, rev, head in branches]
 
     def get_refs(self):
-        for refname, rev in self.rev_cache.refs_dict.iteritems():
+        for refname, rev in self.rev_cache.refs_dict.items():
             if refname != 'HEAD':
                 yield refname, rev
 
@@ -642,7 +642,7 @@ class Storage(object):
         if lin_rev < 1 or lin_rev > len(db):
             return None
 
-        for k, v in db.iteritems():
+        for k, v in db.items():
             if v[2] == lin_rev:
                 return k
 
@@ -891,7 +891,7 @@ class Storage(object):
             return []
 
     def all_revs(self):
-        return self.get_commits().iterkeys()
+        return iter(self.get_commits().keys())
 
     def sync(self):
         with self.__rev_cache_lock:

@@ -201,7 +201,7 @@ class AuthzPolicy(Component):
                 else:
                     self.groups_by_user.setdefault(item, set()).add(group)
 
-        for group, users in groups.iteritems():
+        for group, users in groups.items():
             add_items('@' + group, users)
 
         all_actions = set(PermissionSystem(self.env).get_actions())

@@ -116,7 +116,7 @@ class PostgresTableCreationSQLTest(unittest.TestCase):
         ]
         for orig in values:
             dsn = assemble_pg_dsn(**orig)
-            for k, v in orig.iteritems():
+            for k, v in orig.items():
                 orig[k] = "'%s'" % v
                 continue
             orig['dbname'] = "'t'"

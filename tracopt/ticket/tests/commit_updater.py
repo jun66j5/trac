@@ -108,7 +108,7 @@ class CommitTicketUpdaterTestCase(unittest.TestCase):
         self._make_tickets(5)
         rev = 0
 
-        for tkts, cmd in commands.items():
+        for tkts, cmd in list(commands.items()):
             rev += 1
             message = "This is the first comment. %s." % cmd
             chgset = Mock(repos=self.repos, rev=rev,

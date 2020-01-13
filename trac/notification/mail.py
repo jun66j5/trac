@@ -480,7 +480,7 @@ class EmailDistributor(Component):
 
         outputs = {}
         failed = []
-        for fmt, formatter in formats.iteritems():
+        for fmt, formatter in formats.items():
             if fmt not in addresses and fmt != 'text/plain':
                 continue
             try:
@@ -499,7 +499,7 @@ class EmailDistributor(Component):
                 addresses.setdefault('text/plain', set()) \
                          .update(addresses.pop(fmt, ()))
 
-        for fmt, addrs in addresses.iteritems():
+        for fmt, addrs in addresses.items():
             self.log.debug("%s is sending event as '%s' to: %s",
                            self.__class__.__name__, fmt, ', '.join(addrs))
             message = self._create_message(fmt, outputs)
@@ -574,7 +574,7 @@ class EmailDistributor(Component):
             headers['Bcc'] = ', '.join(bcc_addrs)
         headers['Reply-To'] = smtp_replyto
 
-        for k, v in headers.iteritems():
+        for k, v in headers.items():
             set_header(message, k, v, self._charset)
         for decorator in self.decorators:
             decorator.decorate_message(event, message, self._charset)

@@ -522,7 +522,7 @@ class PermissionSystem(Component):
             return permissions
 
         parent_map = {}
-        for parent, children in self.get_actions_dict().iteritems():
+        for parent, children in self.get_actions_dict().items():
             for child in children:
                 parent_map.setdefault(child, set()).add(parent)
 

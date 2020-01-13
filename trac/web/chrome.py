@@ -342,7 +342,7 @@ def chrome_info_script(req, use_late=None):
                    (to_js_string(link['href']), to_js_string(link['type']))
                    for link in links or ())
     content.extend('var %s=%s;' % (name, presentation.to_json(value))
-                   for name, value in (script_data or {}).iteritems())
+                   for name, value in (script_data or {}).items())
 
     fragment = tag()
     if content:
@@ -930,10 +930,10 @@ class Chrome(Component):
                         active = name
 
         nav_items = {}
-        for category, category_items in all_items.iteritems():
+        for category, category_items in all_items.items():
             nav_items.setdefault(category, [])
             for name, attributes in \
-                    sorted(category_items.iteritems(),
+                    sorted(iter(category_items.items()),
                            key=lambda name_attr: (name_attr[1]['order'], name_attr[0])):
                 if attributes['enabled'] and attributes['link'] and \
                         (not attributes['perm'] or

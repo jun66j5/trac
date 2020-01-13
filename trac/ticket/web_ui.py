@@ -835,7 +835,7 @@ class TicketModule(Component):
         for each in model.Ticket.protected_fields:
             fields.pop(each, None)
             fields.pop('checkbox_' + each, None)    # See Ticket.populate()
-        for field, value in fields.iteritems():
+        for field, value in fields.items():
             if field in ticket.time_fields:
                 try:
                     fields[field] = user_time(req, parse_date, value) \
@@ -943,7 +943,7 @@ class TicketModule(Component):
         def replay_changes(values, old_values, from_version, to_version):
             for version in range(from_version, to_version+1):
                 if version in changes:
-                    for k, v in changes[version]['fields'].iteritems():
+                    for k, v in changes[version]['fields'].items():
                         values[k] = v['new']
                         if old_values is not None and k not in old_values:
                             old_values[k] = v['old']
@@ -975,7 +975,7 @@ class TicketModule(Component):
 
         # -- prop changes
         props = []
-        for k, v in new_ticket.iteritems():
+        for k, v in new_ticket.items():
             if k not in text_fields:
                 old, new = old_ticket[k], new_ticket[k]
                 if old != new:
@@ -1215,7 +1215,7 @@ class TicketModule(Component):
             # wikify comment
             if 'comment' in change:
                 change_summary['added'] = ['comment']
-            for field, values in change['fields'].iteritems():
+            for field, values in change['fields'].items():
                 if field == 'description':
                     change_summary.setdefault('changed', []).append(field)
                 else:
@@ -1417,7 +1417,7 @@ class TicketModule(Component):
             field_changes[field] = {'old': old, 'new': new, 'by': author,
                                     'label': field_labels.get(field, field)}
         # Start with user changes
-        for field, value in ticket._old.iteritems():
+        for field, value in ticket._old.items():
             store_change(field, value or '', ticket[field], 'user')
 
         # Apply controller changes corresponding to the selected action
@@ -1443,7 +1443,7 @@ class TicketModule(Component):
                 store_change(key, old, new, cname)
 
         # Detect non-changes
-        for key, item in field_changes.items():
+        for key, item in list(field_changes.items()):
             if item['old'] == item['new']:
                 del field_changes[key]
         return field_changes, problems
@@ -1659,7 +1659,7 @@ class TicketModule(Component):
                 if ticket.resource.version is not None and \
                         cnum > ticket.resource.version:
                     # Retrieve initial ticket values from later changes
-                    for k, v in change['fields'].iteritems():
+                    for k, v in change['fields'].items():
                         if k not in values:
                             values[k] = v['old']
                     skip = True
@@ -1673,7 +1673,7 @@ class TicketModule(Component):
                                        'comment:%s' % replyto)
                     if ticket.resource.version:
                         # Override ticket value by current changes
-                        for k, v in change['fields'].iteritems():
+                        for k, v in change['fields'].items():
                             values[k] = v['new']
                     if 'description' in change['fields']:
                         data['description_change'] = change
@@ -1750,7 +1750,7 @@ class TicketModule(Component):
                 yield group
 
     def _render_property_changes(self, req, ticket, fields, resource_new=None):
-        for field, changes in fields.iteritems():
+        for field, changes in fields.items():
             new, old = changes['new'], changes['old']
             changes['rendered'] = \
                 self._render_property_diff(req, ticket, field, old, new,

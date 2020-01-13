@@ -153,7 +153,7 @@ class TicketModuleTestCase(unittest.TestCase):
 
         start_time = to_utimestamp(data['start_time'])
         ticket = data['ticket']
-        fields = {'field_%s' % f: v for f, v in ticket.values.iteritems()}
+        fields = {'field_%s' % f: v for f, v in ticket.values.items()}
         req = MockRequest(
             self.env, method='POST', path_info=path_info, authname='user1',
             args=dict(action=data['action'], submit='Submit changes',

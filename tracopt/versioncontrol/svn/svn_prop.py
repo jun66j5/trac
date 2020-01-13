@@ -377,7 +377,7 @@ class SubversionMergePropertyDiffRenderer(Component):
         sources = []
         changed_revs = {}
         changed_nodes = []
-        for spath, (new_revs, new_revs_ni) in new_sources.iteritems():
+        for spath, (new_revs, new_revs_ni) in new_sources.items():
             new_spath = spath not in old_sources
             if new_spath:
                 old_revs = old_revs_ni = set()
@@ -431,7 +431,7 @@ class SubversionMergePropertyDiffRenderer(Component):
                     ))
         # Go through remaining old sources, those were deleted
         removed_sources = []
-        for spath, old_revs in old_sources.iteritems():
+        for spath, old_revs in old_sources.items():
             removed_sources.append((spath,
                                     _get_source_link(spath, old_context)))
         if modified_sources or removed_sources:

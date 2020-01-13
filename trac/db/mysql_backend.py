@@ -228,7 +228,7 @@ class MySQLConnector(Component):
         to `(from, to)` SQL type tuples.
         """
         alterations = []
-        for name, (from_, to) in sorted(columns.iteritems()):
+        for name, (from_, to) in sorted(columns.items()):
             to = _type_map.get(to, to)
             if to != _type_map.get(from_, from_):
                 alterations.append((name, to))
@@ -251,7 +251,7 @@ class MySQLConnector(Component):
             args.extend(['-P', str(db_prop['port'])])
         if 'user' in db_prop:
             args.extend(['-u', db_prop['user']])
-        for name, value in db_params.iteritems():
+        for name, value in db_params.items():
             if name == 'compress' and as_int(value, 0):
                 args.append('--compress')
             elif name == 'named_pipe' and as_int(value, 0):
@@ -379,7 +379,7 @@ class MySQLConnection(ConnectionBase, ConnectionWrapper):
         if port is None:
             port = 3306
         opts = {'charset': 'utf8'}
-        for name, value in params.iteritems():
+        for name, value in params.items():
             key = name.encode('utf-8')
             if name == 'read_default_group':
                 opts[key] = value
@@ -457,7 +457,7 @@ class MySQLConnection(ConnectionBase, ConnectionWrapper):
                 row = dict(zip(columns, row))
                 keys.setdefault(row['Key_name'], []).append(row['Column_name'])
             # drop all composite indices which in the given column is involved
-            for key, columns in keys.iteritems():
+            for key, columns in keys.items():
                 if len(columns) > 1 and column in columns:
                     if key == 'PRIMARY':
                         cursor.execute("ALTER TABLE %s DROP PRIMARY KEY" %

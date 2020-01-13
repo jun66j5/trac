@@ -1023,7 +1023,7 @@ class TracAdminInitenvTestCase(TracAdminTestCaseBase):
         self.assertEqual('project1', cfile.get('project', 'name'))
         self.assertEqual('sqlite:db/sqlite.db', cfile.get('trac', 'database'))
         for (section, name), option in \
-                Option.get_registry(env.compmgr).iteritems():
+                Option.get_registry(env.compmgr).items():
             if (section, name) not in \
                     (('trac', 'database'), ('project', 'name')):
                 self.assertEqual(option.default, cfile.get(section, name))

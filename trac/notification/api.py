@@ -182,11 +182,11 @@ def parse_subscriber_config(rawsubscriptions):
             byname[name][attribute] = value
 
     byclass = defaultdict(list)
-    for name, attributes in byname.items():
-        for key, value in required_attrs.items():
+    for name, attributes in list(byname.items()):
+        for key, value in list(required_attrs.items()):
             attributes.setdefault(key, value)
         byclass[attributes['class']].append(attributes)
-    for values in byclass.values():
+    for values in list(byclass.values()):
         values.sort(key=lambda value: (value['priority'], value['name']))
 
     return byclass
@@ -377,7 +377,7 @@ class NotificationSystem(Component):
                 if transport in packages:
                     recipients = [(k[0], k[1], k[2], format)
                                   for k, format
-                                  in packages[transport].iteritems()]
+                                  in packages[transport].items()]
                     distributor.distribute(transport, recipients, event)
 
     def subscriptions(self, event):

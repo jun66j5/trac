@@ -1816,7 +1816,7 @@ class BatchTicketNotificationTestCase(unittest.TestCase):
         with self.env.db_transaction:
             for tktid in self.tktids:
                 t = Ticket(self.env, tktid)
-                for name, value in new_values.iteritems():
+                for name, value in new_values.items():
                     t[name] = value
                 t.save_changes(author, comment, when=when)
         return BatchTicketChangeEvent(self.tktids, when, author, comment,

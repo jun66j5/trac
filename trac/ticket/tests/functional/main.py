@@ -448,7 +448,7 @@ class TestTicketQueryLinksQueryModuleDisabled(FunctionalTwillTestCaseSetup):
             r'title=".*">\s*%(milestone)s\s*</a>\s*</td>'\
             % {'milestone': props['milestone']}
         try:
-            for field, value in props.iteritems():
+            for field, value in props.items():
                 if field != 'milestone':
                     links = r', '.join(r'<a[^>]+href="/query.*>%s</a>'
                                        % v.strip() for v in value.split(','))
@@ -458,7 +458,7 @@ class TestTicketQueryLinksQueryModuleDisabled(FunctionalTwillTestCaseSetup):
                     tc.find(milestone_cell)
             enable_query_module(False)
             self._tester.go_to_ticket(tid)
-            for field, value in props.iteritems():
+            for field, value in props.items():
                 if field != 'milestone':
                     tc.find(r'<td( class="searchable")? headers="h_%s">'
                             r'\s*%s\s*</td>' % (field, value))

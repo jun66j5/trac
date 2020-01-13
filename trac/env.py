@@ -1133,7 +1133,7 @@ class EnvironmentAdmin(Component):
                        for name, value in parser.items(section))
         options[('trac', 'database')] = dburi
         options = sorted((section, name, value) for (section, name), value
-                                                in options.iteritems())
+                                                in options.items())
 
         class MigrateEnvironment(Environment):
             abstract = True

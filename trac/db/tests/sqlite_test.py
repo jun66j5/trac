@@ -156,7 +156,7 @@ class SQLiteConnectionTestCase(unittest.TestCase):
             cursor = db.cursor()
             cursor.execute("PRAGMA index_list(%s)" % db.quote(table))
             results = {row[1]: {'unique': row[2]} for row in cursor}
-            for index, info in results.iteritems():
+            for index, info in results.items():
                 cursor.execute("PRAGMA index_info(%s)" % db.quote(index))
                 info['columns'] = [row[2] for row in cursor]
         return results

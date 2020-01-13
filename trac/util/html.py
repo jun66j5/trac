@@ -278,7 +278,7 @@ def classes(*args, **kwargs):
     u''
 
     """
-    classes = list(filter(None, args)) + [k for k, v in kwargs.items() if v]
+    classes = list(filter(None, args)) + [k for k, v in list(kwargs.items()) if v]
     return u' '.join(classes)
 
 def styles(*args, **kwargs):
@@ -315,7 +315,7 @@ def styles(*args, **kwargs):
         else:
             styles.append(arg)
     d.update(kwargs)
-    styles.extend('%s: %s' % (k, v) for k, v in d.iteritems() if v)
+    styles.extend('%s: %s' % (k, v) for k, v in d.items() if v)
     return u'; '.join(styles)
 
 
@@ -382,7 +382,7 @@ class XMLElement(Fragment):
 
     def _dict_from_kwargs(self, kwargs):
         attrs = []
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             if v is not None:
                 if k[-1:] == '_':
                     k = k[:-1]
@@ -680,7 +680,7 @@ class TracHTMLSanitizer(object):
 
         """
         new_attrs = {}
-        for attr, value in attrs.iteritems():
+        for attr, value in attrs.items():
             if value is None:
                 value = attr
             if attr not in self.safe_attrs:
@@ -811,7 +811,7 @@ class Deuglifier(object):
         return re.sub(self._compiled_rules, self.replace, indata)
 
     def replace(self, fullmatch):
-        for mtype, match in fullmatch.groupdict().items():
+        for mtype, match in list(fullmatch.groupdict().items()):
             if match:
                 if mtype == 'font':
                     return '<span>'
@@ -934,7 +934,7 @@ class HTMLSanitization(HTMLTransform):
 
         new_attrs = self.sanitizer.sanitize_attrs(tag, dict(attrs))
         html_attrs = ''.join(' %s="%s"' % (name, escape(value))
-                             for name, value in new_attrs.iteritems())
+                             for name, value in new_attrs.items())
         self._write('<%s%s%s>' % (tag, html_attrs, startend))
 
     def handle_starttag(self, tag, attrs):

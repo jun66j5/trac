@@ -59,7 +59,7 @@ def load_eggs(entry_point_name):
                 env.log.error('Skipping "%s": %s', item,
                               exception_to_unicode(e, traceback=True))
 
-        for dist, e in errors.iteritems():
+        for dist, e in errors.items():
             _log_error(dist, e)
 
         def deregister_components(entry_point):
@@ -206,7 +206,7 @@ def get_plugin_info(env, include_core=False):
         for name in list(plugins):
             if name.lower() == 'trac':
                 plugins.pop(name)
-    return sorted(plugins.itervalues(),
+    return sorted(iter(plugins.values()),
                   key=lambda p: (p['name'].lower() != 'trac',
                                  p['name'].lower()))
 
