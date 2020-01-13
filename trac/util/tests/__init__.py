@@ -387,7 +387,7 @@ class FileTestCase(unittest.TestCase):
     def setUp(self):
         self.dir = mkdtemp()
         self.filename = os.path.join(self.dir, 'trac-tempfile')
-        self.data = 'Lorem\ripsum\ndolor\r\nsit\namet,\rconsectetur\r\n'
+        self.data = b'Lorem\ripsum\ndolor\r\nsit\namet,\rconsectetur\r\n'
 
     def tearDown(self):
         rmtree(self.dir)
