@@ -54,7 +54,7 @@ class Parser(html2rest.Parser):
 
     def end_body(self):
         self.end_p()
-        for label, href in self.links.itervalues():
+        for label, href in self.links.values():
             if href[0] != '#':
                 self.writeline('.. _%s: %s' % (label, href))
         self.end_p()

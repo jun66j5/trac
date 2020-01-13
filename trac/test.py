@@ -123,7 +123,7 @@ def Mock(bases=(), *initargs, **kw):
 
     cls = type('Mock', bases, attrs)
     mock = cls(*initargs)
-    for k, v in kw.items():
+    for k, v in list(kw.items()):
         setattr(mock, k, v)
     return mock
 
@@ -193,7 +193,7 @@ def MockRequest(env, **kwargs):
     else:
         args = _RequestArgs()
         args.update((k, convert(v))
-                    for k, v in kwargs.get('args', {}).iteritems())
+                    for k, v in kwargs.get('args', {}).items())
         arg_list = [(name, value) for name in args
                                   for value in args.getlist(name)]
 

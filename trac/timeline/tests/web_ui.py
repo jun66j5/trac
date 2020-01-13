@@ -236,7 +236,7 @@ class TimelineEventProviderTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        for c in (cls.timeline_event_providers or {}).itervalues():
+        for c in (cls.timeline_event_providers or {}).values():
             ComponentMeta.deregister(c)
 
     def setUp(self):

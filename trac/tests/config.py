@@ -176,7 +176,7 @@ class BaseTestCase(unittest.TestCase):
         ComponentMeta._components = list(ComponentMeta._components)
         ComponentMeta._registry = {interface: list(classes)
                                    for interface, classes
-                                   in ComponentMeta._registry.iteritems()}
+                                   in ComponentMeta._registry.items()}
         ConfigSection.registry = {}
         Option.registry = {}
 

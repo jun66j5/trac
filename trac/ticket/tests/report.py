@@ -431,7 +431,7 @@ class ExecuteReportTestCase(unittest.TestCase):
                      **kwargs):
         if when is None:
             when = ticket['changetime'] + timedelta(microseconds=1)
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             ticket[name] = value
         return ticket.save_changes(author=author, comment=comment, when=when)
 

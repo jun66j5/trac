@@ -35,7 +35,7 @@ def _reloader_thread(modification_callback, loop_callback):
     mtimes = {}
     while True:
         for filename in filter(None, [getattr(module, '__file__', None)
-                                      for module in sys.modules.values()]):
+                                      for module in list(sys.modules.values())]):
             while not os.path.isfile(filename): # Probably in an egg or zip file
                 filename = os.path.dirname(filename)
                 if not filename:

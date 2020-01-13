@@ -245,7 +245,7 @@ class SQLiteConnector(Component):
         Type changes are specified as a `columns` dict mapping column names
         to `(from, to)` SQL type tuples.
         """
-        for name, (from_, to) in sorted(columns.iteritems()):
+        for name, (from_, to) in sorted(columns.items()):
             if _type_map.get(to, to) != _type_map.get(from_, from_):
                 raise NotImplementedError("Conversion from %s to %s is not "
                                           "implemented" % (from_, to))

@@ -74,7 +74,7 @@ digraph G {
   { rank=source; new [ shape=invtrapezium ] }
   { rank=sink; closed [ shape=trapezium ] }
     """]
-    for action, attributes in actions.items():
+    for action, attributes in list(actions.items()):
         label = [attributes['label']]
         if show_ops:
             label += attributes['operations']

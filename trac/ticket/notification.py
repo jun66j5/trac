@@ -166,7 +166,7 @@ class TicketFormatter(Component):
                                         '\n', self.ambiwidth)
                     })
                     link += '#comment:%s' % str(change.get('cnum', ''))
-                    for field, values in change['fields'].iteritems():
+                    for field, values in change['fields'].items():
                         old = values['old']
                         new = values['new']
                         newv = ''
@@ -291,7 +291,7 @@ class TicketFormatter(Component):
             tickets = sort_tickets_by_priority(self.env, event.target)
             changes_descr = '\n'.join('%s to %s' % (prop, val)
                                       for prop, val
-                                      in event.new_values.iteritems())
+                                      in event.new_values.items())
             tickets_descr = ', '.join('#%s' % t for t in tickets)
             link = self.env.abs_href.query(id=','.join(str(t) for t in tickets))
             data = Chrome(self.env).populate_data(None, {

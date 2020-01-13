@@ -367,7 +367,7 @@ class TracDatabase(object):
                 ticket_id = db.get_last_id(c, 'ticket')
 
         # add all custom fields to ticket
-        for name, value in customfields.iteritems():
+        for name, value in customfields.items():
             self.addTicketCustomField(ticket_id, name, value)
 
         return ticket_id
@@ -590,7 +590,7 @@ def convert(_db, _host, _user, _password, _env, _force):
             all_components.setdefault(product, []).append(comp)
             all_owners[(product, comp)] = owner
         component_list = []
-        for product, components in all_components.items():
+        for product, components in list(all_components.items()):
             # find best default owner
             default = None
             for comp in DEFAULT_COMPONENTS:
@@ -676,7 +676,7 @@ def convert(_db, _host, _user, _password, _env, _force):
         # pack bugzilla fields into dictionary of trac custom field
         # names and values
         customfields = {}
-        for bugfield, customfield in CUSTOMFIELD_MAP.iteritems():
+        for bugfield, customfield in CUSTOMFIELD_MAP.items():
             customfields[customfield] = bug[bugfield]
         ticket['customfields'] = customfields
 

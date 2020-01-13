@@ -526,7 +526,7 @@ class TicketTestCase(unittest.TestCase):
         self.assertEqual('changed', listener.action)
         self.assertEqual(comment, listener.comment)
         self.assertEqual('author', listener.author)
-        for key, value in data.iteritems():
+        for key, value in data.items():
             self.assertEqual(value, listener.old_values[key])
 
     def test_change_listener_deleted(self):
@@ -590,7 +590,7 @@ class TicketCommentTestCase(unittest.TestCase):
 
     def _modify_ticket(self, author, comment, when, replyto=None, **kwargs):
         ticket = Ticket(self.env, self.id)
-        for k, v in kwargs.iteritems():
+        for k, v in kwargs.items():
             ticket[k] = v
         ticket.save_changes(author, comment, when, replyto)
 
@@ -1106,7 +1106,7 @@ class MilestoneTestCase(unittest.TestCase):
 
     def _create_milestone(self, **values):
         milestone = Milestone(self.env)
-        for k, v in values.iteritems():
+        for k, v in values.items():
             setattr(milestone, k, v)
         return milestone
 
@@ -1115,7 +1115,7 @@ class MilestoneTestCase(unittest.TestCase):
 
     def _update_ticket(self, ticket, author=None, comment=None, when=None,
                        **kwargs):
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             ticket[name] = value
         ticket.save_changes(author, comment, when or self.updated_at)
 

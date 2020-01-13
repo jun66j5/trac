@@ -223,7 +223,7 @@ class DefaultTicketGroupStatsProvider(Component):
                                                       'order': order})
                 group[qualifier] = value
                 order = max(order, int(group['order'])) + 1
-            return [group for group in sorted(groups.values(),
+            return [group for group in sorted(list(groups.values()),
                                               key=lambda g: int(g['order']))]
         else:
             return self.default_milestone_groups
@@ -275,7 +275,7 @@ class DefaultTicketGroupStatsProvider(Component):
         for group in groups:
             group_cnt = 0
             query_args = {}
-            for s, cnt in status_cnt.iteritems():
+            for s, cnt in status_cnt.items():
                 if s in group['statuses']:
                     group_cnt += cnt
                     query_args.setdefault('status', []).append(s)
@@ -567,7 +567,7 @@ class RoadmapModule(Component):
 
         def write_prop(name, value, params={}):
             text = ';'.join([name] + [k + '=' + v for k, v
-                                                  in params.items()]) + \
+                                                  in list(params.items())]) + \
                    ':' + escape_value(value)
             firstline = 1
             text = to_unicode(text)
@@ -701,7 +701,7 @@ class MilestoneModule(Component):
         if 'milestone' in filters:
             milestone_realm = Resource(self.realm)
             for name, due, completed, description \
-                    in MilestoneCache(self.env).milestones.itervalues():
+                    in MilestoneCache(self.env).milestones.values():
                 if completed and start <= completed <= stop:
                     # TODO: creation and (later) modifications should also be
                     #       reported
@@ -1166,7 +1166,7 @@ class MilestoneModule(Component):
         term_regexps = search_to_regexps(terms)
         milestone_realm = Resource(self.realm)
         for name, due, completed, description \
-                in MilestoneCache(self.env).milestones.itervalues():
+                in MilestoneCache(self.env).milestones.values():
             if all(r.search(description) or r.search(name)
                    for r in term_regexps):
                 milestone = milestone_realm(id=name)

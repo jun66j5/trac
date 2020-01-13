@@ -163,7 +163,7 @@ class Href(object):
         if args:
             lastp = args[-1]
             if isinstance(lastp, dict):
-                for k, v in lastp.items():
+                for k, v in list(lastp.items()):
                     add_param(k, v)
                 args = args[:-1]
             elif isinstance(lastp, (list, tuple)):
@@ -180,7 +180,7 @@ class Href(object):
             href = '/'
 
         # assemble the query string
-        for k, v in kw.items():
+        for k, v in list(kw.items()):
             add_param(k[:-1] if k.endswith('_') else k, v)
         if params:
             href += '?' + unicode_urlencode(params, self.query_safe)

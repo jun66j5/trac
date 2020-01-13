@@ -885,7 +885,7 @@ class SubversionNode(Node):
         (wraps ``fs.node_proplist``)
         """
         props = fs.node_proplist(self.root, self._scoped_path_utf8, self.pool())
-        for name, value in props.items():
+        for name, value in list(props.items()):
             # Note that property values can be arbitrary binary values
             # so we can't assume they are UTF-8 strings...
             props[_from_svn(name)] = to_unicode(value)
@@ -998,7 +998,7 @@ class SubversionChangeset(Changeset):
         """
         props = fs.revision_proplist(self.fs_ptr, self.rev, self.pool())
         properties = {}
-        for k, v in props.iteritems():
+        for k, v in props.items():
             if k not in (core.SVN_PROP_REVISION_LOG,
                          core.SVN_PROP_REVISION_AUTHOR,
                          core.SVN_PROP_REVISION_DATE):
@@ -1027,7 +1027,7 @@ class SubversionChangeset(Changeset):
         copies, deletions = {}, {}
         changes = []
         revroots = {}
-        for path_utf8, change in editor.changes.items():
+        for path_utf8, change in list(editor.changes.items()):
             new_path = _from_svn(path_utf8)
 
             # Filtering on `path`
@@ -1087,7 +1087,7 @@ class SubversionChangeset(Changeset):
         moves = []
         # a MOVE is a COPY whose `base_path` corresponds to a `new_path`
         # which has been deleted
-        for k, v in copies.items():
+        for k, v in list(copies.items()):
             if k in deletions:
                 changes[v][2] = Changeset.MOVE
                 moves.append(deletions[k])
@@ -1167,7 +1167,7 @@ class FileContentStream(object):
         'id': ['Id'],
         'header': ['Header'],
         }
-    KEYWORDS = functools.reduce(set.union, map(set, KEYWORD_GROUPS.values()))
+    KEYWORDS = functools.reduce(set.union, map(set, list(KEYWORD_GROUPS.values())))
     KEYWORD_SPLIT_RE = re.compile(r'[ \t\v\n\b\r\f]+')
     KEYWORD_EXPAND_RE = re.compile(r'%[abdDPrRu_%HI]')
     NATIVE_EOL = '\r\n' if os.name == 'nt' else '\n'
@@ -1263,7 +1263,7 @@ class FileContentStream(object):
             return data.get(match, match)
 
         values = {}
-        for name, aliases in self.KEYWORD_GROUPS.iteritems():
+        for name, aliases in self.KEYWORD_GROUPS.items():
             if any(kw in keywords for kw in aliases):
                 values.update((kw, data[name]) for kw in aliases)
         for keyword in keywords:
@@ -1274,7 +1274,7 @@ class FileContentStream(object):
                 values[name] = self.KEYWORD_EXPAND_RE.sub(expand, definition)
 
         if values:
-            return {key: to_utf8(value) for key, value in values.iteritems()}
+            return {key: to_utf8(value) for key, value in values.items()}
         else:
             return None
 

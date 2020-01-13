@@ -90,7 +90,7 @@ class FunctionalTester(object):
             tc.formvalue('propertyform',
                          'action_create_and_assign_reassign_owner',
                          info.pop('owner'))
-        for field, value in info.items():
+        for field, value in list(info.items()):
             tc.formvalue('propertyform', 'field_%s' % field, value)
         tc.submit('submit')
         tc.notfind(internal_error)
@@ -198,7 +198,7 @@ class FunctionalTester(object):
         report_url = self.url + "/report/%s" % id
         if args:
             arglist = []
-            for param, value in args.items():
+            for param, value in list(args.items()):
                 arglist.append('%s=%s' % (param.upper(), unicode_quote(value)))
             report_url += '?' + '&'.join(arglist)
         tc.go(report_url)

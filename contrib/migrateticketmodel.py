@@ -46,7 +46,7 @@ def main():
 
     env = open_environment(sys.argv[1])
     with env.db_transaction:
-        for oldprio, newprio in priority_mapping.items():
+        for oldprio, newprio in list(priority_mapping.items()):
             priority = Priority(env, oldprio)
             priority.name = newprio
             priority.update()

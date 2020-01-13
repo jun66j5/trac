@@ -21,7 +21,7 @@ def insert_ticket(env, **props):
     """
     when = props.pop('when', None)
     ticket = Ticket(env)
-    for k, v in props.items():
+    for k, v in list(props.items()):
         ticket[k] = v
     ticket.insert(when)
     return ticket

@@ -758,7 +758,7 @@ def import_namespace(globals_dict, module_name):
     backward compatibility.
     """
     module = importlib.import_module(module_name)
-    globals_dict.update(item for item in module.__dict__.iteritems()
+    globals_dict.update(item for item in module.__dict__.items()
                         if item[0] not in _dont_import)
     globals_dict.pop('import_namespace', None)
 

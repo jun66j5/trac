@@ -44,7 +44,7 @@ class NotificationPreferencesTestCase(unittest.TestCase):
                  'format': 'text/plain', 'adverb': 'always',
                  'class': 'TicketOwnerSubscriber'}
         props.update((k.rstrip('_'), (v or None) if isinstance(v, str) else v)
-                     for k, v in kwargs.iteritems())
+                     for k, v in kwargs.items())
         assert props['sid'] is not None
         return Subscription.add(self.env, props)
 

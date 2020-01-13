@@ -143,7 +143,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         session = DetachedSession(self.env, sid)
         if values is not None:
             attrs.update(values)
-        for name, value in attrs.iteritems():
+        for name, value in attrs.items():
             session[name] = value
         session.save()
 
@@ -520,7 +520,7 @@ class RecipientMatcherTestCase(unittest.TestCase):
         session['(dummy)'] = 'x'
         if values is not None:
             attrs.update(values)
-        for name, value in attrs.iteritems():
+        for name, value in attrs.items():
             session[name] = value
         session.save()
 

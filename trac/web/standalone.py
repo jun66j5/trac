@@ -91,7 +91,7 @@ class TracEnvironMiddleware(object):
             self.environ['trac.env_paths'] = env_paths
 
     def __call__(self, environ, start_response):
-        for k, v in self.environ.iteritems():
+        for k, v in self.environ.items():
             environ.setdefault(k, v)
         return self.application(environ, start_response)
 

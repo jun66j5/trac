@@ -350,7 +350,7 @@ for x in TEXT_X_TYPES.split():
 # Default mapping from keywords/extensions to known MIME types:
 
 MIME_MAP = {}
-for t, exts in KNOWN_MIME_TYPES.items():
+for t, exts in list(KNOWN_MIME_TYPES.items()):
     MIME_MAP[t] = t
     for e in exts:
         MIME_MAP[e] = t
@@ -374,7 +374,7 @@ def get_mimetype(filename, content=None, mime_map=MIME_MAP,
     `content` is either a `bytes` or a `str` string.
     """
     # 0) mimetype from filename pattern (most specific)
-    for mimetype, regexp in mime_map_patterns.iteritems():
+    for mimetype, regexp in mime_map_patterns.items():
         if regexp.match(filename):
             return mimetype
     suffix = filename.split('.')[-1]

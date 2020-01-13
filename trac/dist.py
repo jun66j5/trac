@@ -192,7 +192,7 @@ try:
                     else:
                         messages.append(None)
 
-                    for name, message in messages_kwargs.iteritems():
+                    for name, message in messages_kwargs.items():
                         if name not in func_kwargs_map:
                             continue
                         index = func_kwargs_map[name]
@@ -502,7 +502,7 @@ try:
         data = {'domain': domain, 'locale': locale}
 
         messages = {}
-        for msgid, msgstr in catalog.iteritems():
+        for msgid, msgstr in catalog.items():
             if isinstance(msgid, (list, tuple)):
                 messages.setdefault(msgid[0], {})
                 messages[msgid[0]][msgid[1]] = msgstr

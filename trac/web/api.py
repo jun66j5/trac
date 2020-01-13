@@ -188,7 +188,7 @@ class TracNotImplementedError(TracError, NotImplementedError):
 
 HTTP_STATUS = {code: reason.title()
                for code, (reason, description)
-               in BaseHTTPRequestHandler.responses.items()}
+               in list(BaseHTTPRequestHandler.responses.items())}
 
 
 class HTTPException(TracBaseError):
@@ -969,7 +969,7 @@ class Request(object):
 
     def _parse_headers(self):
         headers = [(name[5:].replace('_', '-').lower(), value)
-                   for name, value in self.environ.items()
+                   for name, value in list(self.environ.items())
                    if name.startswith('HTTP_')]
         if 'CONTENT_LENGTH' in self.environ:
             headers.append(('content-length', self.environ['CONTENT_LENGTH']))
