@@ -250,10 +250,7 @@ _BABEL_FORMATS = {
 _STRFTIME_HINTS = {'%x %X': 'datetime', '%x': 'date', '%X': 'time'}
 
 def _format_datetime_without_babel(t, format):
-    text = t.strftime(str(format))
-    encoding = getlocale(LC_TIME)[1] or getpreferredencoding() \
-               or sys.getdefaultencoding()
-    return str(text, encoding, 'replace')
+    return t.strftime(format)
 
 def _format_datetime_iso8601(t, format, hint):
     if format != 'full':
@@ -269,7 +266,7 @@ def _format_datetime_iso8601(t, format, hint):
         text = text.split('T', 1)[0]
     elif hint == 'time':
         text = text.split('T', 1)[1]
-    return str(text, 'ascii')
+    return text
 
 def _format_datetime(t, format, tzinfo, locale, hint):
     t = to_datetime(t, tzinfo or localtz)
