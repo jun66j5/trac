@@ -956,7 +956,7 @@ except NotImplementedError:
 
 def hex_entropy(digits=32):
     """Generate `digits` number of hex digits of entropy."""
-    result = ''.join('%.2x' % ord(v) for v in urandom((digits + 1) // 2))
+    result = ''.join('%.2x' % v for v in urandom((digits + 1) // 2))
     return result[:digits] if len(result) > digits else result
 
 

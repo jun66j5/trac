@@ -145,7 +145,7 @@ class RandomTestCase(unittest.TestCase):
             self.assertEqual(i, len(util.urandom(i)))
         # For a large enough sample, each value should appear at least once
         entropy = util.urandom(65536)
-        values = {ord(c) for c in entropy}
+        values = set(entropy)
         self.assertEqual(256, len(values))
 
     def test_hex_entropy(self):
