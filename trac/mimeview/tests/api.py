@@ -230,7 +230,7 @@ class MimeviewRenderTestCase(unittest.TestCase):
         req = MockRequest(self.env)
         context = RenderingContext(Resource('wiki', 'readme.txt'))
         context.req = req
-        content = io.BytesIO("""\
+        content = io.BytesIO(b"""\
 Some text.
 """)
 

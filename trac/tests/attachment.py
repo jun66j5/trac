@@ -556,10 +556,10 @@ class AttachmentModuleTestCase(unittest.TestCase):
     def test_download_zip(self):
         att = Attachment(self.env, 'parent_realm', 'parent_id')
         att.description = 'Blah blah'
-        att.insert('foo.txt', io.BytesIO('foo'), 3,
+        att.insert('foo.txt', io.BytesIO(b'foo'), 3,
                    datetime(2016, 9, 23, 12, 34, 56, tzinfo=utc))
         att = Attachment(self.env, 'parent_realm', 'parent_id')
-        att.insert('bar.jpg', io.BytesIO('bar'), 3,
+        att.insert('bar.jpg', io.BytesIO(b'bar'), 3,
                    datetime(2016, 12, 14, 23, 56, 30, tzinfo=utc))
         module = AttachmentModule(self.env)
         req = MockRequest(self.env, args={'format': 'zip'},
