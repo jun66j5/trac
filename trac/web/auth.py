@@ -351,7 +351,8 @@ class BasicAuthentication(PasswordFileAuthentication):
             return False
 
         if the_hash.startswith('{SHA}'):
-            return b64encode(sha1(password).digest()) == the_hash[5:]
+            return str(b64encode(sha1(password.encode('utf-8')).digest()),
+                       'ascii') == the_hash[5:]
 
         if '$' not in the_hash:
             return self.crypt(password, the_hash[:2]) == the_hash
