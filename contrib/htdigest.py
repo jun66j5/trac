@@ -43,7 +43,8 @@ def get_digest(userprefix, password=None):
 
 
 def make_digest(userprefix, password):
-    return userprefix + hashlib.md5(userprefix + password).hexdigest()
+    value = (userprefix + password).encode('utf-8')
+    return userprefix + hashlib.md5(value).hexdigest()
 
 
 def main():

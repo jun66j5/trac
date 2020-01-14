@@ -711,7 +711,7 @@ class Request(object):
         if isinstance(extra, list):
             m = hashlib.sha1()
             for elt in extra:
-                m.update(repr(elt))
+                m.update(repr(elt).encode('utf-8'))
             extra = m.hexdigest()
         etag = 'W/"%s/%s/%s"' % (self.authname, http_date(datetime), extra)
         inm = self.get_header('If-None-Match')

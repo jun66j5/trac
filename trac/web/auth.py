@@ -455,7 +455,7 @@ class DigestAuthentication(PasswordFileAuthentication):
             self.send_auth_request(environ, start_response)
             return None
 
-        kd = lambda x: md5(':'.join(x)).hexdigest()
+        kd = lambda x: md5(b':'.join(v.encode('utf-8') for v in x)).hexdigest()
         a1 = self.hash[auth['username']]
         a2 = kd([environ['REQUEST_METHOD'], auth['uri']])
         # Is the response correct?

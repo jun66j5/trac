@@ -687,7 +687,8 @@ class Environment(Component, ComponentManager):
                       self.trac_version)
 
     def create_logger(self, log_type, log_file, log_level, log_format):
-        log_id = 'Trac.%s' % hashlib.sha1(self.path).hexdigest()
+        log_id = 'Trac.%s' % \
+                 hashlib.sha1(self.path.encode('utf-8')).hexdigest()
         if log_format:
             log_format = log_format.replace('$(', '%(') \
                                    .replace('%(path)s', self.path) \
