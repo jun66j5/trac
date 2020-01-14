@@ -382,7 +382,7 @@ class RoadmapTestCase(unittest.TestCase):
             rm.process_request(req)
 
         self.assertEqual('200 Ok', req.status_sent[0])
-        self.assertRegexpMatches(req.response_sent.getvalue(), """\
+        self.assertRegex(req.response_sent.getvalue(), """\
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Edgewall Software//NONSGML Trac [\.\w]+//EN
