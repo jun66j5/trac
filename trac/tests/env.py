@@ -567,7 +567,7 @@ class ConvertDatabaseTestCase(unittest.TestCase):
         dbm = DatabaseManager(env)
         dbm.set_database_version(21, 'initial_database_version')
         att = Attachment(env, 'wiki', 'WikiStart')
-        att.insert('filename.txt', io.BytesIO('test'), 4)
+        att.insert('filename.txt', io.BytesIO(b'test'), 4)
         env.shutdown()
 
     if 'destroying' in inspect.getargspec(EnvironmentStub.__init__)[0]:
