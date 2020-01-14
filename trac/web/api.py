@@ -600,6 +600,11 @@ class Request(object):
     def path_info(self):
         """Path inside the application"""
         path_info = self.environ.get('PATH_INFO', '')
+        if isinstance(path_info, str):
+            # According to PEP 3333, the value is decoded by iso-8859-1
+            # encoding when it is a unicode string. However, we need
+            # decoded unicode string by utf-8 encoding.
+            path_info = path_info.encode('iso-8859-1')
         try:
             return str(path_info, 'utf-8')
         except UnicodeDecodeError:
