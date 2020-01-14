@@ -625,7 +625,7 @@ def arity(f):
     """Return the number of arguments expected by the given function, unbound
     or bound method.
     """
-    return f.func_code.co_argcount - bool(getattr(f, 'im_self', False))
+    return f.__code__.co_argcount - bool(getattr(f, '__self__', False))
 
 
 def get_last_traceback():
