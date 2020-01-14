@@ -981,6 +981,12 @@ def md5crypt(password, salt, magic='$1$'):
     :param salt: the raw salt
     :param magic: our magic string
     """
+    magic_arg = magic
+    salt_arg = salt
+    password = to_utf8(password)
+    magic = to_utf8(magic)
+    salt = to_utf8(salt)
+
     # /* The password first, since that is what is most unknown */
     # /* Then our magic string */
     # /* Then the raw salt */
@@ -988,18 +994,19 @@ def md5crypt(password, salt, magic='$1$'):
 
     # /* Then just as many characters of the MD5(pw,salt,pw) */
     mixin = hashlib.md5(password + salt + password).digest()
-    for i in range(len(password)):
-        m.update(mixin[i % 16])
+    m.update(bytes(mixin[i % 16] for i in range(len(password))))
 
     # /* Then something really weird... */
     # Also really broken, as far as I can tell.  -m
-    i = len(password)
-    while i:
-        if i & 1:
-            m.update('\x00')
-        else:
-            m.update(password[0])
-        i >>= 1
+    def iter_password_or_zero():
+        i = len(password)
+        while i:
+            if i & 1:
+                yield 0
+            else:
+                yield password[0]
+            i >>= 1
+    m.update(bytes(iter_password_or_zero()))
 
     final = m.digest()
 
@@ -1026,21 +1033,23 @@ def md5crypt(password, salt, magic='$1$'):
 
     # This is the bit that uses to64() in the original code.
 
-    itoa64 = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    def iter_ito64(value):
+        itoa64 = b'./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' \
+                 b'abcdefghijklmnopqrstuvwxyz'
 
-    rearranged = ''
-    for a, b, c in ((0, 6, 12), (1, 7, 13), (2, 8, 14), (3, 9, 15), (4, 10, 5)):
-        v = ord(final[a]) << 16 | ord(final[b]) << 8 | ord(final[c])
-        for i in range(4):
-            rearranged += itoa64[v & 0x3f]
+        for a, b, c in ((0, 6, 12), (1, 7, 13), (2, 8, 14), (3, 9, 15),
+                        (4, 10, 5)):
+            v = final[a] << 16 | final[b] << 8 | final[c]
+            for i in range(4):
+                yield itoa64[v & 0x3f]
+                v >>= 6
+
+        v = final[11]
+        for i in range(2):
+            yield itoa64[v & 0x3f]
             v >>= 6
 
-    v = ord(final[11])
-    for i in range(2):
-        rearranged += itoa64[v & 0x3f]
-        v >>= 6
-
-    return magic + salt + '$' + rearranged
+    return magic_arg + salt_arg + '$' + str(bytes(iter_ito64(final)), 'ascii')
 
 
 # -- data structures
