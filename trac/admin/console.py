@@ -512,14 +512,7 @@ def _run(args):
         elif args[0] in ('-v', '--version'):
             printout(os.path.basename(sys.argv[0]), TRAC_VERSION)
         else:
-            env_path = os.path.abspath(args[0])
-            try:
-                str(env_path, 'ascii')
-            except UnicodeDecodeError:
-                printerr(_("Non-ascii environment path '%(path)s' not "
-                           "supported.", path=to_unicode(env_path)))
-                return 2
-            admin.env_set(env_path)
+            admin.env_set(os.path.abspath(args[0]))
             if len(args) > 1:
                 return admin.onecmd(' '.join(_quote_args(args[1:])))
             else:
