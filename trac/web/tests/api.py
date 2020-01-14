@@ -486,7 +486,7 @@ new\r\n\
         self.assertEqual('line1,line2,line3\n', req.response_sent)
 
     def test_invalid_cookies(self):
-        environ = _make_environ(HTTP_COOKIE='bad:key=value;')
+        environ = _make_environ(HTTP_COOKIE='bad/key=value;')
         req = Request(environ, None)
         self.assertEqual('', str(req.incookie))
 
