@@ -157,7 +157,7 @@ if twill:
                             "handle it.")
 
         filename = os.path.join(tracdir, 'log', "%s.html" % testname)
-        with open(filename, 'w') as html_file:
+        with open(filename, 'w', encoding='utf-8') as html_file:
             html_file.write(b.get_html())
 
         return urllib.parse.urljoin('file:',

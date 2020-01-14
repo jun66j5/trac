@@ -133,7 +133,7 @@ class FunctionalTestEnvironment(object):
         """
         os.mkdir(self.dirname)
         # testing.log gets any unused output from subprocesses
-        self.logfile = open(os.path.join(self.dirname, 'testing.log'), 'w')
+        self.logfile = open(os.path.join(self.dirname, 'testing.log'), 'wb')
         self.create_repo()
 
         config_file = os.path.join(self.dirname, 'config.ini')
@@ -353,7 +353,7 @@ class FunctionalTestEnvironment(object):
                 parser.add_section(section)
                 for key, value in list(options.items()):
                     parser.set(section, key, value)
-            with open(authz_file, 'w') as f:
+            with open(authz_file, 'w', encoding='utf-8') as f:
                 parser.write(f)
         permission_policies = env.config.get('trac', 'permission_policies')
         env.config.set('trac', 'permission_policies',

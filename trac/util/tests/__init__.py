@@ -67,7 +67,7 @@ class AtomicFileTestCase(unittest.TestCase):
         def test_existing_open_for_reading(self):
             util.create_file(self.path, 'Initial file content')
             self.assertEqual('Initial file content', util.read_file(self.path))
-            with open(self.path) as rf:
+            with open(self.path, 'rb') as rf:
                 with util.AtomicFile(self.path) as f:
                     f.write('Replaced content')
             self.assertTrue(rf.closed)
@@ -269,7 +269,8 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
     def test_file_metadata(self):
         pkgname = 'TestModule_' + util.hex_entropy(16)
         modname = pkgname.lower()
-        with open(os.path.join(self.dir, pkgname + '-0.1.egg-info'), 'w') as f:
+        with open(os.path.join(self.dir, pkgname + '-0.1.egg-info'), 'w',
+                  encoding='utf-8') as f:
             f.write('Metadata-Version: 1.1\n'
                     'Name: %(pkgname)s\n'
                     'Version: 0.1\n'
@@ -285,7 +286,8 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
                     % {'pkgname': pkgname, 'modname': modname})
         os.mkdir(os.path.join(self.dir, modname))
         for name in ('__init__.py', 'bar.py', 'foo.py'):
-            with open(os.path.join(self.dir, modname, name), 'w') as f:
+            with open(os.path.join(self.dir, modname, name), 'w',
+                      encoding='utf-8') as f:
                 f.write('# -*- coding: utf-8 -*-\n')
 
         mod = importlib.import_module(modname)
@@ -306,7 +308,7 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
     def _write_module(self, version, url):
         modname = 'TestModule_' + util.hex_entropy(16)
         modpath = os.path.join(self.dir, modname + '.py')
-        with open(modpath, 'w') as f:
+        with open(modpath, 'w', encoding='utf-8') as f:
             f.write(textwrap.dedent("""\
                 # -*- coding: utf-8 -*-
                 from trac.core import Component

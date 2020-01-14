@@ -386,7 +386,7 @@ try:
                     t = Translations(infile, self.domain)
                     catalog = t._catalog
 
-                with open(js_file, 'w') as outfile:
+                with open(js_file, 'w', encoding='utf-8') as outfile:
                     write_js(outfile, catalog, self.domain, locale)
 
 
@@ -419,7 +419,7 @@ try:
         def run(self):
             for filename in self._get_po_files():
                 distlog.info('checking catalog %s', filename)
-                with open(filename) as f:
+                with open(filename, 'rb') as f:
                     catalog = read_po(f, domain=self.domain)
                 for message in catalog:
                     for error in self._check_message(catalog, message):

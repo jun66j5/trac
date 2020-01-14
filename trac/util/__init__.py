@@ -279,9 +279,10 @@ class AtomicFile(object):
     closed = property(lambda self: self._file is None or self._file.closed)
 
 
-def read_file(path, mode='r'):
+def read_file(path, mode='r', encoding='utf-8', errors='strict'):
     """Read a file and return its content."""
-    with open(path, mode) as f:
+    kwargs = {} if 'b' in mode else {'encoding': encoding, 'errors': errors}
+    with open(path, mode, **kwargs) as f:
         return f.read()
 
 
@@ -308,7 +309,7 @@ def create_unique_file(path):
     idx = 1
     while 1:
         try:
-            return path, os.fdopen(os.open(path, flags, 0o666), 'w')
+            return path, os.fdopen(os.open(path, flags, 0o666), 'wb')
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
@@ -447,7 +448,7 @@ class NaivePopen(object):
         command = '( %s ) > %s' % (command, outfile)
         if input is not None:
             infile = tempfile.mktemp()
-            with open(infile, 'w') as tmp:
+            with open(infile, 'wb') as tmp:
                 tmp.write(input)
             command = command + ' <' + infile
         if capturestderr:
@@ -590,15 +591,20 @@ class file_or_std(object):
 
     file = None
 
-    def __init__(self, filename, mode='r', bufsize=-1):
+    def __init__(self, filename, mode='r', bufsize=-1, encoding='utf-8',
+                 errors='strict'):
         self.filename = filename
         self.mode = mode
         self.bufsize = bufsize
+        self.encoding = encoding
+        self.errors = errors
 
     def __enter__(self):
         if not self.filename:
             return sys.stdin if 'r' in self.mode else sys.stdout
-        self.file = open(self.filename, self.mode, self.bufsize)
+        kwargs = {} if 'b' in self.mode else \
+                 {'encoding': self.encoding, 'errors': self.errors}
+        self.file = open(self.filename, self.mode, self.bufsize, **kwargs)
         return self.file
 
     def __exit__(self, et, ev, tb):

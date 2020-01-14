@@ -121,7 +121,7 @@ if __debug__:
             return
 
         try:
-            with open(DEBUGLOG, 'a') as f:
+            with open(DEBUGLOG, 'a', encoding='utf-8') as f:
                 f.write('%sfcgi: %s\n' % (time.ctime()[4:-4], msg))
         except:
             pass

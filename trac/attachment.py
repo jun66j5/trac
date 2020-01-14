@@ -962,7 +962,7 @@ class Attachment(object):
         while 1:
             path = os.path.join(dir, self._get_hashed_filename(filename))
             try:
-                return filename, os.fdopen(os.open(path, flags, 0o666), 'w')
+                return filename, os.fdopen(os.open(path, flags, 0o666), 'wb')
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise

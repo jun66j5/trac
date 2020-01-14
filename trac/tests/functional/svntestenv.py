@@ -95,7 +95,8 @@ class SvnFunctionalTestEnvironment(FunctionalTestEnvironment):
             self._testenv.svn_add("root.txt", "Hello World")
 
         """
-        with open(os.path.join(self.work_dir(), filename), 'w') as f:
+        with open(os.path.join(self.work_dir(), filename), 'w',
+                  encoding='utf-8') as f:
             f.write(data)
         self.call_in_workdir(['svn', 'add', filename])
         environ = os.environ.copy()

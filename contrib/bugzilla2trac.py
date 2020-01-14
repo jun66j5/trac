@@ -898,7 +898,7 @@ def convert(_db, _host, _user, _password, _env, _force):
         users = mysql_cur.fetchall()
     else:
         users = ()
-    with open('htpasswd', 'w') as f:
+    with open('htpasswd', 'w', encoding='utf-8') as f:
         for user in users:
             if user['login_name'] in LOGIN_MAP:
                 login = LOGIN_MAP[user['login_name']]

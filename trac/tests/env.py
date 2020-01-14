@@ -152,7 +152,7 @@ class EnvironmentTestCase(unittest.TestCase):
 
         self.env.log.warning("The warning message")
 
-        with open(self.env.log_file_path) as f:
+        with open(self.env.log_file_path, encoding='utf-8') as f:
             log = f.readlines()
         self.assertEqual("Trac[env] My Project: The warning message\n",
                          log[-1])

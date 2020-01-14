@@ -700,7 +700,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        with open(args.filename, 'r') as f:
+        with open(args.filename, 'rb') as f:
             importData(f, args.environment)
     except Exception as e:
         printerr("Error: %s" % e)
