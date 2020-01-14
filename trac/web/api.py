@@ -186,9 +186,9 @@ class TracNotImplementedError(TracError, NotImplementedError):
     title = N_("Not Implemented Error")
 
 
-HTTP_STATUS = {code: reason.title()
+HTTP_STATUS = {int(code): reason.title()
                for code, (reason, description)
-               in list(BaseHTTPRequestHandler.responses.items())}
+               in BaseHTTPRequestHandler.responses.items()}
 
 
 class HTTPException(TracBaseError, metaclass=ABCMeta):
