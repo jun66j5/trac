@@ -31,15 +31,15 @@ from trac.util.datefmt import time_now
 
 def _write(filename, lines):
     wait_for_file_mtime_change(filename)
-    create_file(filename, '\n'.join(lines + ['']).encode('utf-8'))
+    create_file(filename, '\n'.join(lines + ['']))
 
 
 def _read(filename):
-    return read_file(filename).decode('utf-8')
+    return read_file(filename)
 
 
 def readlines(filename):
-    with open(filename, 'r') as f:
+    with open(filename, 'r', encoding='utf-8') as f:
         return f.readlines()
 
 
@@ -62,7 +62,7 @@ class UnicodeParserTestCase(unittest.TestCase):
         rmtree(self.tempdir)
 
     def _write(self):
-        with open(self.filename, 'w') as f:
+        with open(self.filename, 'w', encoding='utf-8') as f:
             self.parser.write(f)
 
     def _read(self):

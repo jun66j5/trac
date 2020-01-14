@@ -32,10 +32,10 @@ def load_expected_results(file, pattern):
     """
     expected = {}
     compiled_pattern = re.compile(pattern)
-    with open(file) as f:
+    with open(file, encoding='utf-8') as f:
         test = None
         for line in f:
-            line = line.rstrip().decode('utf-8')
+            line = line.rstrip()
             match = compiled_pattern.search(line)
             if match:
                 test = match.groups()[0]

@@ -158,7 +158,8 @@ def download_default_pages(names, prefix, strict):
                 response = conn.getresponse()
                 content = response.read()
             if response.status == 200 and content:
-                with open('trac/wiki/default-pages/' + name, 'w') as f:
+                with open('trac/wiki/default-pages/' + name, 'w',
+                          encoding='utf-8') as f:
                     if not strict:
                         content = re_box_processor.sub('', content)
                     lines = content.replace('\r\n', '\n').splitlines(True)

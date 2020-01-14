@@ -133,7 +133,8 @@ if twill:
             # functional-testing.log gets the twill output
             self.functional_test_log = \
                 os.path.join(env_path, 'functional-testing.log')
-            twill.set_output(open(self.functional_test_log, 'w'))
+            twill.set_output(open(self.functional_test_log, 'w',
+                                  encoding='utf-8'))
 
             self._testenv.start()
             self._tester = self.tester_class(baseurl)

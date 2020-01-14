@@ -132,7 +132,7 @@ class RegressionTestTicket3833(FunctionalTwillTestCaseSetup):
         trac_log = os.path.join(env.log_dir, 'trac.log')
 
         def read_log_file(offset):
-            with open(trac_log) as fd:
+            with open(trac_log, 'rb') as fd:
                 fd.seek(offset)
                 return fd.read()
 

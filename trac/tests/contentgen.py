@@ -15,8 +15,9 @@ import random
 import uuid
 
 try:
-    all_words = [x.strip() for x in open('/usr/share/dict/words').readlines()
-                           if x.strip().isalpha()]
+    with open('/usr/share/dict/words', 'r', encoding='utf-8') as f:
+        all_words = [x.strip() for x in f.readlines() if x.strip().isalpha()]
+        del f
 except IOError:
     all_words = [
         'one',

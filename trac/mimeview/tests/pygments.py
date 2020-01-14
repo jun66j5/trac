@@ -53,12 +53,12 @@ class PygmentsRendererTestCase(unittest.TestCase):
         self.pygments_html = {}
         testcase = []
         html_file = os.path.join(os.path.dirname(__file__), 'pygments.data')
-        with open(html_file, 'rb') as f:
+        with open(html_file, 'r', encoding='utf-8') as f:
             for line in f.readlines():
                 if line.startswith('#'):
                     self.pygments_html[line[1:].strip()] = testcase = []
                 else:
-                    testcase.append(str(line.rstrip(), 'utf-8'))
+                    testcase.append(line.rstrip())
 
     @property
     def python_mimetype(self):

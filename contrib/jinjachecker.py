@@ -101,7 +101,7 @@ def analyze(jinja_template, only=None, quiet=False, show_ignored=False):
     """Analyzes a Jinja2 template, its control structure as well as the
     structure of the HTML.
     """
-    with open(jinja_template, 'r') as f:
+    with open(jinja_template, 'r', encoding='utf-8') as f:
         lines = f.readlines()
     line_statements, html, html_hints = scan(lines)
     issues_j = issues_h = 0

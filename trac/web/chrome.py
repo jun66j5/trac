@@ -659,7 +659,7 @@ class Chrome(Component):
         def write_sample_template(filename, kind, example=''):
             site_path = os.path.join(self.env.templates_dir,
                                      filename + '.sample')
-            with open(site_path, 'w') as fileobj:
+            with open(site_path, 'w', encoding='utf-8') as fileobj:
                 fileobj.write("""\
 {#  This file allows customizing the appearance of the Trac installation.
 

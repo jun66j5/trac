@@ -1179,7 +1179,7 @@ class GitwebProjectsRepositoryProviderTestCase(unittest.TestCase):
         self.env = EnvironmentStub()
         self.projects_base = mkdtemp()
         self.projects_list = os.path.join(self.projects_base, 'projects_list')
-        with open(self.projects_list, 'w') as f:
+        with open(self.projects_list, 'w', encoding='utf-8') as f:
             f.write("""
             repos1 user1
             repos2.git user+2+<user@example.com>

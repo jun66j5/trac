@@ -73,7 +73,7 @@ def main():
     prefix = '%s:%s:' % (args.username, args.realm)
     if args.create:
         try:
-            with open(args.passwordfile, 'w') as f:
+            with open(args.passwordfile, 'w', encoding='utf-8') as f:
                 print(get_digest(prefix, args.password), file=f)
         except EnvironmentError as e:
             if e.errno == errno.EACCES:
@@ -92,7 +92,7 @@ def main():
                 else:
                     print(line.rstrip())
             if not matched:
-                with open(args.passwordfile, 'a') as f:
+                with open(args.passwordfile, 'a', encoding='utf-8') as f:
                     print(get_digest(prefix, args.password), file=f)
         except EnvironmentError as e:
             if e.errno == errno.ENOENT:

@@ -395,7 +395,8 @@ class Environment(Component, ComponentManager):
         """Verify that the provided path points to a valid Trac environment
         directory."""
         try:
-            with open(os.path.join(self.path, 'VERSION')) as f:
+            with open(os.path.join(self.path, 'VERSION'),
+                      encoding='utf-8') as f:
                 tag = f.readline().rstrip('\n')
         except Exception as e:
             raise TracError(_("No Trac environment found at %(path)s\n"
@@ -994,8 +995,8 @@ class EnvironmentAdmin(Component):
             template = chrome.load_template('deploy_trac.' + script, text=True)
             text = chrome.render_template_string(template, data, text=True)
 
-            with open(dest, 'w') as out:
-                out.write(text.encode('utf-8'))
+            with open(dest, 'w', encoding='utf-8') as out:
+                out.write(text)
 
     def _do_hotcopy(self, dest, no_db=None):
         if no_db not in (None, '--no-database'):

@@ -963,7 +963,7 @@ class GitwebProjectsRepositoryProvider(Component):
                              "'%s'", self.projects_list)
             return
 
-        with open(self.projects_list, 'r') as fp:
+        with open(self.projects_list, 'r', encoding='utf-8') as fp:
             for line in fp:
                 entries = line.strip().split()
                 if entries:
@@ -977,7 +977,8 @@ class GitwebProjectsRepositoryProvider(Component):
                     description_path = \
                         os.path.join(info['dir'], 'description')
                     if os.path.exists(description_path):
-                        with open(description_path, 'r') as fd:
+                        with open(description_path, 'r',
+                                  encoding='utf-8') as fd:
                             info['description'] = fd.read().strip()
                     if self.projects_url:
                         info['url'] = self.projects_url % reponame
