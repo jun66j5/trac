@@ -1099,7 +1099,7 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
         self.assertIsInstance(content, bytes)
         content = str(content, 'utf-8')
         if has_babel:
-            self.assertRegexpMatches(content, textwrap.dedent("""\
+            self.assertRegex(content, textwrap.dedent("""\
                 <!DOCTYPE html>
                 <html>
                 <body>
@@ -1115,7 +1115,7 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
                 </body>
                 </html>"""), content)
         else:
-            self.assertRegexpMatches(content, textwrap.dedent("""\
+            self.assertRegex(content, textwrap.dedent("""\
                 <!DOCTYPE html>
                 <html>
                 <body>

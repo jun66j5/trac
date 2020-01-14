@@ -375,18 +375,18 @@ class ReportModuleTestCase(unittest.TestCase):
         rendered = Chrome(self.env).render_template(req, rv[0], rv[1],
                                                     {'fragment': False,
                                                      'iterable': False})
-        self.assertRegexpMatches(rendered,
-                                 r'<tr[^>]*>\s*'
-                                 r'<td class="fullrow foo" colspan="100">'
-                                 r'\s*#13046\s*<hr />\s*</td>\s*</tr>')
-        self.assertRegexpMatches(rendered,
-                                 r'<tr[^>]*>\s*'
-                                 r'<td class="fullrow bar" colspan="100">'
-                                 r'\s*42\s*<hr />\s*</td>\s*</tr>')
-        self.assertRegexpMatches(rendered,
-                                 r'<tr[^>]*>\s*'
-                                 r'<td class="fullrow baz" colspan="100">'
-                                 r'\s*blah\s*<hr />\s*</td>\s*</tr>')
+        self.assertRegex(rendered,
+                         r'<tr[^>]*>\s*'
+                         r'<td class="fullrow foo" colspan="100">'
+                         r'\s*#13046\s*<hr />\s*</td>\s*</tr>')
+        self.assertRegex(rendered,
+                         r'<tr[^>]*>\s*'
+                         r'<td class="fullrow bar" colspan="100">'
+                         r'\s*42\s*<hr />\s*</td>\s*</tr>')
+        self.assertRegex(rendered,
+                         r'<tr[^>]*>\s*'
+                         r'<td class="fullrow baz" colspan="100">'
+                         r'\s*blah\s*<hr />\s*</td>\s*</tr>')
 
     def test_timestamp_columns(self):
         req = MockRequest(self.env, method='POST', path_info='/report', args={
@@ -406,11 +406,11 @@ class ReportModuleTestCase(unittest.TestCase):
         rendered = Chrome(self.env).render_template(req, rv[0], rv[1],
                                                     {'fragment': False,
                                                      'iterable': False})
-        self.assertRegexpMatches(rendered,
+        self.assertRegex(rendered,
             r'<td class="date">\s*(12:00:42 AM|00:00:42)\s*</td>')
-        self.assertRegexpMatches(rendered,
+        self.assertRegex(rendered,
             r'<td class="date">\s*(Jan 3, 1970|01/03/70)\s*</td>')
-        self.assertRegexpMatches(rendered,
+        self.assertRegex(rendered,
             r'<td class="date">\s*(Jan 4, 1970, 12:00:44 AM|'
             r'01/04/70 00:00:44)\s*</td>')
 

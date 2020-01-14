@@ -493,35 +493,35 @@ class SystemInfoTestCase(unittest.TestCase):
             self.fail('Missing %r' % name)
 
         if self.env.dburi.startswith('mysql'):
-            self.assertRegexpMatches(get_info(info_before, 'MySQL'),
-                                     r'^server: \(not-connected\), '
-                                     r'client: "\d+(\.\d+)+([-.].+)?", '
-                                     r'thread-safe: True$')
-            self.assertRegexpMatches(get_info(info_after, 'MySQL'),
-                                     r'^server: "\d+(\.\d+)+([-.].+)?", '
-                                     r'client: "\d+(\.\d+)+([-.].+)?", '
-                                     r'thread-safe: True$')
-            self.assertRegexpMatches(get_info(info_before, 'pymysql'),
-                                     r'^\d+(\.\d+)+$')
-            self.assertRegexpMatches(get_info(info_after, 'pymysql'),
-                                     r'^\d+(\.\d+)+$')
+            self.assertRegex(get_info(info_before, 'MySQL'),
+                             r'^server: \(not-connected\), '
+                             r'client: "\d+(\.\d+)+([-.].+)?", '
+                             r'thread-safe: True$')
+            self.assertRegex(get_info(info_after, 'MySQL'),
+                             r'^server: "\d+(\.\d+)+([-.].+)?", '
+                             r'client: "\d+(\.\d+)+([-.].+)?", '
+                             r'thread-safe: True$')
+            self.assertRegex(get_info(info_before, 'pymysql'),
+                             r'^\d+(\.\d+)+$')
+            self.assertRegex(get_info(info_after, 'pymysql'),
+                             r'^\d+(\.\d+)+$')
         elif self.env.dburi.startswith('postgres'):
-            self.assertRegexpMatches(get_info(info_before, 'PostgreSQL'),
-                                     r'^server: \(not-connected\), '
-                                     r'client: (\d+(\.\d+)+|\(unknown\))$')
-            self.assertRegexpMatches(get_info(info_after, 'PostgreSQL'),
-                                     r'^server: \d+(\.\d+)+, '
-                                     r'client: (\d+(\.\d+)+|\(unknown\))$')
-            self.assertRegexpMatches(get_info(info_before, 'psycopg2'),
-                                     r'^\d+(\.\d+)+$')
-            self.assertRegexpMatches(get_info(info_after, 'psycopg2'),
-                                     r'^\d+(\.\d+)+$')
+            self.assertRegex(get_info(info_before, 'PostgreSQL'),
+                             r'^server: \(not-connected\), '
+                             r'client: (\d+(\.\d+)+|\(unknown\))$')
+            self.assertRegex(get_info(info_after, 'PostgreSQL'),
+                             r'^server: \d+(\.\d+)+, '
+                             r'client: (\d+(\.\d+)+|\(unknown\))$')
+            self.assertRegex(get_info(info_before, 'psycopg2'),
+                             r'^\d+(\.\d+)+$')
+            self.assertRegex(get_info(info_after, 'psycopg2'),
+                             r'^\d+(\.\d+)+$')
         elif self.env.dburi.startswith('sqlite'):
             self.assertEqual(info_before, info_after)
-            self.assertRegexpMatches(get_info(info_before, 'SQLite'),
-                                     r'^\d+(\.\d+)+$')
-            self.assertRegexpMatches(get_info(info_before, 'pysqlite'),
-                                     r'^\d+(\.\d+)+$')
+            self.assertRegex(get_info(info_before, 'SQLite'),
+                             r'^\d+(\.\d+)+$')
+            self.assertRegex(get_info(info_before, 'pysqlite'),
+                             r'^\d+(\.\d+)+$')
         else:
             self.fail("Unknown value for dburi %s" % self.env.dburi)
 
