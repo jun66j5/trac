@@ -50,11 +50,8 @@ def _execute(func, strip_trailing_space=True, input=None):
     _err = sys.stderr
     _out = sys.stdout
     try:
-        if input:
-            sys.stdin = io.BytesIO(input.encode('utf-8'))
-            sys.stdin.encoding = 'utf-8'  # fake input encoding
-        sys.stderr = sys.stdout = out = io.BytesIO()
-        out.encoding = 'utf-8'  # fake output encoding
+        sys.stdin = io.StringIO(input or '')
+        sys.stderr = sys.stdout = out = io.StringIO()
         return_val = func()
         value = out.getvalue()
         if isinstance(value, bytes):  # reverse what print_listing did
