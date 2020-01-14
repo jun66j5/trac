@@ -426,8 +426,11 @@ class _RequestArgs(dict):
         if hasattr(upload, 'file'):
             fileobj = upload.file
             if hasattr(fileobj, 'fileno'):
-                size = os.fstat(fileobj.fileno())[6]
-            else:
+                try:
+                    size = os.fstat(fileobj.fileno())[6]
+                except io.UnsupportedOperation:
+                    size = None
+            if size is None:
                 fileobj.seek(0, 2)  # seek to end of file
                 size = fileobj.tell()
                 fileobj.seek(0)
