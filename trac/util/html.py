@@ -1065,12 +1065,20 @@ def to_fragment(input):
 
 
 # Mappings for removal of control characters
-_translate_nop = ''.join(chr(i) for i in range(256))
-_invalid_control_chars = ''.join(chr(i) for i in range(32)
-                                 if i not in [0x09, 0x0a, 0x0d])
+_invalid_control_chars = bytes(i for i in range(32)
+                                 if i not in (0x09, 0x0a, 0x0d))
 
-def valid_html_bytes(bytes):
-    return bytes.translate(_translate_nop, _invalid_control_chars)
+def valid_html_bytes(data):
+    """Return only valid bytes in XML/HTML from the given data.
+
+    >>> valid_html_bytes(b'blah')
+    b'blah'
+
+    >>> list(valid_html_bytes(bytes(range(33)) + b'\x7F'))
+    [9, 10, 13, 32, 127]
+
+    """
+    return data.translate(None, _invalid_control_chars)
 
 
 _reference_re = re.compile(r'&(?:#[xX][0-9a-fA-F]+|#[0-9]+|\w{1,8});')
