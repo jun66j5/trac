@@ -88,7 +88,7 @@ class EnvironmentTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.stdout = sys.stdout
         cls.stderr = sys.stderr
-        cls.devnull = io.open(os.devnull, 'wb')
+        cls.devnull = io.open(os.devnull, 'w', encoding='utf-8')
         sys.stdout = sys.stderr = cls.devnull
 
     @classmethod
@@ -192,7 +192,7 @@ class EnvironmentDataTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.stdout = sys.stdout
         cls.stderr = sys.stderr
-        cls.devnull = io.open(os.devnull, 'wb')
+        cls.devnull = io.open(os.devnull, 'w', encoding='utf-8')
         sys.stdout = sys.stderr = cls.devnull
         cls.env = Environment(mkdtemp(), create=True)
 
@@ -535,7 +535,7 @@ class ConvertDatabaseTestCase(unittest.TestCase):
     def setUpClass(cls):
         cls.stdout = sys.stdout
         cls.stderr = sys.stderr
-        cls.devnull = io.open(os.devnull, 'wb')
+        cls.devnull = io.open(os.devnull, 'w', encoding='utf-8')
         sys.stdout = sys.stderr = cls.devnull
 
     @classmethod
@@ -869,7 +869,7 @@ class TracAdminDeployTestCase(TracAdminTestCaseBase):
     def setUpClass(cls):
         cls.stdout = sys.stdout
         cls.stderr = sys.stderr
-        cls.devnull = io.open(os.devnull, 'wb')
+        cls.devnull = io.open(os.devnull, 'w', encoding='utf-8')
         sys.stdout = sys.stderr = cls.devnull
 
     @classmethod

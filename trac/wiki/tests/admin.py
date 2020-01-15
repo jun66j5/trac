@@ -52,7 +52,7 @@ class WikiAdminTestCase(unittest.TestCase):
         self.env.reset_db_and_disk()
 
     def _import_page(self, *args, **kwargs):
-        with open(os.devnull, 'wb') as devnull:
+        with open(os.devnull, 'w', encoding='utf-8') as devnull:
             stdout = sys.stdout
             try:
                 sys.stdout = devnull
