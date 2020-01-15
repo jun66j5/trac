@@ -767,7 +767,12 @@ def expandtabs(s, tabstop=8, ignoring=None):
 def fix_eol(text, eol):
     """Fix end-of-lines in a text."""
     lines = text.splitlines()
-    lines.append('')
+    if isinstance(text, bytes):
+        last = b''
+        eol = eol.encode('utf-8')
+    else:
+        last = ''
+    lines.append(last)
     return eol.join(lines)
 
 def unicode_to_base64(text, strip_newlines=True):
