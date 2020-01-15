@@ -17,7 +17,6 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 from collections import defaultdict
-from operator import itemgetter
 
 from trac.config import (BoolOption, ConfigSection, ExtensionOption,
                          ListOption, Option)
@@ -398,7 +397,9 @@ class NotificationSystem(Component):
         # If it is "always" keep it. If it is "never" drop it.
 
         # sort by (transport, sid, authenticated, priority)
-        ordered = sorted(subscriptions, key=itemgetter(1,2,3,6))
+        ordered = sorted(subscriptions,
+                         key=lambda v: (v[1], '' if v[2] is None else v[2],
+                                        v[3], v[6]))
         previous_combination = None
         for rule, transport, sid, auth, addr, fmt, prio, adverb in ordered:
             if (transport, sid, auth) == previous_combination:

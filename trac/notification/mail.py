@@ -16,14 +16,16 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
+import base64
 import hashlib
 import os
 import re
 import smtplib
+from email import policy
 from email.charset import BASE64, QP, SHORTEST, Charset
 from email.header import Header
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from email.headerregistry import Address
+from email.message import EmailMessage
 from email.utils import formatdate, parseaddr, getaddresses
 from subprocess import Popen, PIPE
 
@@ -63,6 +65,13 @@ EMAIL_LOOKALIKE_PATTERN = (
 _mime_encoding_re = re.compile(r'=\?[^?]+\?[bq]\?[^?]+\?=', re.IGNORECASE)
 
 local_hostname = None
+
+# When default policy is used if [notification] mime_encoding is 'none'
+# and a line is exceeded max_line_length (78 bytes by default), 'base64'
+# or 'quoted-printable' is used for Content-Transfer-Encoding header.
+# Using the custom policy avoids the behavior.
+_policy_default = policy.SMTP  # newline is CRLF
+_policy_8bit = _policy_default.clone(max_line_length=998)
 
 
 def create_charset(mime_encoding):
@@ -137,8 +146,29 @@ def create_header(key, value, charset):
     return header
 
 
+def create_address_header(addresses):
+    """Create address header instance to pass to `set_header`.
+
+    The `addresses` is a list of addresses. The item can either be `str`,
+    a `(name, address)` tuple or a `(None, address)`.
+    """
+    l = []
+    for item in addresses:
+        if isinstance(item, str):
+            instance = Address(addr_spec=item)
+        elif isinstance(item, (list, tuple)):
+            name, addr = item
+            instance = Address(name or '', addr_spec=addr)
+        elif isinstance(item, Address):
+            instance = item
+        else:
+            raise ValueError('Unrecognized item %r' % item)
+        l.append(instance)
+    return l
+
+
 def set_header(message, key, value, charset):
-    """Create and add or replace a header in a `MIMEMultipart`.
+    """Create and add or replace a header in a `EmailMessage`.
 
     The `key` is always a string and will be converted to the
     appropriate `charset`. The `value` can either be a string or a
@@ -152,7 +182,12 @@ def set_header(message, key, value, charset):
         set_header(my_message, 'From', ('Trac', 'noreply@ourcompany.com'),
                    my_charset)
     """
-    header = create_header(key, value, charset)
+    if isinstance(value, (list, tuple)):
+        header = create_address_header([value])
+    elif isinstance(value, Address):
+        header = value
+    else:
+        header = str(value)
     if key in message:
         message.replace_header(key, header)
     else:
@@ -160,7 +195,7 @@ def set_header(message, key, value, charset):
 
 
 def create_mime_multipart(subtype):
-    """Create an email `MIMEMultipart`.
+    """Create a multipart email message.
 
     The `subtype` is a string that describes the type of multipart
     message you are defining. You should pick one that is defined
@@ -175,32 +210,36 @@ def create_mime_multipart(subtype):
       and the client can choose which to display based on capabilities
       and user preferences, such as a text/html with an alternative
       text/plain.
-
-    The `MIMEMultipart` is defined in the `email.mime.multipart` module in the
-    Python standard library.
     """
-    msg = MIMEMultipart(subtype)
-    del msg['Content-Transfer-Encoding']
+    msg = EmailMessage()
+    if subtype == 'related':
+        msg.make_related()
+    elif subtype == 'alternative':
+        msg.make_alternative()
+    elif subtype == 'mixed':
+        msg.make_mixed()
+    else:
+        raise ValueError("subtype must be one of ('related', 'multipart', "
+                         "'mixed'), not %r" % subtype)
+    msg['MIME-Version'] = '1.0'
     return msg
 
 
 def create_mime_text(body, format, charset):
-    """Create a `MIMEText` that can be added to an email message.
+    """Create a `EmailMessage` that can be added to an email message.
 
     :param body: a string with the body of the message.
-    :param format: each text has a MIMEType, like `text/plain`. The
+    :param format: each text has a EmailMessage, like `text/plain`. The
         supertype is always `text`, so in the `format` parameter you
         pass the subtype, like `plain` or `html`.
     :param charset: should be created using `create_charset()`.
     """
-    if isinstance(body, str):
-        body = body.encode('utf-8')
-    msg = MIMEText(body, format)
-    # Message class computes the wrong type from MIMEText constructor,
-    # which does not take a Charset object as initializer. Reset the
-    # encoding type to force a new, valid evaluation
-    del msg['Content-Transfer-Encoding']
-    msg.set_charset(charset)
+    if isinstance(body, bytes):
+        body = str(body, 'utf-8')
+    cte = {BASE64: 'base64', QP: 'quoted-printable'}.get(charset.body_encoding)
+    msg = EmailMessage(_policy_8bit if cte is None else _policy_default)
+    msg['MIME-Version'] = '1.0'
+    msg.set_content(body, subtype=format, cte=cte)
     return msg
 
 
@@ -219,10 +258,12 @@ def create_message_id(env, targetid, from_email, time, more=None):
     :param more: a string that contains additional information that
         makes this message unique
     """
-    items = [env.project_url.encode('utf-8'), targetid, to_utimestamp(time)]
+    items = [env.project_url, targetid, to_utimestamp(time)]
     if more is not None:
         items.append(more.encode('ascii', 'ignore'))
-    source = '.'.join(str(item) for item in items)
+    source = b'.'.join(item if isinstance(item, bytes) else
+                       str(item).encode('utf-8')
+                       for item in items)
     hash_type = NotificationSystem(env).message_id_hash
     try:
         h = hashlib.new(hash_type)
@@ -520,9 +561,10 @@ class EmailDistributor(Component):
         maintype, subtype = format.split('/')
         preferred = create_mime_text(outputs[format], subtype, self._charset)
         if format != 'text/plain' and 'text/plain' in outputs:
+            text = create_mime_text(outputs['text/plain'], 'plain',
+                                    self._charset)
             alternative = create_mime_multipart('alternative')
-            alternative.attach(create_mime_text(outputs['text/plain'],
-                                                'plain', self._charset))
+            alternative.attach(text)
             alternative.attach(preferred)
             preferred = alternative
         message.attach(preferred)
@@ -586,7 +628,7 @@ class EmailDistributor(Component):
             to_addrs.update(addr for name, addr in getaddresses(values)
                                  if addr)
         del message['Bcc']
-        notify_sys.send_email(from_addr, list(to_addrs), message.as_string())
+        notify_sys.send_email(from_addr, list(to_addrs), message.as_bytes())
 
 
 class SmtpEmailSender(Component):
