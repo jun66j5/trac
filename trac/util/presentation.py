@@ -452,7 +452,10 @@ def separated(items, sep=',', last=None):
     [(1, ';'), (2, ';'), (3, '.')]
     """
     items = iter(items)
-    nextval = next(items)
+    try:
+        nextval = next(items)
+    except StopIteration:
+        return
     for i in items:
         yield nextval, sep
         nextval = i
