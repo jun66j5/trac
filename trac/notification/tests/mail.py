@@ -12,7 +12,7 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 import unittest
-from email import message_from_string
+from email import message_from_bytes
 
 from trac.core import Component, implements
 from trac.notification.api import (
@@ -37,7 +37,7 @@ class TestEmailSender(Component):
 
     def send(self, from_addr, recipients, message):
         self.history.append((from_addr, recipients,
-                             message_from_string(message)))
+                             message_from_bytes(message)))
 
 
 class TestFormatter(Component):
@@ -168,7 +168,8 @@ class EmailDistributorTestCase(unittest.TestCase):
         payload = list(message.get_payload())
         self.assertEqual([content_type],
                          [p.get_content_type() for p in payload])
-        self.assertEqual([body], [p.get_payload() for p in payload])
+        self.assertEqual([body], [p.get_payload().rstrip('\n')
+                                  for p in payload])
 
     def _assert_alternative_mail(self, message, body_plain, body_html):
         self.assertNotIn('Bcc', message)
@@ -180,7 +181,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertEqual(['text/plain', 'text/html'],
                          [p.get_content_type() for p in alternative])
         self.assertEqual([body_plain, body_html],
-                         [p.get_payload() for p in alternative])
+                         [p.get_payload().rstrip('\n') for p in alternative])
 
     def test_plain(self):
         with self.env.db_transaction:
@@ -213,7 +214,8 @@ class EmailDistributorTestCase(unittest.TestCase):
             if 'foo@example.org' in recipients:
                 self.assertEqual('trac@example.org', from_addr)
                 self.assertEqual(['foo@example.org'], recipients)
-                self._assert_alternative_mail(message, 'blah', '<p>blah</p>')
+                self._assert_alternative_mail(message, 'blah',
+                                              '<p>blah</p>')
             if 'cc@example.org' in recipients:
                 self.assertEqual('trac@example.org', from_addr)
                 self.assertEqual({'cc@example.org', 'bcc@example.org'},
@@ -237,7 +239,8 @@ class EmailDistributorTestCase(unittest.TestCase):
                 self._assert_mail(message, 'text/plain', 'blah')
             if 'bar@example.org' in recipients:
                 self.assertEqual(['bar@example.org'], recipients)
-                self._assert_alternative_mail(message, 'blah', '<p>blah</p>')
+                self._assert_alternative_mail(message, 'blah',
+                                              '<p>blah</p>')
 
     def test_formats_in_session_and_tracini(self):
         self.config.set('notification', 'smtp_always_cc', 'bar,quux')
@@ -272,7 +275,8 @@ class EmailDistributorTestCase(unittest.TestCase):
             if 'qux@example.org' in recipients:
                 self.assertEqual(['quux@example.org', 'qux@example.org'],
                                  recipients)
-                self._assert_alternative_mail(message, 'blah', '<p>blah</p>')
+                self._assert_alternative_mail(message, 'blah',
+                                              '<p>blah</p>')
 
     def test_broken_plain_formatter(self):
         with self.env.db_transaction:
@@ -343,7 +347,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertNotEqual([], history)
         from_addr, recipients, message = history[0]
         self.assertEqual('trac@example.org', from_addr)
-        self.assertEqual('"My Project" <trac@example.org>', message['From'])
+        self.assertEqual('My Project <trac@example.org>', message['From'])
         self.assertEqual(1, len(history))
 
         self._notify_event('blah', author=None)
@@ -351,7 +355,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertNotEqual([], history)
         from_addr, recipients, message = history[0]
         self.assertEqual('trac@example.org', from_addr)
-        self.assertEqual('"My Project" <trac@example.org>', message['From'])
+        self.assertEqual('My Project <trac@example.org>', message['From'])
         self.assertEqual(1, len(history))
 
         self.env.config.set('notification', 'smtp_from_name', 'Trac')
@@ -360,7 +364,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertNotEqual([], history)
         from_addr, recipients, message = history[0]
         self.assertEqual('trac@example.org', from_addr)
-        self.assertEqual('"Trac" <trac@example.org>', message['From'])
+        self.assertEqual('Trac <trac@example.org>', message['From'])
         self.assertEqual(1, len(history))
 
     def test_from_author_enabled(self):
@@ -374,7 +378,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertNotEqual([], history)
         from_addr, recipients, message = history[0]
         self.assertEqual('bar@example.org', from_addr)
-        self.assertEqual('"=?utf-8?b?QsOkxZUncyBuYW1l?=" <bar@example.org>',
+        self.assertEqual('=?utf-8?b?QsOkxZUncw==?= name <bar@example.org>',
                          message['From'])
         self.assertEqual(1, len(history))
 
@@ -391,7 +395,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertNotEqual([], history)
         from_addr, recipients, message = history[0]
         self.assertEqual('trac@example.org', from_addr)
-        self.assertEqual('"My Project" <trac@example.org>', message['From'])
+        self.assertEqual('My Project <trac@example.org>', message['From'])
         self.assertEqual(1, len(history))
 
         self.env.config.set('notification', 'smtp_from_name', 'Trac')
@@ -400,7 +404,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertNotEqual([], history)
         from_addr, recipients, message = history[0]
         self.assertEqual('trac@example.org', from_addr)
-        self.assertEqual('"Trac" <trac@example.org>', message['From'])
+        self.assertEqual('Trac <trac@example.org>', message['From'])
         self.assertEqual(1, len(history))
 
     def test_ignore_domains(self):
@@ -461,7 +465,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         history = self._test_without_domain(use_short_addr='enabled')
         from_addr, recipients, message = history[0]
         self.assertEqual('from-trac', from_addr)
-        self.assertEqual('"My Project" <from-trac>', message['From'])
+        self.assertEqual('My Project <from-trac>', message['From'])
         self._assert_equal_sets(['qux', 'cc@example.org', 'bcc1@example.org',
                                  'bcc2', 'foo@example.org', 'baz',
                                  'corge-mail'], recipients)
@@ -472,7 +476,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         history = self._test_without_domain(smtp_default_domain='example.com')
         from_addr, recipients, message = history[0]
         self.assertEqual('from-trac@example.com', from_addr)
-        self.assertEqual('"My Project" <from-trac@example.com>',
+        self.assertEqual('My Project <from-trac@example.com>',
                          message['From'])
         self._assert_equal_sets(['qux@example.com', 'cc@example.org',
                                  'bcc1@example.org', 'bcc2@example.com',
@@ -498,7 +502,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         self.assertEqual(1, len(history))
         from_addr, recipients, message = history[0]
         self.assertEqual('trac@example.org', from_addr)
-        self.assertEqual('"My Project" <trac@example.org>', message['From'])
+        self.assertEqual('My Project <trac@example.org>', message['From'])
         self.assertEqual({'foo@example.com', 'foo@bar.example.org',
                           'baz@example.com', 'cc@example.org',
                           'bcc@example.org'}, set(recipients))

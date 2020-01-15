@@ -154,16 +154,22 @@ def create_address_header(addresses):
     """
     l = []
     for item in addresses:
+        if isinstance(item, Address):
+            l.append(item)
+            continue
         if isinstance(item, str):
-            instance = Address(addr_spec=item)
+            name = None
+            addr = item
         elif isinstance(item, (list, tuple)):
             name, addr = item
-            instance = Address(name or '', addr_spec=addr)
-        elif isinstance(item, Address):
-            instance = item
         else:
             raise ValueError('Unrecognized item %r' % item)
-        l.append(instance)
+        if '@' in addr:
+            username, domain = addr.rsplit('@', 1)
+        else:
+            username = addr
+            domain = ''
+        l.append(Address(name or '', username, domain))
     return l
 
 
