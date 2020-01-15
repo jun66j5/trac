@@ -389,17 +389,17 @@ class TicketFormatter(Component):
             i += 1
         width_l = width[0] + width[1] + 5
         width_r = width[2] + width[3] + 5
-        half_cols = (self.COLS - 1) / 2
+        half_cols = (self.COLS - 1) // 2
         if width_l + width_r + 1 > self.COLS:
             if ((width_l > half_cols and width_r > half_cols) or
-                    (width[0] > half_cols / 2 or width[2] > half_cols / 2)):
+                    (width[0] > half_cols // 2 or width[2] > half_cols // 2)):
                 width_l = half_cols
                 width_r = half_cols
             elif width_l > width_r:
-                width_l = min((self.COLS - 1) * 2 / 3, width_l)
+                width_l = min((self.COLS - 1) * 2 // 3, width_l)
                 width_r = self.COLS - width_l - 1
             else:
-                width_r = min((self.COLS - 1) * 2 / 3, width_r)
+                width_r = min((self.COLS - 1) * 2 // 3, width_r)
                 width_l = self.COLS - width_r - 1
         sep = width_l * '-' + '+' + width_r * '-'
         txt = sep + '\n'

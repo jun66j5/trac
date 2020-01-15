@@ -581,7 +581,7 @@ class NotificationTestCase(unittest.TestCase):
         notify_ticket_created(self.env, ticket)
         message = smtpd.get_message()
         headers, body = parse_smtp_message(message)
-        self.assertEqual('"Joe User" <user-joe@example.com>', headers['From'])
+        self.assertEqual('Joe User <user-joe@example.com>', headers['From'])
         self.assertEqual('<047.54e62c60198a043f858f1311784a5791@example.com>',
                          headers['Message-ID'])
         self.assertNotIn('In-Reply-To', headers)
@@ -592,7 +592,7 @@ class NotificationTestCase(unittest.TestCase):
         notify_ticket_changed(self.env, ticket, 'jim@domain')
         message = smtpd.get_message()
         headers, body = parse_smtp_message(message)
-        self.assertEqual('"Jim User" <user-jim@example.com>', headers['From'])
+        self.assertEqual('Jim User <user-jim@example.com>', headers['From'])
         self.assertEqual('<062.a890ee4ad5488fb49e60b68099995ba3@example.com>',
                          headers['Message-ID'])
         self.assertEqual('<047.54e62c60198a043f858f1311784a5791@example.com>',
@@ -614,7 +614,7 @@ class NotificationTestCase(unittest.TestCase):
         notify_ticket_changed(self.env, ticket, 'noemail')
         message = smtpd.get_message()
         headers, body = parse_smtp_message(message)
-        self.assertEqual('"My Trac" <trac@example.com>', headers['From'])
+        self.assertEqual('My Trac <trac@example.com>', headers['From'])
         self.assertEqual('<062.98cff27cb9fabd799bcb09f9edd6c99e@example.com>',
                          headers['Message-ID'])
         # Unknown author with name and e-mail address
@@ -624,7 +624,7 @@ class NotificationTestCase(unittest.TestCase):
         notify_ticket_changed(self.env, ticket, 'Test User <test@example.com>')
         message = smtpd.get_message()
         headers, body = parse_smtp_message(message)
-        self.assertEqual('"Test User" <test@example.com>', headers['From'])
+        self.assertEqual('Test User <test@example.com>', headers['From'])
         self.assertEqual('<062.6e08a363c340c1d4e2ed84c6123a1e9d@example.com>',
                          headers['Message-ID'])
         # Unknown author with e-mail address only
@@ -642,7 +642,7 @@ class NotificationTestCase(unittest.TestCase):
         notify_ticket_changed(self.env, ticket, 'unknown')
         message = smtpd.get_message()
         headers, body = parse_smtp_message(message)
-        self.assertEqual('"My Trac" <trac@example.com>', headers['From'])
+        self.assertEqual('My Trac <trac@example.com>', headers['From'])
         self.assertEqual('<062.6d5543782e7aba4100302487e75ce16f@example.com>',
                          headers['Message-ID'])
 
@@ -717,7 +717,8 @@ class NotificationTestCase(unittest.TestCase):
                   u'to generate a multi-line (2 lines) súmmäry'
         ticket = insert_ticket(self.env, reporter='joe.user@example.org',
                                summary=summary)
-        self._validate_mimebody((base64, 'base64', 'utf-8'), ticket, True)
+        self._validate_mimebody((base64.b64decode, 'base64', 'utf-8'),
+                                ticket, True)
 
     def test_mimebody_qp(self):
         """MIME QP/utf-8 encoding"""
@@ -726,8 +727,8 @@ class NotificationTestCase(unittest.TestCase):
                   u'to generate a multi-line (2 lines) súmmäry'
         ticket = insert_ticket(self.env, reporter='joe.user@example.org',
                                summary=summary)
-        self._validate_mimebody((quopri, 'quoted-printable', 'utf-8'),
-                                ticket, True)
+        self._validate_mimebody((quopri.decodestring, 'quoted-printable',
+                                 'utf-8'), ticket, True)
 
     def test_mimebody_none_7bit(self):
         """MIME None encoding resulting in 7bit"""
@@ -849,8 +850,8 @@ class NotificationTestCase(unittest.TestCase):
         # and charset
         try:
             if mime_decoder:
-                body = mime_decoder.decodestring(body)
-            body = str(body, charset)
+                body = mime_decoder(body)
+                body = str(body, charset)
         except Exception as e:
             raise AssertionError(e)
         # now processes each line of the body
@@ -1378,12 +1379,13 @@ Security sensitive:  0                           |          Blocking:
             self.env.config.set('notification', 'smtp_from_name', from_name)
             notify_ticket_created(self.env, ticket)
             message = smtpd.get_message()
-            headers, body = parse_smtp_message(message)
+            headers, body = parse_smtp_message(message, decode=False)
             return message, headers, body
 
         message, headers, body = notify(u'Träc')
-        self.assertEqual(r'"=?utf-8?b?VHLDpGM=?=" <trac@example.com>',
-                         headers['From'])
+        self.assertIn(headers['From'],
+                      ('=?utf-8?b?VHLDpGM=?= <trac@example.com>',
+                       '=?utf-8?q?Tr=C3=A4c?= <trac@example.com>'))
         message, headers, body = notify(u'Trac\\')
         self.assertEqual(r'"Trac\\" <trac@example.com>', headers['From'])
         message, headers, body = notify(u'Trac"')
@@ -1848,8 +1850,8 @@ class BatchTicketNotificationTestCase(unittest.TestCase):
         self.assertEqual('trac@localhost', sender)
         self.assertIn('Date', headers)
         self.assertEqual('[TracTest] Batch modify: #3, #10, #4, #11, #5, #12, '
-                         '#6, #13, #7, #14,...', headers['Subject'])
-        self.assertEqual('"TracTest" <trac@localhost>', headers['From'])
+                         '#6, #13, #7, #14, ...', headers['Subject'])
+        self.assertEqual('TracTest <trac@localhost>', headers['From'])
         self.assertEqual('<078.0b9de298f9080302285a0e333c75dd47@localhost>',
                          headers['Message-ID'])
         self.assertIn('Batch modification to #3, #10, #4, #11, #5, #12, #6, '
