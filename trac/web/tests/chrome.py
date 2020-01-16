@@ -1064,14 +1064,14 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
         content = self.chrome.render_template(MockRequest(self.env),
                                               self.filename, data,
                                               {'fragment': True})
-        self.assertIsInstance(content, str)
+        self.assertIsInstance(content, bytes)
         self.assertEqual(textwrap.dedent("""\
             <!DOCTYPE html>
             <html>
               <body>
                 <h1>Hell&amp;ö</h1>
               </body>
-            </html>"""), content)
+            </html>""").encode('utf-8'), content)
 
     def test_render_template_late_data(self):
         def fn():
@@ -1099,13 +1099,13 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
         data = {'fn': fn}
         content = self.chrome.render_template(req, filename, data,
                                               {'fragment': True})
-        self.assertIsInstance(content, str)
-        self.assertIn('<div>blahblah</div>', content)
-        self.assertIn(' jQuery.loadScript("/trac.cgi/chrome/'
-                      'common/js/blahblah.js", "");', content)
-        self.assertIn(' jQuery.loadStyleSheet("/trac.cgi/chrome/'
-                      'common/css/blahblah.css", "text/css");', content)
-        self.assertIn(' var blahblah=42;', content)
+        self.assertIsInstance(content, bytes)
+        self.assertIn(b'<div>blahblah</div>', content)
+        self.assertIn(b' jQuery.loadScript("/trac.cgi/chrome/'
+                      b'common/js/blahblah.js", "");', content)
+        self.assertIn(b' jQuery.loadStyleSheet("/trac.cgi/chrome/'
+                      b'common/css/blahblah.css", "text/css");', content)
+        self.assertIn(b' var blahblah=42;', content)
 
 
 def test_suite():
