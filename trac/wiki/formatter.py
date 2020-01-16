@@ -1303,8 +1303,6 @@ class Formatter(object):
             text = text.splitlines()
 
         for line in text:
-            if isinstance(line, str):
-                line = line.decode('utf-8')
             # Detect start of code block (new block or embedded block)
             block_start_match = None
             if WikiParser.ENDBLOCK not in line:
@@ -1435,8 +1433,6 @@ class OneLinerFormatter(Formatter):
         processor = None
         buf = io.StringIO()
         for line in text.strip().splitlines():
-            if isinstance(line, str):
-                line = line.decode('utf-8')
             if WikiParser.ENDBLOCK not in line and \
                    WikiParser._startblock_re.match(line):
                 in_code_block += 1
