@@ -1026,7 +1026,7 @@ class Request(object):
                            .replace(',', '%3C')
             self.outcookie[name]['path'] = path
 
-        cookies = to_unicode(self.outcookie.output(header='')).encode('utf-8')
+        cookies = to_unicode(self.outcookie.output(header=''))
         for cookie in cookies.splitlines():
             self._outheaders.append(('Set-Cookie', cookie.strip()))
 

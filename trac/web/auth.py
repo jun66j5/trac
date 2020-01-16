@@ -370,9 +370,10 @@ class BasicAuthentication(PasswordFileAuthentication):
                 if self.test(user, password):
                     return user
 
-        start_response('401 Unauthorized',
-                       [('WWW-Authenticate', 'Basic realm="%s"' % self.realm),
-                        ('Content-Length', '0')])('')
+        headers = [('WWW-Authenticate', 'Basic realm="%s"' % self.realm),
+                   ('Content-Length', '0')]
+        write = start_response('401 Unauthorized', headers)
+        write(b'')
 
 
 class DigestAuthentication(PasswordFileAuthentication):
@@ -429,11 +430,12 @@ class DigestAuthentication(PasswordFileAuthentication):
         self.active_nonces.append(nonce)
         if len(self.active_nonces) > self.MAX_NONCES:
             self.active_nonces = self.active_nonces[-self.MAX_NONCES:]
-        start_response('401 Unauthorized',
-                       [('WWW-Authenticate',
-                        'Digest realm="%s", nonce="%s", qop="auth", stale="%s"'
-                        % (self.realm, nonce, stale)),
-                        ('Content-Length', '0')])('')
+        headers = [('WWW-Authenticate',
+                    'Digest realm="%s", nonce="%s", qop="auth", stale="%s"' %
+                    (self.realm, nonce, stale)),
+                   ('Content-Length', '0')]
+        write = start_response('401 Unauthorized', headers)
+        write(b'')
 
     def do_auth(self, environ, start_response):
         header = environ.get('HTTP_AUTHORIZATION')
