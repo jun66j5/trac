@@ -719,9 +719,9 @@ class TicketModuleTestCase(unittest.TestCase):
                     if self.pick_next_text:
                         self.pick_next_text = False
 
-            extractor = TimefieldExtractor(io.BytesIO())
-            extractor.feed(content.encode('utf-8'))
-            return extractor.value.decode('utf-8').strip()
+            extractor = TimefieldExtractor(io.StringIO())
+            extractor.feed(content)
+            return extractor.value.strip()
 
         self._insert_ticket(summary='Time fields')
         self.assertEqual('', timefield_text())
