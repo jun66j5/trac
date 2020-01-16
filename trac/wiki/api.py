@@ -216,7 +216,7 @@ def parse_args(args, strict=True):
       ([], {})
       >>> parse_args('Some text')
       (['Some text'], {})
-      >>> parse_args('Some text, mode= 3, some other arg\, with a comma.')
+      >>> parse_args(r'Some text, mode= 3, some other arg\, with a comma.')
       (['Some text', ' some other arg, with a comma.'], {'mode': ' 3'})
       >>> parse_args('milestone=milestone1,status!=closed', strict=False)
       ([], {'status!': 'closed', 'milestone': 'milestone1'})

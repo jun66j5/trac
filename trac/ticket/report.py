@@ -72,14 +72,14 @@ def sql_skeleton(sql):
     This is probably not 100% robust but should be enough for most
     needs.
 
-    >>> re.sub('\s+', lambda m: '<%d>' % len(m.group(0)), sql_skeleton(''' \\n\
+    >>> re.sub(r'\s+', lambda m: '<%d>' % len(m.group(0)), sql_skeleton('''\\n\
         SELECT a FROM (SELECT x FROM z ORDER BY COALESCE(u, ')/*(')) ORDER \\n\
           /* SELECT a FROM (SELECT x /* FROM z                             \\n\
-                        ORDER BY */ COALESCE(u, '\)X(')) ORDER */          \\n\
+                        ORDER BY */ COALESCE(u, ')X(')) ORDER */           \\n\
           BY c, (SELECT s FROM f WHERE v in ('ORDER BY', '(\\')')          \\n\
                  ORDER BY (1), '') -- LIMIT                                \\n\
          '''))
-    '<10>SELECT<1>a<1>FROM<48>ORDER<164>BY<1>c,<144>'
+    '<9>SELECT<1>a<1>FROM<48>ORDER<164>BY<1>c,<144>'
     """
     old = None
     while sql != old:
