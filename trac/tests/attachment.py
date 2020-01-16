@@ -169,7 +169,7 @@ class AttachmentTestCase(unittest.TestCase):
         self.assertEqual(8, attachment.size)
         self.assertEqual(self.datetime, attachment.date)
         self.assertEqual('joe', attachment.author)
-        self.assertEqual("<Attachment u'foo.txt'>", repr(attachment))
+        self.assertEqual("<Attachment 'foo.txt'>", repr(attachment))
 
     def test_existing_attachment_from_resource(self):
         resource = Resource('ticket', 43).child('attachment', 'foo.txt')
@@ -179,7 +179,7 @@ class AttachmentTestCase(unittest.TestCase):
         self.assertEqual(8, attachment.size)
         self.assertEqual(self.datetime, attachment.date)
         self.assertEqual('joe', attachment.author)
-        self.assertEqual("<Attachment u'foo.txt'>", repr(attachment))
+        self.assertEqual("<Attachment 'foo.txt'>", repr(attachment))
 
     def test_get_path(self):
         attachment = Attachment(self.env, 'ticket', 42)
@@ -555,8 +555,8 @@ class AttachmentModuleTestCase(unittest.TestCase):
 
     def test_download_zip(self):
         att = Attachment(self.env, 'parent_realm', 'parent_id')
-        att.description = 'Blah blah'
-        att.insert('foo.txt', io.BytesIO(b'foo'), 3,
+        att.description = 'Bláh błah'
+        att.insert('föö.txt', io.BytesIO(b'foo'), 3,
                    datetime(2016, 9, 23, 12, 34, 56, tzinfo=utc))
         att = Attachment(self.env, 'parent_realm', 'parent_id')
         att.insert('bar.jpg', io.BytesIO(b'bar'), 3,
@@ -568,20 +568,20 @@ class AttachmentModuleTestCase(unittest.TestCase):
         self.assertTrue(module.match_request(req))
         self.assertRaises(RequestDone, module.process_request, req)
         z = zipfile.ZipFile(req.response_sent, 'r')
-        self.assertEqual(['bar.jpg', 'foo.txt'],
+        self.assertEqual(['bar.jpg', 'föö.txt'],
                          sorted(i.filename for i in z.infolist()))
 
-        zinfo = z.getinfo('foo.txt')
-        self.assertEqual('foo', z.read('foo.txt'))
+        zinfo = z.getinfo('föö.txt')
+        self.assertEqual(b'foo', z.read('föö.txt'))
         self.assertEqual(3, zinfo.file_size)
         self.assertEqual((2016, 9, 23, 12, 34, 56), zinfo.date_time)
-        self.assertEqual('Blah blah', zinfo.comment)
+        self.assertEqual('Bláh błah'.encode('utf-8'), zinfo.comment)
 
         zinfo = z.getinfo('bar.jpg')
-        self.assertEqual('bar', z.read('bar.jpg'))
+        self.assertEqual(b'bar', z.read('bar.jpg'))
         self.assertEqual(3, zinfo.file_size)
         self.assertEqual((2016, 12, 14, 23, 56, 30), zinfo.date_time)
-        self.assertEqual('', zinfo.comment)
+        self.assertEqual(b'', zinfo.comment)
 
     def test_preview_valid_xhtml(self):
         chrome = Chrome(self.env)
@@ -601,22 +601,22 @@ class AttachmentModuleTestCase(unittest.TestCase):
         attachment = Attachment(self.env, 'parent_realm', 'parent_id')
         attachment.insert('empty', io.BytesIO(), 0, 1)
         result = render(attachment)
-        self.assertIn('<strong>(The file is empty)</strong>', result)
+        self.assertIn(b'<strong>(The file is empty)</strong>', result)
         xml = minidom.parseString(result)
 
         # text file
         attachment = Attachment(self.env, 'parent_realm', 'parent_id')
         attachment.insert('foo.txt', io.BytesIO(b'text'), 4, 1)
         result = render(attachment)
-        self.assertIn('<tr><th id="L1"><a href="#L1">1</a></th>'
-                      '<td>text</td></tr>', result)
+        self.assertIn(b'<tr><th id="L1"><a href="#L1">1</a></th>'
+                      b'<td>text</td></tr>', result)
         xml = minidom.parseString(result)
 
         # preview unavailable
         attachment = Attachment(self.env, 'parent_realm', 'parent_id')
         attachment.insert('foo.dat', io.BytesIO(b'\x00\x00\x01\xb3'), 4, 1)
         result = render(attachment)
-        self.assertIn('<strong>HTML preview not available</strong>', result)
+        self.assertIn(b'<strong>HTML preview not available</strong>', result)
         xml = minidom.parseString(result)
 
 
