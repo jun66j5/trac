@@ -81,7 +81,7 @@ class GitCommandMixin(object):
         secs = offset.days * 3600 * 24 + offset.seconds
         hours, rem = divmod(abs(secs), 3600)
         return '%d %c%02d:%02d' % (to_timestamp(dt), '-' if secs < 0 else '+',
-                                   hours, rem / 60)
+                                   hours, rem // 60)
 
     def _set_committer_date(self, env, dt):
         if not isinstance(dt, str):

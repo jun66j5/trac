@@ -1060,7 +1060,7 @@ class Formatter(object):
         if separator[-1] == '=':
             numpipes -= 1
             cell = 'th'
-        colspan = numpipes / 2
+        colspan = numpipes // 2
         if is_last is not None:
             if is_last and is_last[-1] == '\\':
                 self.continue_table_row = 1

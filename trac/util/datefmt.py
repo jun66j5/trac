@@ -114,7 +114,7 @@ if os.name == 'nt':
                 raise RuntimeError('[LastError %s %d]' %
                                    (func_systime, GetLastError()))
             ft = ft.dwHighDateTime * 0x100000000 + ft.dwLowDateTime
-            usec = (ft - ft_epoch) / 10
+            usec = (ft - ft_epoch) // 10
             return usec / 1000000.0
 
         def datetime_now(tz=None):
@@ -1001,7 +1001,7 @@ class LocalTimezone(tzinfo):
     def _tzname_offset(self, offset):
         secs = offset.days * 3600 * 24 + offset.seconds
         hours, rem = divmod(abs(secs), 3600)
-        return 'UTC%c%02d:%02d' % ('+-'[secs < 0], hours, rem / 60)
+        return 'UTC%c%02d:%02d' % ('+-'[secs < 0], hours, rem // 60)
 
     def _tzinfo(self, dt, is_dst=False):
         tzinfo = dt.tzinfo

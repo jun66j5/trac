@@ -176,8 +176,8 @@ class MySQLConnector(Component):
         with a max of 767 bytes per column.
         """
         cols = []
-        limit_col = 767 / max_bytes
-        limit = min(self._max_key_length / (max_bytes * len(columns)),
+        limit_col = 767 // max_bytes
+        limit = min(self._max_key_length // (max_bytes * len(columns)),
                     limit_col)
         for c in columns:
             name = _quote(c)

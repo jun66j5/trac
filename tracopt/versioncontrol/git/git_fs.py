@@ -217,7 +217,7 @@ def _parse_user_time(s):
     """
 
     user, time, tz_str = s.rsplit(None, 2)
-    tz = FixedOffset((int(tz_str) * 6) / 10, tz_str)
+    tz = FixedOffset((int(tz_str) * 6) // 10, tz_str)
     time = datetime.fromtimestamp(float(time), tz)
     return user, time
 

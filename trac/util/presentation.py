@@ -411,8 +411,8 @@ class Paginator(object):
         min_page = 1
         max_page = int(ceil(float(self.num_items) / self.max_per_page))
         current_page = self.page + 1
-        start_page = current_page - page_index_count / 2
-        end_page = current_page + page_index_count / 2 + \
+        start_page = current_page - page_index_count // 2
+        end_page = current_page + page_index_count // 2 + \
                    (page_index_count % 2 - 1)
 
         if start_page < min_page:

@@ -272,7 +272,7 @@ class BrowserModule(Component):
         if intermediate:
             intermediate_color = parse_color(self.intermediate_color, None)
             if not intermediate_color:
-                intermediate_color = tuple([(a + b) / 2 for a, b in
+                intermediate_color = tuple([(a + b) // 2 for a, b in
                                             zip(newest_color, oldest_color)])
             def colorizer(value):
                 if value <= intermediate:
