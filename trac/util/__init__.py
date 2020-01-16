@@ -367,14 +367,7 @@ def create_zipinfo(filename, mtime=None, dir=False, executable=False, symlink=Fa
     :param comment: comment of the entry
     """
     zipinfo = zipfile.ZipInfo()
-
-    # The general purpose bit flag 11 is used to denote
-    # UTF-8 encoding for path and comment. Only set it for
-    # non-ascii files for increased portability.
-    # See http://www.pkware.com/documents/casestudies/APPNOTE.TXT
-    if any(ord(c) >= 128 for c in filename):
-        zipinfo.flag_bits |= 0x0800
-    zipinfo.filename = filename.encode('utf-8')
+    zipinfo.filename = filename
 
     if mtime is not None:
         mtime = to_datetime(mtime, utc)
@@ -411,7 +404,8 @@ def create_zipinfo(filename, mtime=None, dir=False, executable=False, symlink=Fa
             zipinfo.external_attr |= 0o120000 << 16  # symlink file type
 
     if comment:
-        zipinfo.comment = comment.encode('utf-8')
+        zipinfo.comment = comment.encode('utf-8') \
+                          if isinstance(comment, str) else comment
 
     return zipinfo
 
