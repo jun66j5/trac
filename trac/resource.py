@@ -151,24 +151,24 @@ class Resource(object):
 
         >>> main = Resource('wiki', 'WikiStart')
         >>> repr(main)
-        "<Resource u'wiki:WikiStart'>"
+        "<Resource 'wiki:WikiStart'>"
 
         >>> Resource(main) is main
         True
 
         >>> main3 = Resource(main, version=3)
         >>> repr(main3)
-        "<Resource u'wiki:WikiStart@3'>"
+        "<Resource 'wiki:WikiStart@3'>"
 
         >>> main0 = main3(version=0)
         >>> repr(main0)
-        "<Resource u'wiki:WikiStart@0'>"
+        "<Resource 'wiki:WikiStart@0'>"
 
         In a copy, if `id` is overridden, then the original `version` value
         will not be reused.
 
         >>> repr(Resource(main3, id="WikiEnd"))
-        "<Resource u'wiki:WikiEnd'>"
+        "<Resource 'wiki:WikiEnd'>"
 
         >>> repr(Resource(None))
         "<Resource ''>"
@@ -218,7 +218,7 @@ class Resource(object):
         Same as `__call__`, except that this one sets the parent to `self`.
 
         >>> repr(Resource(None).child('attachment', 'file.txt'))
-        "<Resource u', attachment:file.txt'>"
+        "<Resource ', attachment:file.txt'>"
         """
         return Resource(realm, id, version, self)
 
@@ -326,13 +326,13 @@ def get_resource_description(env, resource, format='default', **kwargs):
     >>> env = EnvironmentStub()
     >>> main = Resource('generic', 'Main')
     >>> get_resource_description(env, main)
-    u'generic:Main'
+    'generic:Main'
 
     >>> get_resource_description(env, main(version=3))
-    u'generic:Main'
+    'generic:Main'
 
     >>> get_resource_description(env, main(version=3), format='summary')
-    u'generic:Main at version 3'
+    'generic:Main at version 3'
 
     """
     manager = ResourceSystem(env).get_resource_manager(resource.realm)
