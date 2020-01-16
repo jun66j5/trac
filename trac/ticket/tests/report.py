@@ -274,9 +274,12 @@ class ReportModuleTestCase(unittest.TestCase):
 
         self.assertRaises(RequestDone,
                           self.report_module._render_view, req, rid)
-        self.assertEqual('http://example.org/trac.cgi/query?' +
-                         'type=r%C3%A9sum%C3%A9&report=' + str(rid),
-                         req.headers_sent['Location'])
+        str_rid = str(rid)
+        self.assertIn(req.headers_sent['Location'],
+                      ['http://example.org/trac.cgi/query?'
+                       'type=r%C3%A9sum%C3%A9&report=' + str_rid,
+                       'http://example.org/trac.cgi/query?report=' +
+                       str_rid + '&type=r%C3%A9sum%C3%A9'])
 
     def test_quoted_id_with_var(self):
         req = MockRequest(self.env)
