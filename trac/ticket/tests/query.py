@@ -1098,7 +1098,8 @@ ORDER BY COALESCE(c.%(ticket)s,'')='',c.%(ticket)s,t.id""" % quoted)
         req = MockRequest(self.env)
         content, mimetype, ext = Mimeview(self.env).convert_content(
             req, 'trac.ticket.Query', query, 'csv')
-        self.assertEqual('\xef\xbb\xbfid,col1\r\n1,"value, needs escaped"\r\n',
+        self.assertEqual(b'\xef\xbb\xbf'
+                         b'id,col1\r\n1,"value, needs escaped"\r\n',
                          content)
 
     def test_csv_obfuscation(self):
@@ -1361,6 +1362,7 @@ ORDER BY COALESCE(t.id,0)=0,t.id""".format(**quoted))
         rendered = Chrome(self.env).render_template(req, template, data,
                                                     {'fragment': False,
                                                      'iterable': False})
+        rendered = str(rendered, 'utf-8')
         matches = list(re.finditer(r'<td class="blah">\s*([^<\s]*)\s*</td>',
                                    rendered))
         self.assertEqual('yes', matches[0].group(1))
@@ -1371,10 +1373,10 @@ ORDER BY COALESCE(t.id,0)=0,t.id""".format(**quoted))
                                   u'id=%s&col=blah&order=id' % id_range)
         csv, mimetype, ext = Mimeview(self.env).convert_content(
             req, 'trac.ticket.Query', query, 'csv')
-        self.assertEqual('\xef\xbb\xbf'
-                         'id,Blah\r\n'
-                         '%d,1\r\n'
-                         '%d,0\r\n' % (tktids[0], tktids[1]),
+        self.assertEqual(b'\xef\xbb\xbf'
+                         b'id,Blah\r\n'
+                         b'%d,1\r\n'
+                         b'%d,0\r\n' % (tktids[0], tktids[1]),
                          csv)
 
     def test_rss_feed_for_authenticated_users(self):

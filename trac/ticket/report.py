@@ -894,10 +894,12 @@ class ReportModule(Component):
 
         def iterate():
             out = io.BytesIO()
-            writer = csv.writer(out, delimiter=sep, quoting=csv.QUOTE_MINIMAL)
+            writer = csv.writer(io.TextIOWrapper(out, encoding='utf-8',
+                                                 write_through=True),
+                                delimiter=sep, quoting=csv.QUOTE_MINIMAL)
 
             def writerow(values):
-                writer.writerow([value.encode('utf-8') for value in values])
+                writer.writerow(values)
                 rv = out.getvalue()
                 out.truncate(0)
                 out.seek(0)
@@ -905,7 +907,7 @@ class ReportModule(Component):
 
             converters = [col_conversions.get(c.strip('_'), cell_value)
                           for c in cols]
-            yield '\xef\xbb\xbf'  # BOM
+            yield b'\xef\xbb\xbf'  # BOM
             yield writerow(c for c in cols if c not in self._html_cols)
             for row in rows:
                 yield writerow(converters[i](cell)
@@ -916,7 +918,7 @@ class ReportModule(Component):
         if Chrome(self.env).use_chunked_encoding:
             length = None
         else:
-            data = ''.join(data)
+            data = b''.join(data)
             length = len(data)
 
         req.send_response(200)

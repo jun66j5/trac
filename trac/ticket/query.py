@@ -1165,17 +1165,18 @@ class QueryModule(Component):
     def _export_csv(self, req, query, sep=',', mimetype='text/plain'):
         def iterate():
             out = io.BytesIO()
-            writer = csv.writer(out, delimiter=sep, quoting=csv.QUOTE_MINIMAL)
+            writer = csv.writer(io.TextIOWrapper(out, encoding='utf-8',
+                                                 write_through=True),
+                                delimiter=sep, quoting=csv.QUOTE_MINIMAL)
 
             def writerow(values):
-                writer.writerow([str(value).encode('utf-8')
-                                 for value in values])
+                writer.writerow(map(str, values))
                 rv = out.getvalue()
                 out.truncate(0)
                 out.seek(0)
                 return rv
 
-            yield '\xef\xbb\xbf'  # BOM
+            yield b'\xef\xbb\xbf'  # BOM
 
             with translation_deactivated():
                 labels = TicketSystem(self.env).get_ticket_field_labels()

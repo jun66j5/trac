@@ -1187,8 +1187,10 @@ class TicketModule(Component):
                   if f['name'] not in ('time', 'changetime')]
         content = io.BytesIO()
         content.write(b'\xef\xbb\xbf')   # BOM
-        writer = csv.writer(content, delimiter=sep, quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['id'] + [str(f['name']) for f in fields])
+        writer = csv.writer(io.TextIOWrapper(content, encoding='utf-8',
+                                             write_through=True),
+                            delimiter=sep, quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(['id'] + [f['name'] for f in fields])
 
         context = web_context(req, ticket.resource)
         cols = [str(ticket.id)]
@@ -1201,7 +1203,7 @@ class TicketModule(Component):
                 format = ticket.fields.by_name(name).get('format')
                 value = user_time(req, format_date_or_datetime, format,
                                   value) if value else ''
-            cols.append(value.encode('utf-8'))
+            cols.append(value)
         writer.writerow(cols)
         return content.getvalue(), '%s;charset=utf-8' % mimetype
 
