@@ -49,7 +49,7 @@ LIMIT_OFFSET = '@LIMIT_OFFSET@'
 def cell_value(v):
     """Normalize a cell value for display.
     >>> (cell_value(None), cell_value(0), cell_value(1), cell_value('v'))
-    ('', '0', u'1', u'v')
+    ('', '0', '1', 'v')
     """
     return '0' if v == 0 else str(v) if v else ''
 
