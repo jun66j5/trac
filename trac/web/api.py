@@ -679,7 +679,7 @@ class Request(object):
         """
         if name.lower() == 'content-type':
             self._content_type = value.split(';', 1)[0]
-        self._outheaders.append((name, str(value).encode('utf-8')))
+        self._outheaders.append((name, str(value)))
 
     def end_headers(self, exc_info=None):
         """Must be called after all headers have been sent and before the
@@ -858,7 +858,7 @@ class Request(object):
             bufsize = 0
             buf = []
             buf_append = buf.append
-            if isinstance(data, str):
+            if isinstance(data, bytes):
                 data = [data]
             for chunk in data:
                 if isinstance(chunk, str):
@@ -868,11 +868,11 @@ class Request(object):
                 bufsize += len(chunk)
                 buf_append(chunk)
                 if bufsize >= chunk_size:
-                    self._write(''.join(buf))
+                    self._write(b''.join(buf))
                     bufsize = 0
                     buf[:] = ()
             if bufsize > 0:
-                self._write(''.join(buf))
+                self._write(b''.join(buf))
         except IOError as e:
             if is_client_disconnect_exception(e):
                 raise RequestDone
@@ -927,7 +927,10 @@ class Request(object):
             qs_on_post = self.environ.pop('QUERY_STRING', '')
         try:
             fs = _FieldStorage(fp, environ=self.environ,
-                               keep_blank_values=True)
+                               keep_blank_values=True, errors='strict')
+        except UnicodeDecodeError as e:
+            raise HTTPBadRequest(_("Invalid encoding in form data: %(msg)s",
+                                   msg=exception_to_unicode(e)))
         except IOError as e:
             if is_client_disconnect_exception(e):
                 raise HTTPBadRequest(
@@ -945,19 +948,11 @@ class Request(object):
         for value in fs.list or ():
             name = value.name
             raise_if_null_bytes(name)
-            try:
-                if name is not None:
-                    name = str(name, 'utf-8')
-                if value.filename:
-                    raise_if_null_bytes(value.filename)
-                else:
-                    value = value.value
-                    raise_if_null_bytes(value)
-                    value = str(value, 'utf-8')
-            except UnicodeDecodeError as e:
-                raise HTTPBadRequest(
-                    _("Invalid encoding in form data: %(msg)s",
-                      msg=exception_to_unicode(e)))
+            if value.filename:
+                raise_if_null_bytes(value.filename)
+            else:
+                value = value.value
+                raise_if_null_bytes(value)
             args.append((name, value))
         return args
 
@@ -970,7 +965,7 @@ class Request(object):
 
     def _parse_headers(self):
         headers = [(name[5:].replace('_', '-').lower(), value)
-                   for name, value in list(self.environ.items())
+                   for name, value in self.environ.items()
                    if name.startswith('HTTP_')]
         if 'CONTENT_LENGTH' in self.environ:
             headers.append(('content-length', self.environ['CONTENT_LENGTH']))

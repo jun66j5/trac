@@ -209,8 +209,9 @@ def MockRequest(env, **kwargs):
         'SERVER_PORT': kwargs.get('server_port', '80'),
     }
     for key in environ:
-        if isinstance(environ[key], str):
-            environ[key] = environ[key].encode('utf-8')
+        if isinstance(environ[key], bytes):
+            environ[key] = str(environ[key], 'utf-8')
+
 
     status_sent = []
     headers_sent = {}
