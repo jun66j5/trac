@@ -536,6 +536,8 @@ def dispatch_request(environ, start_response):
             # the remaining path in the `PATH_INFO` variable.
             script_name = environ.get('SCRIPT_NAME', '')
             try:
+                if isinstance(script_name, str):
+                    script_name = script_name.encode('iso-8859-1')  # PEP 3333
                 script_name = str(script_name, 'utf-8')
             except UnicodeDecodeError:
                 errmsg = 'Invalid URL encoding (was %r)' % script_name
@@ -553,6 +555,7 @@ def dispatch_request(environ, start_response):
                     errmsg = 'Environment not found'
 
             if errmsg:
+                errmsg = errmsg.encode('utf-8')
                 start_response('404 Not Found',
                                [('Content-Type', 'text/plain'),
                                 ('Content-Length', str(len(errmsg)))])

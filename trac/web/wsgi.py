@@ -119,7 +119,7 @@ class WSGIGateway(object, metaclass=ABCMeta):
                     if chunk:
                         self._write(chunk)
                 if not self.headers_sent or self.use_chunked:
-                    self._write('') # last chunk '\r\n0\r\n' if use_chunked
+                    self._write(b'') # last chunk '\r\n0\r\n' if use_chunked
         finally:
             if hasattr(response, 'close'):
                 response.close()
@@ -173,17 +173,13 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
             environ['REMOTE_HOST'] = host
         environ['REMOTE_ADDR'] = self.client_address[0]
 
-        if self.headers.typeheader is None:
-            environ['CONTENT_TYPE'] = self.headers.type
-        else:
-            environ['CONTENT_TYPE'] = self.headers.typeheader
+        environ['CONTENT_TYPE'] = self.headers.get_content_type()
 
-        length = self.headers.getheader('content-length')
+        length = self.headers.get('content-length')
         if length:
             environ['CONTENT_LENGTH'] = length
 
-        for name, value in [header.split(':', 1) for header
-                            in self.headers.headers]:
+        for name, value in self.headers.items():
             name = name.replace('-', '_').upper()
             value = value.strip()
             if name in environ:
@@ -253,10 +249,12 @@ class WSGIServerGateway(WSGIGateway):
                         headers.append(('Connection', 'close'))
                 self.handler.send_response(int(status[:3]))
                 for name, value in headers:
+                    if isinstance(value, bytes):
+                        value = str(value, 'utf-8')
                     self.handler.send_header(name, value)
                 self.handler.end_headers()
             if self.use_chunked:
-                self.handler.wfile.write('%x\r\n%s\r\n' % (len(data), data))
+                self.handler.wfile.write(b'%x\r\n%s\r\n' % (len(data), data))
             else:
                 self.handler.wfile.write(data)
         except IOError as e:
