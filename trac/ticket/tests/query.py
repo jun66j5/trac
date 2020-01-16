@@ -1164,7 +1164,7 @@ ORDER BY COALESCE(c.%(ticket)s,'')='',c.%(ticket)s,t.id""" % quoted)
 
     def test_null_time_and_changetime_with_saved_query_tickets(self):
         with self.env.db_transaction as db:
-            n = self.n_tickets / 2
+            n = self.n_tickets // 2
             db("UPDATE ticket SET time=NULL WHERE id<%s", (n,))
             db("UPDATE ticket SET changetime=NULL WHERE id>%s", (n,))
         req = MockRequest(self.env, path_info='/query', args={'id': '!0'})
