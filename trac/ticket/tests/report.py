@@ -263,8 +263,8 @@ class ReportModuleTestCase(unittest.TestCase):
 
         self.assertRaises(RequestDone,
                           self.report_module._send_csv, req, cols, rows)
-        self.assertEqual('\xef\xbb\xbfTEST_COL,TEST_ZERO\r\n"'
-                         'value, needs escaped",0\r\n',
+        self.assertEqual(b'\xef\xbb\xbfTEST_COL,TEST_ZERO\r\n"'
+                         b'value, needs escaped",0\r\n',
                          req.response_sent.getvalue())
 
     def test_saved_custom_query_redirect(self):
@@ -375,6 +375,7 @@ class ReportModuleTestCase(unittest.TestCase):
         rendered = Chrome(self.env).render_template(req, rv[0], rv[1],
                                                     {'fragment': False,
                                                      'iterable': False})
+        rendered = str(rendered, 'utf-8')
         self.assertRegex(rendered,
                          r'<tr[^>]*>\s*'
                          r'<td class="fullrow foo" colspan="100">'
@@ -406,6 +407,7 @@ class ReportModuleTestCase(unittest.TestCase):
         rendered = Chrome(self.env).render_template(req, rv[0], rv[1],
                                                     {'fragment': False,
                                                      'iterable': False})
+        rendered = str(rendered, 'utf-8')
         self.assertRegex(rendered,
             r'<td class="date">\s*(12:00:42 AM|00:00:42)\s*</td>')
         self.assertRegex(rendered,
