@@ -141,6 +141,9 @@ class UnicodeConfigParser(ConfigParser):
     def remove_section(self, section):
         ConfigParser.remove_section(self, section)
 
+    def read(self, filename, encoding='utf-8'):
+        return ConfigParser.read(self, filename, encoding)
+
     def __copy__(self):
         parser = self.__class__()
         parser._sections = copy.copy(self._sections)
