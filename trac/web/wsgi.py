@@ -50,7 +50,8 @@ class _ErrorsWrapper(object):
         self.logfunc(msg)
 
     def writelines(self, seq):
-        map(self.write, seq)
+        for item in seq:
+            self.write(item)
 
 
 class _FileWrapper(object):
