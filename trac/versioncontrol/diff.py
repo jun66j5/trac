@@ -71,8 +71,8 @@ def get_filtered_hunks(fromlines, tolines, context=None,
     SequenceMatcher.
     """
     if ignore_space_changes:
-        fromlines = map(_norm_space_changes, fromlines)
-        tolines = map(_norm_space_changes, tolines)
+        fromlines = list(map(_norm_space_changes, fromlines))
+        tolines = list(map(_norm_space_changes, tolines))
     if ignore_case:
         fromlines = [l.lower() for l in fromlines]
         tolines = [l.lower() for l in tolines]

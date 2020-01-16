@@ -121,7 +121,7 @@ class GitCore(object):
                     if isinstance(arg, str):
                         arg = arg.encode(fs_encoding, 'replace')
                     return arg
-            cmd = map(to_cmd_encoding, cmd)
+            cmd = list(map(to_cmd_encoding, cmd))
         return cmd
 
     def __pipe(self, git_cmd, *cmd_args, **kw):
@@ -484,7 +484,7 @@ class Storage(object):
         refs = {refname: _rev_reuse(rev) for refname, rev in refs.items()}
         head_revs = {rev for refname, rev in refs.items()
                          if refname.startswith('refs/heads/')}
-        rev_list = [map(_rev_reuse, line.split())
+        rev_list = [list(map(_rev_reuse, line.split()))
                     for line in self.repo.rev_list('--parents', '--topo-order',
                                                    '--all').splitlines()]
         revs_seen = None

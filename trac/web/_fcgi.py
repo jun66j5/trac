@@ -1058,8 +1058,8 @@ class Server(object):
         """
         web_server_addrs = os.environ.get('FCGI_WEB_SERVER_ADDRS')
         if web_server_addrs is not None:
-            web_server_addrs = map(lambda x: x.strip(),
-                                   web_server_addrs.split(','))
+            web_server_addrs = list(map(lambda x: x.strip(),
+                                        web_server_addrs.split(',')))
 
         sock = self._setupSocket()
 
