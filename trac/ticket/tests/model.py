@@ -962,7 +962,7 @@ class EnumTestCase(unittest.TestCase):
 
     def test_repr(self):
         self.assertEqual("<Priority None None>", repr(Priority(self.env)))
-        self.assertEqual("<Priority 'major' u'3'>",
+        self.assertEqual("<Priority 'major' '3'>",
                          repr(Priority(self.env, 'major')))
 
     def test_priority_fetch(self):
@@ -1150,7 +1150,7 @@ class MilestoneTestCase(unittest.TestCase):
         self.assertIsNone(milestone.due)
         self.assertIsNone(milestone.completed)
         self.assertEqual('', milestone.description)
-        self.assertEqual("<Milestone u'Test'>", repr(milestone))
+        self.assertEqual("<Milestone 'Test'>", repr(milestone))
 
     def test_create_and_update_milestone(self):
         milestone = Milestone(self.env)
