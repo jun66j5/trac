@@ -221,12 +221,15 @@ class AtomicFile(object):
     atomically (on Unix, at least) to its final name. If it is rolled back,
     the temporary file is removed.
     """
-    def __init__(self, path, mode='w', bufsize=-1):
+    def __init__(self, path, mode='w', bufsize=-1, encoding='utf-8',
+                 errors='strict'):
         self._file = None
         self._path = os.path.realpath(path)
         dir, name = os.path.split(self._path)
         fd, self._temp = tempfile.mkstemp(prefix=name + '-', dir=dir)
-        self._file = os.fdopen(fd, mode, bufsize)
+        kwargs = {} if 'b' in mode else \
+                 {'encoding': encoding, 'errors': errors}
+        self._file = os.fdopen(fd, mode, bufsize, **kwargs)
 
         # Try to preserve permissions and group ownership, but failure
         # should not be fatal
