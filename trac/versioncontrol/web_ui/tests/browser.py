@@ -58,7 +58,7 @@ class MockRepositoryConnector(Component):
                 else:
                     entries = ['dir1', 'dir2']
                 entries = [posixpath.join(path, entry) for entry in entries]
-            content = 'Contents for %s' % to_utf8(path)
+            content = b'Contents for %s' % to_utf8(path)
             node = Mock(Node, repos, path, rev, kind,
                         created_path=path, created_rev=rev,
                         get_entries=lambda: iter(get_node(entry, rev)
@@ -413,13 +413,13 @@ anonymous = !BROWSER_VIEW, !FILE_VIEW
 
         zi = z.getinfo('trunk/dir1/file.txt')
         self.assertEqual(0o644 << 16, zi.external_attr)
-        self.assertEqual('Contents for trunk/dir1/file.txt',
+        self.assertEqual(b'Contents for trunk/dir1/file.txt',
                          z.read('trunk/dir1/file.txt'))
         self.assertEqual((2017, 3, 31, 12, 34, 56), zi.date_time)
 
         zi = z.getinfo('trunk/dir2/file.txt')
         self.assertEqual(0o644 << 16, zi.external_attr)
-        self.assertEqual('Contents for trunk/dir2/file.txt',
+        self.assertEqual(b'Contents for trunk/dir2/file.txt',
                          z.read('trunk/dir2/file.txt'))
         self.assertEqual((2017, 3, 31, 12, 34, 56), zi.date_time)
 
