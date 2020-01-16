@@ -489,9 +489,9 @@ class TracAdminHelpMacro(WikiMacroBase):
                                    '"%(command)s"', command=content))
         else:
             doc = TracAdmin.all_docs(self.env)
-        buf = io.BytesIO()
+        buf = io.StringIO()
         TracAdmin.print_doc(doc, buf, long=True)
-        return html.PRE(buf.getvalue().decode('utf-8'), class_='wiki')
+        return html.pre(buf.getvalue(), class_='wiki')
 
 
 def _quote_args(args):
