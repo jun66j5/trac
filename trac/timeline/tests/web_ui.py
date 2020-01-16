@@ -275,7 +275,7 @@ class TimelineEventProviderTestCase(unittest.TestCase):
         rv = self._process_request(req)
         self.assertEqual('timeline.rss', rv[0])
         self.assertEqual({'content_type': 'application/rss+xml'}, rv[2])
-        output = self._render_template(req, *rv)
+        output = str(self._render_template(req, *rv), 'utf-8')
 
         self.assertIn('<title>summary 1: &lt;b&gt;&amp;&lt;/b&gt;</title>',
                       output)
