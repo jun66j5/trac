@@ -131,7 +131,7 @@ class EnvironmentTestCase(unittest.TestCase):
             Environment(self.env.path)
         self.assertEqual(
             "No Trac environment found at %s\n"
-            "IOError: [Errno 2] No such file or directory: '%s'"
+            "FileNotFoundError: [Errno 2] No such file or directory: '%s'"
             % (self.env.path, version_file),
             str(cm.exception))
 
