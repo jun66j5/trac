@@ -441,9 +441,10 @@ def content_to_unicode(env, content, mimetype):
     >>> from trac.test import EnvironmentStub
     >>> env = EnvironmentStub()
     >>> content_to_unicode(env, u"\ufeffNo BOM! h\u00e9 !", '')
-    u'No BOM! h\\xe9 !'
-    >>> content_to_unicode(env, "\xef\xbb\xbfNo BOM! h\xc3\xa9 !", '')
-    u'No BOM! h\\xe9 !'
+    'No BOM! h\\xe9 !'
+    >>> content_to_unicode(env, bytes([0xEF, 0xBB, 0xBF]) + b'No BOM! h' +
+    ...                         bytes([0xC3, 0xA9]) + b' !', '')
+    'No BOM! h\\xe9 !'
 
     """
     mimeview = Mimeview(env)
@@ -702,15 +703,27 @@ class Mimeview(Component):
             output = conversion.converter.convert_content(req, mimetype,
                                                           content,
                                                           conversion.key)
-            if output:
-                content, content_type = output
-                if iterable:
-                    if isinstance(content, str):
-                        content = (content,)
-                else:
-                    if not isinstance(content, str):
-                        content = ''.join(content)
-                return content, content_type, conversion.extension
+            if not output:
+                continue
+            content, content_type = output
+            is_iterable = not isinstance(content, (str, bytes))
+            if iterable:
+                if not is_iterable:
+                    content = (content,)
+            else:
+                if is_iterable:
+                    content = iter(content)
+                    try:
+                        first = next(content)
+                    except StopIteration:
+                        content = b''  # the iterable is empty
+                    else:
+                        join = ''.join if isinstance(first, str) else b''.join
+                        def g():
+                            yield first
+                            yield from content
+                        content = join(g())
+            return content, content_type, conversion.extension
         raise TracError(
             _("No available MIME conversions from %(old)s to %(new)s",
               old=mimetype, new=key))
