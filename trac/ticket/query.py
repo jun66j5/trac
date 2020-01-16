@@ -156,10 +156,6 @@ class Query(object):
         constraints = [{}]
         cols = []
         report = None
-        def as_str(s):
-            if isinstance(s, str):
-                return s.encode('utf-8')
-            return s
         for filter_ in cls._clause_splitter.split(string):
             if filter_ == 'or':
                 constraints.append({})
@@ -185,11 +181,11 @@ class Query(object):
             processed_values = [mode + val.replace(r'\|', '|')
                                 for val in cls._item_splitter.split(values)]
             if field in kw_strs:
-                kw[as_str(field)] = processed_values[0]
+                kw[field] = processed_values[0]
             elif field in kw_arys:
-                kw.setdefault(as_str(field), []).extend(processed_values)
+                kw.setdefault(field, []).extend(processed_values)
             elif field in kw_bools:
-                kw[as_str(field)] = as_bool(processed_values[0])
+                kw[field] = as_bool(processed_values[0])
             elif field == 'col':
                 cols.extend(synonyms.get(value, value)
                             for value in processed_values)
