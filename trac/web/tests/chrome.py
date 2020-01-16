@@ -1043,10 +1043,10 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
         self.assertIsNotNone(t)
         t_text = self.chrome.load_template(self.filename, text=True)
         self.assertIsNotNone(t_text)
-        data = {'greeting': u"Hell&ö"}
+        data = {'greeting': "Hell&ö"}
         content = self.chrome.render_template_string(t, data)
         self.assertIsInstance(content, Markup)
-        self.assertEqual(textwrap.dedent(u"""\
+        self.assertEqual(textwrap.dedent("""\
             <!DOCTYPE html>
             <html>
             <body>
@@ -1057,7 +1057,7 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
                                                           text=True)
         self.assertFalse(isinstance(content_text, Markup))
         self.assertIsInstance(content_text, str)
-        self.assertEqual(textwrap.dedent(u"""\
+        self.assertEqual(textwrap.dedent("""\
             <!DOCTYPE html>
             <html>
             <body>
@@ -1067,18 +1067,18 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
 
     def test_render_template(self):
         self._create_template('<h1>${greeting}</h1>')
-        data = {'greeting': u"Hell&ö"}
+        data = {'greeting': "Hell&ö"}
         content = self.chrome.render_template(MockRequest(self.env),
                                               self.filename, data,
                                               {'fragment': True})
-        self.assertIsInstance(content, str)
+        self.assertIsInstance(content, bytes)
         self.assertEqual(textwrap.dedent("""\
             <!DOCTYPE html>
             <html>
             <body>
             <h1>Hell&amp;ö</h1>
             </body>
-            </html>"""), content)
+            </html>""").encode('utf-8'), content)
 
     def test_pretty_dateinfo(self):
         self._create_template(textwrap.dedent("""\
@@ -1096,6 +1096,8 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
                                               self.filename, data,
                                               {'fragment': True})
 
+        self.assertIsInstance(content, bytes)
+        content = str(content, 'utf-8')
         if has_babel:
             self.assertRegexpMatches(content, textwrap.dedent("""\
                 <!DOCTYPE html>
@@ -1155,13 +1157,13 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
         data = {'fn': fn}
         content = self.chrome.render_template(req, filename, data,
                                               {'fragment': True})
-        self.assertIsInstance(content, str)
-        self.assertIn('<div>blahblah</div>', content)
-        self.assertIn(' jQuery.loadScript("/trac.cgi/chrome/'
-                      'common/js/blahblah.js", "");', content)
-        self.assertIn(' jQuery.loadStyleSheet("/trac.cgi/chrome/'
-                      'common/css/blahblah.css", "text/css");', content)
-        self.assertIn(' var blahblah=42;', content)
+        self.assertIsInstance(content, bytes)
+        self.assertIn(b'<div>blahblah</div>', content)
+        self.assertIn(b' jQuery.loadScript("/trac.cgi/chrome/'
+                      b'common/js/blahblah.js", "");', content)
+        self.assertIn(b' jQuery.loadStyleSheet("/trac.cgi/chrome/'
+                      b'common/css/blahblah.css", "text/css");', content)
+        self.assertIn(b' var blahblah=42;', content)
 
 
 def test_suite():

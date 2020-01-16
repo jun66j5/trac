@@ -254,11 +254,13 @@ class RequestDispatcher(Component):
                 if 'hdfdump' in req.args:
                     req.perm.require('TRAC_ADMIN')
                     # debugging helper - no need to render first
-                    out = io.BytesIO()
-                    pprint({'template': template,
-                            'metadata': metadata,
-                            'data': data}, out)
-                    req.send(out.getvalue(), 'text/plain')
+                    with io.TextIOWrapper(io.BytesIO(), encoding='utf-8',
+                                          write_through=True) as out:
+                        pprint({'template': template,
+                                'metadata': metadata,
+                                'data': data}, out)
+                        out = out.buffer.getvalue()
+                    req.send(out, 'text/plain')
                 self.log.debug("Rendering response with template %s", template)
                 metadata.setdefault('iterable', chrome.use_chunked_encoding)
                 content_type = metadata.get('content_type')
@@ -422,7 +424,7 @@ class RequestDispatcher(Component):
     def _xsendfile_header(self):
         header = self.xsendfile_header.strip()
         if Request.is_valid_header(header):
-            return to_utf8(header)
+            return header
         else:
             if not self._warn_xsendfile_header:
                 self._warn_xsendfile_header = True
