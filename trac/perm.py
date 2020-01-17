@@ -811,15 +811,14 @@ class PermissionAdmin(Component):
 
     def _do_export(self, filename=None):
         try:
-            with file_or_std(filename, 'wb') as f:
-                encoding = stream_encoding(f)
+            with file_or_std(filename, 'w') as f:
                 linesep = os.linesep if filename else '\n'
                 writer = csv.writer(f, lineterminator=linesep)
                 users = self.get_user_list()
                 for user in sorted(users):
                     actions = sorted(self.get_user_perms(user))
-                    writer.writerow([s.encode(encoding, 'replace')
-                                     for s in [user] + actions])
+                    writer.writerow([s for s in [user] + actions])
+                f.flush()
         except IOError as e:
             raise AdminCommandError(
                 _("Cannot export to %(filename)s: %(error)s",
@@ -830,8 +829,7 @@ class PermissionAdmin(Component):
         permsys = PermissionSystem(self.env)
         linesep = os.linesep if filename else '\n'
         try:
-            with file_or_std(filename, 'rb') as f:
-                encoding = stream_encoding(f)
+            with file_or_std(filename, 'r') as f:
                 reader = csv.reader(f, lineterminator=linesep)
                 for row in reader:
                     if len(row) < 2:
@@ -839,9 +837,8 @@ class PermissionAdmin(Component):
                             _("Invalid row %(line)d. Expected <user>, "
                               "<action>, [action], [...]",
                               line=reader.line_num))
-                    user = to_unicode(row[0], encoding)
-                    actions = [to_unicode(action, encoding)
-                               for action in row[1:]]
+                    user = row[0]
+                    actions = row[1:]
                     if user.isupper():
                         raise AdminCommandError(
                             _("Invalid user %(user)s on line %(line)d: All "
