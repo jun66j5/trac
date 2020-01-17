@@ -20,7 +20,7 @@ import re
 import weakref
 from collections import deque
 from functools import partial
-from subprocess import PIPE
+from subprocess import DEVNULL, PIPE
 from threading import Lock
 
 from trac.core import TracBaseError
@@ -69,20 +69,37 @@ def parse_commit(raw):
     return '\n'.join(lines), props
 
 
-_unquote_re = re.compile(r'\\(?:[abtnvfr"\\]|[0-7]{3})')
-_unquote_chars = {'a': '\a', 'b': '\b', 't': '\t', 'n': '\n', 'v': '\v',
-                  'f': '\f', 'r': '\r', '"': '"', '\\': '\\'}
+_unquote_re = re.compile(r'\\(?:[abtnvfr"\\]|[0-7]{3})'.encode('utf-8'))
+_unquote_chars = bytearray(128)
+for _key, _val in zip(b'abtnvfr"\\', b'\a\b\t\n\v\f\r"\\'):
+    _unquote_chars[_key] = _val
+del _key, _val
+_unquote_chars = bytes(_unquote_chars)
 
 
 def _unquote(path):
-    if path.startswith('"') and path.endswith('"'):
+    if path.startswith(b'"') and path.endswith(b'"'):
         def replace(match):
-            s = match.group(0)[1:]
-            if len(s) == 3:
-                return chr(int(s, 8))  # \ooo
-            return _unquote_chars[s]
+            match = match.group(0)
+            if len(match) == 4:
+                code = int(match[1:], 8)  # \ooo
+            else:
+                code = _unquote_chars[match[1]]
+            return b'%c' % code
         path = _unquote_re.sub(replace, path[1:-1])
     return path
+
+
+def _rev_u(rev):
+    if rev is not None:
+        rev = str(rev, 'ascii')
+    return rev
+
+
+def _rev_b(rev):
+    if rev is not None:
+        rev = rev.encode('ascii')
+    return rev
 
 
 class GitCore(object):
@@ -111,11 +128,11 @@ class GitCore(object):
         fs_encoding = self.__fs_encoding
         if fs_encoding is not None:
             if os.name == 'nt':
-                # For Windows, Popen() accepts only ANSI encoding
+                # If Python 3 for Windows, Popen() accepts only str instances
                 def to_cmd_encoding(arg):
-                    if not isinstance(arg, str):
+                    if isinstance(arg, bytes):
                         arg = arg.decode(fs_encoding, 'replace')
-                    return arg.encode('mbcs', 'replace')
+                    return arg
             else:
                 def to_cmd_encoding(arg):
                     if isinstance(arg, str):
@@ -136,7 +153,7 @@ class GitCore(object):
 
         #print("DEBUG:", git_cmd, cmd_args, file=sys.stderr)
 
-        with self.__pipe(git_cmd, *cmd_args) as p:
+        with self.__pipe(git_cmd, *cmd_args, stdin=DEVNULL) as p:
             stdout_data, stderr_data = p.communicate()
         if self.__log and (p.returncode != 0 or stderr_data):
             self.__log.debug('%s exits with %d, dir: %r, args: %s %r, '
@@ -156,7 +173,7 @@ class GitCore(object):
             raise AttributeError(name)
         return partial(self.__execute, name.replace('_','-'))
 
-    __is_sha_pat = re.compile(r'[0-9A-Fa-f]*$')
+    __is_sha_pat = re.compile(b'[0-9A-Fa-f]{4,40}$')
 
     @classmethod
     def is_sha(cls, sha):
@@ -288,14 +305,14 @@ class Storage(object):
                     len(self.refs_dict), len(self.srev_dict))
 
         def iter_branches(self):
-            head = self.refs_dict.get('HEAD')
+            head = self.refs_dict.get(b'HEAD')
             for refname, rev in self.refs_dict.items():
-                if refname.startswith('refs/heads/'):
+                if refname.startswith(b'refs/heads/'):
                     yield refname[11:], rev, refname == head
 
         def iter_tags(self):
             for refname, rev in self.refs_dict.items():
-                if refname.startswith('refs/tags/'):
+                if refname.startswith(b'refs/tags/'):
                     yield refname[10:], rev
 
     @staticmethod
@@ -325,7 +342,7 @@ class Storage(object):
                 except ValueError:
                     return s
 
-            split_version = tuple(map(try_int, version.split('.')))
+            split_version = tuple(map(try_int, version.split(b'.')))
 
             result = {}
             result['v_str'] = version
@@ -483,7 +500,7 @@ class Storage(object):
 
         refs = {refname: _rev_reuse(rev) for refname, rev in refs.items()}
         head_revs = {rev for refname, rev in refs.items()
-                         if refname.startswith('refs/heads/')}
+                         if refname.startswith(b'refs/heads/')}
         rev_list = [list(map(_rev_reuse, line.split()))
                     for line in self.repo.rev_list('--parents', '--topo-order',
                                                    '--all').splitlines()]
@@ -565,10 +582,10 @@ class Storage(object):
         tags = {}
 
         for line in self.repo.show_ref('--dereference').splitlines():
-            if ' ' not in line:
+            if b' ' not in line:
                 continue
-            rev, refname = line.split(' ', 1)
-            if refname.endswith('^{}'):  # derefered tag
+            rev, refname = line.split(b' ', 1)
+            if refname.endswith(b'^{}'):  # derefered tag
                 tags[refname[:-3]] = rev
             else:
                 refs[refname] = rev
@@ -577,7 +594,7 @@ class Storage(object):
         if refs:
             refname = (self.repo.symbolic_ref('-q', 'HEAD') or '').strip()
             if refname in refs:
-                refs['HEAD'] = refname
+                refs[b'HEAD'] = refname
 
         return refs
 
@@ -588,24 +605,26 @@ class Storage(object):
         def fn(args):
             name, rev, head = args
             return not head, name
-        branches = sorted(((self._fs_to_unicode(name), rev, head)
+        _fs_to_unicode = self._fs_to_unicode
+        branches = sorted(((_fs_to_unicode(name), _rev_u(rev), head)
                            for name, rev, head
                            in self.rev_cache.iter_branches()), key=fn)
         return [(name, rev) for name, rev, head in branches]
 
     def get_refs(self):
+        _fs_to_unicode = self._fs_to_unicode
         for refname, rev in self.rev_cache.refs_dict.items():
-            if refname != 'HEAD':
-                yield refname, rev
+            if refname != b'HEAD':
+                yield _fs_to_unicode(refname), _rev_u(rev)
 
     def get_commits(self):
         return self.rev_cache.rev_dict
 
     def oldest_rev(self):
-        return self.rev_cache.oldest_rev
+        return _rev_u(self.rev_cache.oldest_rev)
 
     def youngest_rev(self):
-        return self.rev_cache.youngest_rev
+        return _rev_u(self.rev_cache.youngest_rev)
 
     def get_branch_contains(self, sha, resolve=False):
         """return list of reachable head sha ids or (names, sha) pairs if
@@ -614,6 +633,7 @@ class Storage(object):
         see also get_branches()
         """
 
+        sha = _rev_b(sha)
         _rev_cache = self.rev_cache
 
         try:
@@ -622,32 +642,40 @@ class Storage(object):
             return []
 
         if resolve:
-            return sorted((self._fs_to_unicode(name), rev)
-                          for name, rev, head in _rev_cache.iter_branches()
-                          if rev in rheads)
+            _fs_to_unicode = self._fs_to_unicode
+            rv = [(_fs_to_unicode(name), _rev_u(rev))
+                  for name, rev, head in _rev_cache.iter_branches()
+                  if rev in rheads]
+            rv.sort(key=lambda v: v[0])
+            return rv
         else:
-            return list(rheads)
+            return list(map(_rev_u, rheads))
 
     def history_relative_rev(self, sha, rel_pos):
-        db = self.get_commits()
 
-        if sha not in db:
-            raise GitErrorSha()
+        def get_history_relative_rev(sha, rel_pos):
+            rev_dict = self.get_commits()
 
-        if rel_pos == 0:
-            return sha
+            if sha not in rev_dict:
+                raise GitErrorSha()
 
-        lin_rev = db[sha][2] + rel_pos
+            if rel_pos == 0:
+                return sha
 
-        if lin_rev < 1 or lin_rev > len(db):
-            return None
+            lin_rev = rev_dict[sha][2] + rel_pos
 
-        for k, v in db.items():
-            if v[2] == lin_rev:
-                return k
+            if lin_rev < 1 or lin_rev > len(rev_dict):
+                return None
 
-        # should never be reached if db is consistent
-        raise GitError("internal inconsistency detected")
+            for k, v in rev_dict.items():
+                if v[2] == lin_rev:
+                    return k
+
+            # should never be reached if rev_dict is consistent
+            raise GitError("internal inconsistency detected")
+
+        result = get_history_relative_rev(_rev_b(sha), rel_pos)
+        return _rev_u(result)
 
     def hist_next_revision(self, sha):
         return self.history_relative_rev(sha, -1)
@@ -673,25 +701,24 @@ class Storage(object):
                 self.__cat_file_pipe = self.repo.cat_file_batch()
 
             try:
-                self.__cat_file_pipe.stdin.write(sha + '\n')
+                self.__cat_file_pipe.stdin.write(sha + b'\n')
                 self.__cat_file_pipe.stdin.flush()
 
                 split_stdout_line = self.__cat_file_pipe.stdout.readline() \
                                                                .split()
                 if len(split_stdout_line) != 3:
-                    raise GitError("internal error (could not split line "
-                                   "'%s')" % (split_stdout_line,))
+                    raise GitError("internal error (could not split line %s)" %
+                                   repr(split_stdout_line))
 
                 _sha, _type, _size = split_stdout_line
 
                 if _type != kind:
                     raise GitError("internal error (got unexpected object "
-                                   "kind '%s', expected '%s')"
-                                   % (_type, kind))
+                                   "kind %r, expected %r)" % (_type, kind))
 
                 size = int(_size)
                 return self.__cat_file_pipe.stdout.read(size + 1)[:size]
-            except:
+            except EnvironmentError:
                 # There was an error, we should close the pipe to get to a
                 # consistent state (Otherwise it happens that next time we
                 # call cat_file we get payload from previous call)
@@ -703,123 +730,137 @@ class Storage(object):
         """verify/lookup given revision object and return a sha id or None
         if lookup failed
         """
-        rev = self._fs_from_unicode(rev)
 
-        _rev_cache = self.rev_cache
+        def get_verifyrev(rev):
+            _rev_cache = self.rev_cache
 
-        if GitCore.is_sha(rev):
-            # maybe it's a short or full rev
-            fullrev = self.fullrev(rev)
-            if fullrev:
-                return fullrev
+            if GitCore.is_sha(rev):
+                # maybe it's a short or full rev
+                fullrev = self.fullrev(rev)
+                if fullrev:
+                    return fullrev
 
-        refs = _rev_cache.refs_dict
-        if rev == 'HEAD':  # resolve HEAD
-            refname = refs.get('HEAD')
-            if refname in refs:
-                return refs[refname]
-        resolved = refs.get('refs/heads/' + rev)  # resolve branch
-        if resolved:
-            return resolved
-        resolved = refs.get('refs/tags/' + rev)  # resolve tag
-        if resolved:
-            return resolved
+            refs = _rev_cache.refs_dict
+            if rev == b'HEAD':  # resolve HEAD
+                refname = refs.get(rev)
+                if refname in refs:
+                    return refs[refname]
+            resolved = refs.get(b'refs/heads/' + rev)  # resolve branch
+            if resolved:
+                return resolved
+            resolved = refs.get(b'refs/tags/' + rev)  # resolve tag
+            if resolved:
+                return resolved
 
-        # fall back to external git calls
-        rc = self.repo.rev_parse('--verify', rev).strip()
-        if not rc:
+            # fall back to external git calls
+            rc = self.repo.rev_parse('--verify', rev).strip()
+            if not rc:
+                return None
+            if rc in _rev_cache.rev_dict:
+                return rc
+
             return None
-        if rc in _rev_cache.rev_dict:
-            return rc
 
-        return None
+        result = get_verifyrev(self._fs_from_unicode(rev))
+        return _rev_u(result)
 
     def shortrev(self, rev, min_len=7):
-        """try to shorten sha id"""
-        #try to emulate the following:
-        #return self.repo.rev_parse("--short", str(rev)).strip()
-        rev = str(rev)
 
-        if min_len < self.__SREV_MIN:
-            min_len = self.__SREV_MIN
+        def get_shortrev(rev, min_len):
+            """try to shorten sha id"""
+            #try to emulate the following:
+            #return self.repo.rev_parse("--short", rev).strip()
 
-        _rev_cache = self.rev_cache
+            if min_len < self.__SREV_MIN:
+                min_len = self.__SREV_MIN
 
-        if rev not in _rev_cache.rev_dict:
-            return None
+            _rev_cache = self.rev_cache
 
-        srev = rev[:min_len]
-        srevs = set(_rev_cache.srev_dict[self.__rev_key(rev)])
+            if rev not in _rev_cache.rev_dict:
+                return None
 
-        if len(srevs) == 1:
-            return srev # we already got a unique id
+            srev = rev[:min_len]
+            srevs = set(_rev_cache.srev_dict[self.__rev_key(rev)])
 
-        # find a shortened id for which rev doesn't conflict with
-        # the other ones from srevs
-        crevs = srevs - {rev}
+            if len(srevs) == 1:
+                return srev # we already got a unique id
 
-        for l in range(min_len+1, 40):
-            srev = rev[:l]
-            if srev not in [ r[:l] for r in crevs ]:
-                return srev
+            # find a shortened id for which rev doesn't conflict with
+            # the other ones from srevs
+            crevs = srevs - {rev}
 
-        return rev # worst-case, all except the last character match
+            for l in range(min_len+1, 40):
+                srev = rev[:l]
+                if srev not in [ r[:l] for r in crevs ]:
+                    return srev
 
-    def fullrev(self, srev):
+            return rev # worst-case, all except the last character match
+
+        return _rev_u(get_shortrev(_rev_b(rev), min_len))
+
+
+    def fullrev(self, rev):
         """try to reverse shortrev()"""
-        srev = str(srev)
 
         _rev_cache = self.rev_cache
 
         # short-cut
-        if len(srev) == 40 and srev in _rev_cache.rev_dict:
-            return srev
+        if len(rev) == 40 and rev in _rev_cache.rev_dict:
+            return rev
 
-        if not GitCore.is_sha(srev):
+        if not GitCore.is_sha(rev):
             return None
 
         try:
-            srevs = _rev_cache.srev_dict[self.__rev_key(srev)]
+            srevs = _rev_cache.srev_dict[self.__rev_key(rev)]
         except KeyError:
             return None
 
-        srevs = list(filter(lambda s: s.startswith(srev), srevs))
-        if len(srevs) == 1:
-            return srevs[0]
-
-        return None
+        resolved = None
+        for s in srevs:
+            if s.startswith(rev):
+                if resolved is not None:
+                    return None
+                resolved = s
+        return resolved
 
     def get_tags(self, rev=None):
+        if rev is not None:
+            rev = _rev_b(rev)
         return sorted(self._fs_to_unicode(name)
                       for name, rev_ in self.rev_cache.iter_tags()
                       if rev is None or rev == rev_)
 
     def ls_tree(self, rev, path='', recursive=False):
-        rev = rev and str(rev) or 'HEAD' # paranoia
-        path = self._fs_from_unicode(path).lstrip('/') or '.'
+        rev = self._fs_from_unicode(rev) if rev else b'HEAD'  # paranoia
+        path = self._fs_from_unicode(path).lstrip(b'/') or b'.'
         tree = self.repo.ls_tree('-zlr' if recursive else '-zl',
-                                 rev, '--', path).split('\0')
+                                 rev, '--', path).split(b'\0')
 
         def split_ls_tree_line(l):
             """split according to '<mode> <type> <sha> <size>\t<fname>'"""
 
-            meta, fname = l.split('\t', 1)
+            meta, fname = l.split(b'\t', 1)
             _mode, _type, _sha, _size = meta.split()
+            _type = str(_type, 'utf-8')
+            _sha = _rev_u(_sha)
             _mode = int(_mode, 8)
-            _size = None if _size == '-' else int(_size)
-            return _mode, _type, _sha, _size, self._fs_to_unicode(fname)
+            _size = None if _size == b'-' else int(_size)
+            fname = self._fs_to_unicode(fname)
+            return _mode, _type, _sha, _size, fname
 
-        return [ split_ls_tree_line(e) for e in tree if e ]
+        return [split_ls_tree_line(e) for e in tree if e]
 
     def read_commit(self, commit_id):
         if not commit_id:
             raise GitError("read_commit called with empty commit_id")
 
-        commit_id, commit_id_orig = self.fullrev(commit_id), commit_id
+        commit_id_orig = commit_id
+        commit_id = self.fullrev(_rev_b(commit_id))
 
-        db = self.get_commits()
-        if commit_id not in db:
-            self.logger.info("read_commit failed for '%s' ('%s')",
+        rev_dict = self.get_commits()
+        if commit_id not in rev_dict:
+            self.logger.info("read_commit failed for %r (%r)",
                              commit_id, commit_id_orig)
             raise GitErrorSha
 
@@ -829,35 +870,35 @@ class Storage(object):
                 result = self.__commit_msg_cache[commit_id]
                 return result[0], dict(result[1])
 
-            # cache miss
-            raw = self.cat_file('commit', commit_id)
-            raw = str(raw, self.get_commit_encoding(), 'replace')
-            result = parse_commit(raw)
-
+        # cache miss
+        raw = self.cat_file(b'commit', commit_id)
+        raw = str(raw, self.get_commit_encoding(), 'replace')
+        result = parse_commit(raw)
+        with self.__commit_msg_lock:
             self.__commit_msg_cache[commit_id] = result
-
-            return result[0], dict(result[1])
+        return result[0], dict(result[1])
 
     def get_file(self, sha):
-        return io.BytesIO(self.cat_file('blob', str(sha)))
+        sha = _rev_b(sha)
+        content = self.cat_file(b'blob', sha)
+        return io.BytesIO(content)
 
     def get_obj_size(self, sha):
-        sha = str(sha)
-
+        sha = _rev_b(sha)
         try:
             obj_size = int(self.repo.cat_file('-s', sha).strip())
         except ValueError:
             raise GitErrorSha("object '%s' not found" % sha)
-
         return obj_size
 
     def children(self, sha):
-        db = self.get_commits()
-
+        sha = _rev_b(sha)
+        rev_dict = self.get_commits()
         try:
-            return sorted(db[sha][0])
+            item = rev_dict[sha]
         except KeyError:
-            return []
+            return ()
+        return sorted(map(_rev_u, item[0]))
 
     def children_recursive(self, sha, rev_dict=None):
         """Recursively traverse children in breadth-first order"""
@@ -883,15 +924,17 @@ class Storage(object):
         assert len(work_list) == 0
 
     def parents(self, sha):
-        db = self.get_commits()
-
+        sha = _rev_b(sha)
+        rev_dict = self.get_commits()
         try:
-            return list(db[sha][1])
+            item = rev_dict[sha]
         except KeyError:
             return []
+        return list(map(_rev_u, item[1]))
 
     def all_revs(self):
-        return iter(self.get_commits().keys())
+        for rev in self.get_commits():
+            yield _rev_u(rev)
 
     def sync(self):
         with self.__rev_cache_lock:
@@ -909,13 +952,13 @@ class Storage(object):
                                        '--name-status', sha, '--', base_path)]
             f = p[0].stdout
             for l in f:
-                if l == '\n':
+                if l == b'\n':
                     continue
-                old_sha = l.rstrip('\n')
+                old_sha = l.rstrip(b'\n')
                 for l in f:
-                    if l == '\n':
+                    if l == b'\n':
                         break
-                    _, path = l.rstrip('\n').split('\t', 1)
+                    _, path = l.rstrip(b'\n').split(b'\t', 1)
                     # git-log without -z option quotes each pathname
                     path = _unquote(path)
                     while path not in change:
@@ -923,7 +966,7 @@ class Storage(object):
                         if next_path == [path]:
                             yield old_sha
                         try:
-                            path, _ = path.rsplit('/', 1)
+                            path, _ = path.rsplit(b'/', 1)
                         except ValueError:
                             break
             if p:
@@ -936,10 +979,11 @@ class Storage(object):
         def historian(path):
             path = self._fs_from_unicode(path)
             try:
-                return change[path]
+                rev = change[path]
             except KeyError:
                 next_path[:] = [path]
-                return next(gen)
+                rev = next(gen)
+            return _rev_u(rev)
 
         try:
             yield historian
@@ -950,8 +994,9 @@ class Storage(object):
     def last_change(self, sha, path, historian=None):
         if historian is not None:
             return historian(path)
-        tmp = self.history(sha, path, limit=1)
-        return tmp[0] if tmp else None
+        for entry in self.history(sha, path, limit=1):
+            return entry
+        return None
 
     def history(self, sha, path, limit=None):
         if limit is None:
@@ -961,20 +1006,22 @@ class Storage(object):
         if path:
             args.extend(('--', self._fs_from_unicode(path)))
         tmp = self.repo.rev_list(*args)
-        return [rev.strip() for rev in tmp.splitlines()]
+        for rev in tmp.splitlines():
+            yield _rev_u(rev)
 
     def history_timerange(self, start, stop):
         # retrieve start <= committer-time < stop,
         # see CachedRepository.get_changesets()
-        return [ rev.strip() for rev in
-                     self.repo.rev_list('--date-order',
-                                        '--max-age=%d' % start,
-                                        '--min-age=%d' % (stop - 1),
-                                        '--all').splitlines() ]
+        output = self.repo.rev_list('--all', '--date-order',
+                                    '--max-age=%d' % start,
+                                    '--min-age=%d' % (stop - 1))
+        return [_rev_u(rev) for rev in output.splitlines()]
 
     def rev_is_anchestor_of(self, rev1, rev2):
         """return True if rev2 is successor of rev1"""
 
+        rev1 = _rev_b(rev1)
+        rev2 = _rev_b(rev2)
         rev_dict = self.get_commits()
         return (rev2 in rev_dict and
                 rev2 in self.children_recursive(rev1, rev_dict))
@@ -982,13 +1029,14 @@ class Storage(object):
     def blame(self, commit_sha, path):
         in_metadata = False
 
+        commit_sha = _rev_b(commit_sha)
         path = self._fs_from_unicode(path)
 
-        for line in self.repo.blame('-p', '--', path, str(commit_sha)) \
+        for line in self.repo.blame('-p', '--', path, commit_sha) \
                              .splitlines():
             assert line
             if in_metadata:
-                in_metadata = not line.startswith('\t')
+                in_metadata = not line.startswith(b'\t')
             else:
                 split_line = line.split()
                 if len(split_line) == 4:
@@ -997,7 +1045,7 @@ class Storage(object):
                     (sha, orig_lineno, lineno) = split_line
 
                 assert len(sha) == 40
-                yield (sha, lineno)
+                yield _rev_u(sha), lineno
                 in_metadata = True
 
         assert not in_metadata
@@ -1009,12 +1057,12 @@ class Storage(object):
         # diff-tree returns records with the following structure:
         # :<old-mode> <new-mode> <old-sha> <new-sha> <change> NUL <old-path> NUL [ <new-path> NUL ]
 
-        path = self._fs_from_unicode(path).strip('/') or '.'
+        path = self._fs_from_unicode(path).strip(b'/') or b'.'
         diff_tree_args = ['-z', '-r']
         if find_renames:
             diff_tree_args.append('-M')
-        diff_tree_args.extend([str(tree1) if tree1 else '--root',
-                               str(tree2), '--', path])
+        diff_tree_args.extend([tree1 if tree1 else '--root',
+                               tree2, '--', path])
         result = self.repo.diff_tree(*diff_tree_args)
         if not result:
             return
@@ -1022,7 +1070,7 @@ class Storage(object):
         def iter_entry(result):
             start = 0
             while True:
-                idx = result.find('\0', start)
+                idx = result.find(b'\0', start)
                 if idx == -1:
                     return
                 yield result[start:idx]
@@ -1037,20 +1085,22 @@ class Storage(object):
             # if only one tree-sha is given on commandline,
             # the first line is just the redundant tree-sha itself...
             entry = next_entry()
-            assert not entry.startswith(':')
+            assert not entry.startswith(b':')
 
         while True:
             try:
                 entry = next_entry()
             except StopIteration:
                 return
-            assert entry.startswith(':')
-            values = entry[1:].split(' ')
+            assert entry.startswith(b':')
+            values = entry[1:].split(b' ')
             assert len(values) == 5
             old_mode, new_mode, old_sha, new_sha, change = values
             old_mode = int(old_mode, 8)
             new_mode = int(new_mode, 8)
-            change = change[:1]
+            old_sha = _rev_u(old_sha)
+            new_sha = _rev_u(new_sha)
+            change = str(change[:1], 'utf-8')
             old_path = self._fs_to_unicode(next_entry())
             new_path = None
             if change in ('R', 'C'):  # renamed or copied

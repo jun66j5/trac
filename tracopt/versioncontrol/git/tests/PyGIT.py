@@ -29,11 +29,11 @@ from tracopt.versioncontrol.git.tests.git_fs import GitCommandMixin
 class GitTestCase(unittest.TestCase):
 
     def test_is_sha(self):
-        self.assertFalse(GitCore.is_sha('123'))
-        self.assertTrue(GitCore.is_sha('1a3f'))
-        self.assertTrue(GitCore.is_sha('f' * 40))
-        self.assertFalse(GitCore.is_sha('x' + 'f' * 39))
-        self.assertFalse(GitCore.is_sha('f' * 41))
+        self.assertFalse(GitCore.is_sha(b'123'))
+        self.assertTrue(GitCore.is_sha(b'1a3f'))
+        self.assertTrue(GitCore.is_sha(b'f' * 40))
+        self.assertFalse(GitCore.is_sha(b'x' + b'f' * 39))
+        self.assertFalse(GitCore.is_sha(b'f' * 41))
 
     def test_git_version(self):
         v = Storage.git_version()
@@ -222,6 +222,7 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
         repos.sync()
         rev = repos.youngest_rev
 
+        self.assertEqual(rev, repos.normalize_rev(rev[:7]))
         self.assertNotEqual(rev, parent_rev)
         self.assertFalse(repos.rev_older_than(None, None))
         self.assertFalse(repos.rev_older_than(None, rev[:7]))
@@ -369,9 +370,8 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
                  u'tickét.tx\\t',
                  u'\a\b\t\n\v\f\r\x1b"\\.tx\\t']
         for path in paths:
-            path_utf8 = path.encode('utf-8')
-            create_file(os.path.join(self.repos_path, path_utf8))
-            self._git('add', path_utf8)
+            create_file(os.path.join(self.repos_path, path))
+            self._git('add', path)
         self._git_commit('-m', 'ticket:11180 and ticket:11198',
                          date=datetime(2013, 4, 30, 13, 48, 57))
 
@@ -390,9 +390,8 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
                  u'\a\b\t\n\v\f\r\x1b"\\.tx\\t']
 
         for path in paths:
-            path_utf8 = path.encode('utf-8')
-            create_file(os.path.join(self.repos_path, path_utf8))
-            self._git('add', path_utf8)
+            create_file(os.path.join(self.repos_path, path))
+            self._git('add', path)
         self._git_commit('-m', 'ticket:11180 and ticket:11198',
                          date=datetime(2013, 4, 30, 17, 48, 57))
 
