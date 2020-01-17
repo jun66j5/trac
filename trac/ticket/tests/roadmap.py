@@ -382,7 +382,7 @@ class RoadmapTestCase(unittest.TestCase):
             rm.process_request(req)
 
         self.assertEqual('200 Ok', req.status_sent[0])
-        self.assertRegex(req.response_sent.getvalue(), """\
+        self.assertRegex(req.response_sent.getvalue(), b"""\
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Edgewall Software//NONSGML Trac [\.\w]+//EN
@@ -398,7 +398,7 @@ SUMMARY:Milestone milestone1
 URL:http://example.org/trac.cgi/milestone/milestone1
 END:VEVENT
 END:VCALENDAR
-""".replace('\n', '\r\n'))
+""".replace(b'\n', b'\r\n'))
 
 
 class ResourceTestCase(unittest.TestCase):
