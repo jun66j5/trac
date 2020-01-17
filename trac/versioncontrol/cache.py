@@ -466,10 +466,12 @@ class CachedRepository(Repository):
         else:
             try:
                 rev = int(rev)
-                if rev <= self.youngest_rev:
-                    return rev
+                youngest_rev = int(self.youngest_rev)
             except (ValueError, TypeError):
                 pass
+            else:
+                if rev <= youngest_rev:
+                    return rev
             raise NoSuchChangeset(rev)
 
     def db_rev(self, rev):
