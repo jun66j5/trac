@@ -16,7 +16,7 @@ import os
 import sys
 import unittest
 from datetime import datetime, timedelta
-from subprocess import PIPE
+from subprocess import DEVNULL, PIPE
 
 from trac.core import TracError
 from trac.test import EnvironmentStub, MockRequest, locate, mkdtemp, rmtree
@@ -50,7 +50,7 @@ class GitCommandMixin(object):
 
     def _spawn_git(self, *args, **kwargs):
         args = tuple(map(to_utf8, (self.git_bin,) + args))
-        kwargs.setdefault('stdin', PIPE)
+        kwargs.setdefault('stdin', DEVNULL)
         kwargs.setdefault('stdout', PIPE)
         kwargs.setdefault('stderr', PIPE)
         kwargs.setdefault('cwd', self.repos_path)
@@ -94,6 +94,9 @@ class GitCommandMixin(object):
 
 class BaseTestCase(unittest.TestCase, GitCommandMixin):
 
+    gitignore_content = b'*.py[co]\n' \
+                        b'\312\326\267\347\307\331.txt\n'
+
     def setUp(self):
         self.env = EnvironmentStub()
         self.tmpdir = mkdtemp()
@@ -134,7 +137,8 @@ class BaseTestCase(unittest.TestCase, GitCommandMixin):
         if not bare and data:
             self._git('config', 'user.name', 'Joe', **kwargs)
             self._git('config', 'user.email', 'joe@example.com', **kwargs)
-            create_file(os.path.join(self.repos_path, '.gitignore'))
+            create_file(os.path.join(self.repos_path, '.gitignore'),
+                        self.gitignore_content, 'wb')
             self._git('add', '.gitignore', **kwargs)
             self._git_commit('-a', '-m', 'test',
                              date=datetime(2001, 1, 29, 16, 39, 56), **kwargs)
@@ -261,13 +265,17 @@ class GitNormalTestCase(BaseTestCase):
         self._add_repository()
         repos = self._repomgr.get_repository('gitrepos')
         rev = repos.youngest_rev
-        self.assertIsNotNone(rev)
+        self.assertIsInstance(rev, str)
         self.assertEqual(40, len(rev))
 
         self.assertEqual(rev, repos.get_node('/').rev)
         self.assertEqual(rev, repos.get_node('/', rev[:7]).rev)
         self.assertEqual(rev, repos.get_node('/.gitignore').rev)
         self.assertEqual(rev, repos.get_node('/.gitignore', rev[:7]).rev)
+        self.assertEqual(self.gitignore_content,
+                         repos.get_node('/.gitignore').get_content().read())
+        self.assertEqual(len(self.gitignore_content),
+                         repos.get_node('/.gitignore').content_length)
 
         self.assertRaises(NoSuchNode, repos.get_node, '/non-existent')
         self.assertRaises(NoSuchNode, repos.get_node, '/non-existent', rev[:7])
@@ -397,9 +405,16 @@ class GitRepositoryTestCase(BaseTestCase):
         entries = list(repos.get_node('').get_history())
         self.assertEqual(2, len(entries))
         self.assertEqual('', entries[0][0])
+        self.assertEqual(youngest_rev, entries[0][1])
         self.assertEqual(Changeset.EDIT, entries[0][2])
         self.assertEqual('', entries[1][0])
+        self.assertIsInstance(entries[1][1], str)
         self.assertEqual(Changeset.ADD, entries[1][2])
+
+        self.assertEqual(entries[1][1], repos.previous_rev(youngest_rev, ''))
+        self.assertEqual(None, repos.next_rev(youngest_rev, ''))
+        self.assertEqual(None, repos.previous_rev(entries[1][1], ''))
+        self.assertEqual(youngest_rev, repos.next_rev(entries[1][1], ''))
 
         self._git('reset', '--hard', 'HEAD~')
         repos.sync()
@@ -407,6 +422,9 @@ class GitRepositoryTestCase(BaseTestCase):
         self.assertEqual(1, len(new_entries))
         self.assertEqual(new_entries[0], entries[1])
         self.assertNotEqual(youngest_rev, repos.youngest_rev)
+        self.assertEqual(new_entries[0][1], repos.youngest_rev)
+        self.assertEqual(None, repos.next_rev(repos.youngest_rev, ''))
+        self.assertEqual(None, repos.previous_rev(repos.youngest_rev, ''))
 
     def test_tags(self):
         self._git_init()
@@ -508,7 +526,7 @@ class GitRepositoryTestCase(BaseTestCase):
                                                       rev))),
                          sorted(cset.get_changes()))
 
-    _data_annotations = """\
+    _data_annotations = b"""\
 blob
 mark :1
 data 14
@@ -613,7 +631,7 @@ from :6
     # * | 998bf23843c8fd982bbc23f88ec33c4d08114557 Changed b1
     # |/
     # * c5b01c74e125aa034a1d4ae31dc16f1897a73779 First commit
-    _data_iter_nodes = """\
+    _data_iter_nodes = b"""\
 blob
 mark :1
 data 2
@@ -811,7 +829,7 @@ from :17
         self.assertEqual({(':100666', FILE, MOVE, ':100644', rev1)},
                          set(cset.get_changes()))
 
-    _data_colon_character_in_filename = """\
+    _data_colon_character_in_filename = b"""\
 blob
 mark :1
 data 0
@@ -898,7 +916,7 @@ from :4
         self.assertEqual({'mode': '160000', 'commit': submodule_rev2},
                          node2.get_properties())
 
-    _data_submodule = """\
+    _data_submodule = b"""\
 blob
 mark :1
 data 0
@@ -985,7 +1003,7 @@ class GitCachedRepositoryTestCase(GitRepositoryTestCase):
 
     def test_sync_file_with_invalid_byte_sequence(self):
         self._git_init(data=False)
-        self._git_fast_import("""\
+        self._git_fast_import(b"""\
 blob
 mark :1
 data 0
@@ -997,7 +1015,7 @@ author Ryan Ollos <rjollos@edgewall.com> 1463639119 +0200
 committer Ryan Ollos <rjollos@edgewall.com> 1463639119 +0200
 data 9
 (#12322)
-M 100644 :1 "\312\326\267\347\307\331.txt"
+M 100644 :1 "\\312\\326\\267\\347\\307\\331.txt"
 
 reset refs/heads/master
 from :2
@@ -1111,12 +1129,12 @@ M 100644 :1 dev%(dev)08d.txt
 
 """
         data = io.BytesIO()
-        data.write(init % {'timestamp': timestamp})
+        data.write(init % {b'timestamp': timestamp})
         for idx in range(n):
-            data.write(merge % {'timestamp': timestamp,
-                                'dev': 4 + idx * 2,
-                                'merge': 5 + idx * 2,
-                                'from': 3 + idx * 2})
+            data.write(merge % {b'timestamp': timestamp,
+                                b'dev': 4 + idx * 2,
+                                b'merge': 5 + idx * 2,
+                                b'from': 3 + idx * 2})
         return data.getvalue()
 
     def test_sync_many_refs(self):
