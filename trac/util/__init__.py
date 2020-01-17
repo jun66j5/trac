@@ -598,7 +598,10 @@ class file_or_std(object):
 
     def __enter__(self):
         if not self.filename:
-            return sys.stdin if 'r' in self.mode else sys.stdout
+            f = sys.stdin if 'r' in self.mode else sys.stdout
+            if 'b' in self.mode:
+                f = f.buffer
+            return f
         kwargs = {} if 'b' in self.mode else \
                  {'encoding': self.encoding, 'errors': self.errors}
         self.file = open(self.filename, self.mode, self.bufsize, **kwargs)
