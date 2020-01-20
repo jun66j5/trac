@@ -247,7 +247,7 @@ def unicode_urlencode(params, safe=''):
     equal sign.
     """
     if isinstance(params, dict):
-        params = iter(params.items())
+        params = sorted(params.items(), key=lambda i: i[0])
     l = []
     for k, v in params:
         if v is empty:
