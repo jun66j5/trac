@@ -203,11 +203,11 @@ class TicketModuleTestCase(unittest.TestCase):
 
         data = self.ticket_module.process_request(req)[1]
 
-        self.assertEqual(u'<a class="trac-author" href="/trac.cgi/query?'
-                         u'status=!closed&amp;reporter=user1">User One</a>',
+        self.assertEqual('<a class="trac-author" href="/trac.cgi/query?'
+                         'reporter=user1&amp;status=!closed">User One</a>',
                          str(data['reporter_link']))
-        self.assertEqual(u'<a class="trac-author-user" href="/trac.cgi/query?'
-                         u'status=!closed&amp;owner=user2">User Two</a>',
+        self.assertEqual('<a class="trac-author-user" href="/trac.cgi/query?'
+                         'owner=user2&amp;status=!closed">User Two</a>',
                          str(data['owner_link']))
 
     def test_version_release_date_displayed(self):

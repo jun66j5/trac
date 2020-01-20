@@ -279,6 +279,8 @@ class DefaultTicketGroupStatsProvider(Component):
                 if s in group['statuses']:
                     group_cnt += cnt
                     query_args.setdefault('status', []).append(s)
+                if 'status' in query_args:
+                    query_args['status'].sort()
             for arg in [kv for kv in group.get('query_args', '').split(',')
                         if '=' in kv]:
                 k, v = [a.strip() for a in arg.split('=', 1)]
