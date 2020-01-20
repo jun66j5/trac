@@ -150,9 +150,10 @@ class TracHTMLSanitizerTestCaseBase(unittest.TestCase):
 
     def test_empty_attribute(self):
         html = '<option value="1236" selected>Family B</option>'
-        self.assertEqual(
-            '<option selected="selected" value="1236">Family B</option>',
-            self.sanitize(html))
+        self.assertIn(
+            self.sanitize(html),
+            ['<option selected="selected" value="1236">Family B</option>',
+             '<option value="1236" selected="selected">Family B</option>'])
 
     def test_expression(self):
         html = '<div style="top:expression(alert())">XSS</div>'
