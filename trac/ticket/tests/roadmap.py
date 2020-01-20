@@ -137,9 +137,9 @@ class DefaultTicketGroupStatsProviderTestCase(unittest.TestCase):
         self.assertEqual('open', open['css_class'], 'open class incorrect')
         self.assertFalse(open['overall_completion'],
                          "open shouldn't contribute to overall completion")
-        self.assertEqual({'status':
-                          [u'assigned', u'new', u'accepted', u'reopened']},
-                         open['qry_args'], 'qry_args incorrect')
+        self.assertEqual(['accepted', 'assigned', 'new', 'reopened'],
+                         sorted(open['qry_args']['status']))
+        self.assertEqual(['status'], sorted(open['qry_args']))
         self.assertEqual(2, open['count'], 'open count incorrect')
         self.assertEqual(67, open['percent'], 'open percent incorrect')
 
