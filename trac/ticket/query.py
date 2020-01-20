@@ -15,6 +15,7 @@
 #
 # Author: Christopher Lenz <cmlenz@gmx.de>
 
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from itertools import groupby
 import operator
@@ -153,12 +154,12 @@ class Query(object):
         kw_synonyms = {'row': 'rows'}
         # i18n TODO - keys will be unicode
         synonyms = TicketSystem(env).get_field_synonyms()
-        constraints = [{}]
+        constraints = [OrderedDict()]
         cols = []
         report = None
         for filter_ in cls._clause_splitter.split(string):
             if filter_ == 'or':
-                constraints.append({})
+                constraints.append(OrderedDict())
                 continue
             filter_ = filter_.replace(r'\&', '&').split('=', 1)
             if len(filter_) != 2:
@@ -370,20 +371,25 @@ class Query(object):
 
         constraints = []
         for clause in self.constraints:
-            constraints.extend(iter(clause.items()))
+            constraints.extend(clause.items())
             constraints.append(("or", empty))
         del constraints[-1:]
 
-        return href.query(constraints,
-                          report=id,
-                          order=order, desc=1 if desc else None,
-                          group=self.group or None,
-                          groupdesc=1 if self.groupdesc else None,
-                          col=cols,
-                          row=self.rows,
-                          max=max,
-                          page=page,
-                          format=format)
+        args = []
+        args.extend(constraints)
+        args.extend([
+            ('report', id),
+            ('group', self.group or None),
+            ('groupdesc', 1 if self.groupdesc else None),
+            ('max', max),
+            ('order', order),
+            ('desc', 1 if desc else None),
+            ('col', cols),
+            ('row', self.rows),
+            ('page', page),
+            ('format', format),
+        ])
+        return href.query(args)
 
     def to_string(self):
         """Return a user readable and editable representation of the query.
@@ -1319,9 +1325,9 @@ class TicketQueryMacro(WikiMacroBase):
     @staticmethod
     def parse_args(content):
         """Parse macro arguments and translate them to a query string."""
-        clauses = [{}]
+        clauses = [OrderedDict()]
         argv = []
-        kwargs = {}
+        kwargs = OrderedDict()
         for arg in TicketQueryMacro._comma_splitter.split(content or ''):
             arg = arg.replace(r'\,', ',')
             m = re.match(r'\s*[^=]+=', arg)
@@ -1340,10 +1346,10 @@ class TicketQueryMacro(WikiMacroBase):
 
         if len(argv) > 0 and 'format' not in kwargs:  # 0.10 compatibility hack
             kwargs['format'] = argv[0]
-        if 'order' not in kwargs:
-            kwargs['order'] = 'id'
         if 'max' not in kwargs:
             kwargs['max'] = '0'  # unlimited by default
+        if 'order' not in kwargs:
+            kwargs['order'] = 'id'
 
         format = kwargs.pop('format', 'list').strip().lower()
         if format in ('list', 'compact'):  # we need 'status' and 'summary'
