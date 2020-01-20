@@ -218,8 +218,9 @@ def parse_args(args, strict=True):
       (['Some text'], {})
       >>> parse_args(r'Some text, mode= 3, some other arg\, with a comma.')
       (['Some text', ' some other arg, with a comma.'], {'mode': ' 3'})
-      >>> parse_args('milestone=milestone1,status!=closed', strict=False)
-      ([], {'status!': 'closed', 'milestone': 'milestone1'})
+      >>> sorted(parse_args('milestone=milestone1,status!=closed',
+      ...                   strict=False)[1].items())
+      [('milestone', 'milestone1'), ('status!', 'closed')]
 
     """
     largs, kwargs = [], {}
