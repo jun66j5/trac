@@ -360,7 +360,8 @@ class ConfigurableTicketWorkflowTestCase(unittest.TestCase):
         ticket = insert_ticket(self.env, status='new')
         actions = self.ctlr.get_actions_by_operation_for_req(req, ticket,
                                                              'set_owner')
-        self.assertEqual([(0, u'change_owner'), (0, u'reassign')], actions)
+        self.assertEqual([(0, u'change_owner'), (0, u'reassign')],
+                         sorted(actions))
 
     def test_get_actions_by_operation_for_req_with_ticket_modify(self):
         """User without TICKET_MODIFY won't have reassign action."""
@@ -368,7 +369,7 @@ class ConfigurableTicketWorkflowTestCase(unittest.TestCase):
         ticket = insert_ticket(self.env, status='new')
         actions = self.ctlr.get_actions_by_operation_for_req(req, ticket,
                                                              'set_owner')
-        self.assertEqual([(0, u'change_owner')], actions)
+        self.assertEqual([(0, u'change_owner')], sorted(actions))
 
     def test_get_actions_by_operation_for_req_without_ticket_modify(self):
         """User with TICKET_MODIFY will have reassign action."""
@@ -377,7 +378,8 @@ class ConfigurableTicketWorkflowTestCase(unittest.TestCase):
         ticket = insert_ticket(self.env, status='new')
         actions = self.ctlr.get_actions_by_operation_for_req(req, ticket,
                                                              'set_owner')
-        self.assertEqual([(0, u'change_owner'), (0, u'reassign')], actions)
+        self.assertEqual([(0, u'change_owner'), (0, u'reassign')],
+                         sorted(actions))
 
 
 class ResetActionTestCase(unittest.TestCase):
