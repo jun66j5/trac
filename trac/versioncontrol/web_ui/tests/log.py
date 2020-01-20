@@ -193,8 +193,8 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
         self.assertEqual(['delete'] + ['edit'] * 3 + [None],
                          [item['change'] for item in items])
         links = req.chrome['links']['next']
-        self.assertEqual('/trac.cgi/log/mock/file?limit=4&rev=88&'
-                         'mode=stop_on_copy', links[0]['href'])
+        self.assertEqual('/trac.cgi/log/mock/file?limit=4&'
+                         'mode=stop_on_copy&rev=88', links[0]['href'])
         self.assertEqual(1, len(links))
 
     def test_with_rev(self):
@@ -227,8 +227,8 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
         self.assertEqual(['edit'] * 3 + ['move', None],
                          [item['change'] for item in items])
         links = req.chrome['links']['next']
-        self.assertEqual('/trac.cgi/log/mock/file-old?limit=4&rev=37&'
-                         'mode=stop_on_copy', links[0]['href'])
+        self.assertEqual('/trac.cgi/log/mock/file-old?limit=4&'
+                         'mode=stop_on_copy&rev=37', links[0]['href'])
         self.assertEqual(1, len(links))
 
     def test_with_rev_on_start(self):
@@ -363,8 +363,8 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
                          [item['change'] for item in items])
         self.assertIn('next', req.chrome['links'])
         links = req.chrome['links']['next']
-        self.assertEqual('/trac.cgi/log/mock/file?limit=4&revs=70%2C79&'
-                         'rev=79&mode=stop_on_copy', links[0]['href'])
+        self.assertEqual('/trac.cgi/log/mock/file?limit=4&mode=stop_on_copy&'
+                         'rev=79&revs=70%2C79', links[0]['href'])
         self.assertEqual(1, len(links))
 
     def test_revranges_1_next_link_with_limits(self):
@@ -410,8 +410,8 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
                          [item['change'] for item in items])
         self.assertIn('next', req.chrome['links'])
         links = req.chrome['links']['next']
-        self.assertEqual('/trac.cgi/log/mock/file-old?limit=4&revs=22-37&'
-                         'rev=37&mode=stop_on_copy', links[0]['href'])
+        self.assertEqual('/trac.cgi/log/mock/file-old?limit=4&mode='
+                         'stop_on_copy&rev=37&revs=22-37', links[0]['href'])
         self.assertEqual(1, len(links))
 
     def test_revranges_3_with_limit(self):
@@ -484,8 +484,8 @@ class LogModuleTestCase(RequestHandlerPermissionsTestCaseBase):
         self.assertEqual(['edit', 'move', 'edit', 'edit', None],
                          [item['change'] for item in items])
         links = req.chrome['links']['next']
-        self.assertEqual('/trac.cgi/log/mock/file-old?limit=4&rev=31&'
-                         'mode=follow_copy', links[0]['href'])
+        self.assertEqual('/trac.cgi/log/mock/file-old?limit=4&'
+                         'mode=follow_copy&rev=31', links[0]['href'])
         self.assertEqual(1, len(links))
 
     def test_path_history(self):
