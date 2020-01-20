@@ -94,7 +94,7 @@ class Href(object):
     as Python keywords is supported too:
 
     >>> href('timeline', from_='02/24/05', daysback=30)
-    '/trac/timeline?from=02%2F24%2F05&daysback=30'
+    '/trac/timeline?daysback=30&from=02%2F24%2F05'
 
     If the order of query string parameters should be preserved, you may also
     pass a sequence of (name, value) tuples as last positional argument:
@@ -169,7 +169,7 @@ class Href(object):
         if args:
             lastp = args[-1]
             if isinstance(lastp, dict):
-                for k, v in list(lastp.items()):
+                for k, v in sorted(lastp.items(), key=lambda i: i[0]):
                     add_param(k, v)
                 args = args[:-1]
             elif isinstance(lastp, (list, tuple)):
@@ -186,7 +186,7 @@ class Href(object):
             href = '/'
 
         # assemble the query string
-        for k, v in list(kw.items()):
+        for k, v in sorted(kw.items(), key=lambda i: i[0]):
             add_param(k[:-1] if k.endswith('_') else k, v)
         if params:
             href += '?' + unicode_urlencode(params, self.query_safe)
