@@ -848,12 +848,6 @@ class HTMLTransform(HTMLParser):
     def handle_startendtag(self, tag, attrs):
         self._write(self.get_starttag_text())
 
-    def handle_charref(self, name):
-        self._handle_charref(name)
-
-    def handle_entityref(self, name):
-        self._handle_entityref(name)
-
     def handle_comment(self, data):
         self._write('<!--%s-->' % data)
 
@@ -868,31 +862,6 @@ class HTMLTransform(HTMLParser):
 
     def handle_endtag(self, tag):
         self._write('</' + tag + '>')
-
-    def unescape(self, s):
-        return _html_parser_unescape(s)
-
-    _codepoint2ref = {38: '&amp;', 60: '&lt;', 62: '&gt;', 34: '&#34;'}
-
-    def _handle_charref(self, name):
-        if name.startswith(('x', 'X')):
-            codepoint = int(name[1:], 16)
-        else:
-            codepoint = int(name)
-        if 0 <= codepoint <= 0x10ffff:
-            text = self._codepoint2ref.get(codepoint) or chr(codepoint)
-        else:
-            text = '&amp;#%s;' % name
-        self._write(text)
-
-    def _handle_entityref(self, name):
-        try:
-            codepoint = _name2codepoint[name]
-        except KeyError:
-            text = '&amp;%s;' % name
-        else:
-            text = self._codepoint2ref.get(codepoint) or chr(codepoint)
-        self._write(text)
 
     def _write(self, data):
         self.out.write(self._convert(data))
@@ -945,14 +914,6 @@ class HTMLSanitization(HTMLTransform):
     def handle_startendtag(self, tag, attrs):
         if not self.waiting_for:
             self._handle_start(tag, attrs, '/')
-
-    def handle_charref(self, name):
-        if not self.waiting_for:
-            self._handle_charref(name)
-
-    def handle_entityref(self, name):
-        if not self.waiting_for:
-            self._handle_entityref(name)
 
     def handle_comment(self, data):
         pass
@@ -1079,31 +1040,3 @@ def valid_html_bytes(data):
 
     """
     return data.translate(None, _invalid_control_chars)
-
-
-_reference_re = re.compile(r'&(?:#[xX][0-9a-fA-F]+|#[0-9]+|\w{1,8});')
-
-def _html_parser_unescape(s):
-    """This is to avoid an issue which HTMLParser.unescape() raises
-    ValueError or OverflowError from chr() when character reference
-    with a large integer in the attribute.
-    """
-
-    def repl(match):
-        match = match.group(0)
-        name = match[1:-1]
-        if name.startswith(('#x', '#X')):
-            codepoint = int(name[2:], 16)
-        elif name.startswith('#'):
-            codepoint = int(name[1:])
-        else:
-            try:
-                codepoint = _name2codepoint[name]
-            except KeyError:
-                return match
-        if 0 <= codepoint <= 0x10ffff:
-            return chr(codepoint)
-        else:
-            return match
-
-    return _reference_re.sub(repl, s)
