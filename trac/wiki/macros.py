@@ -85,8 +85,9 @@ class WikiMacroBase(Component):
         if description:
             return (domain, description) if domain else description
         # For pre-0.12 compatibility
-        doc = inspect.getdoc(self.__class__)
-        return to_unicode(doc) if doc else ''
+        # don't use inspect.getdoc() to avoid retreiving from the inheritance
+        # hierarchy
+        return inspect.cleandoc(self.__doc__) if self.__doc__ else ''
 
     def parse_macro(self, parser, name, content):
         raise NotImplementedError

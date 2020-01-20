@@ -747,7 +747,7 @@ def get_doc(obj):
     where `summary` is the first paragraph and `description` is the remaining
     text.
     """
-    doc = inspect.getdoc(obj)
+    doc = obj.__doc__
     if not doc:
         return None, None
     doc = to_unicode(doc).split('\n\n', 1)
