@@ -308,15 +308,14 @@ class TracHTMLSanitizerTestCaseBase(unittest.TestCase):
         test('<p>&amp;&amp;</p>',       '<p>&amp;&amp;</p>')
         test('<p>&amp;\u2026</p>',      '<p>&amp;&hellip;</p>')
         test("<p>&amp;unknown;</p>",    '<p>&unknown;</p>')
-        test("<p>\U0010ffff</p>",       '<p>&#1114111;</p>')
-        test("<p>\U0010ffff</p>",       '<p>&#x10ffff;</p>')
-        test("<p>\U0010ffff</p>",       '<p>&#X10FFFF;</p>')
-        test("<p>&amp;#1114112;</p>",   '<p>&#1114112;</p>')
-        test("<p>&amp;#x110000;</p>",   '<p>&#x110000;</p>')
-        test("<p>&amp;#X110000;</p>",   '<p>&#X110000;</p>')
+        test('<p>\U0010fffd\ufffd</p>',
+             '<p>&#1114109;&#1114110;&#1114111;&#1114112;</p>')
+        test('<p>\U0010fffd\ufffd</p>',
+             '<p>&#x10fffd;&#x10fffe;&#x10ffff;&#x110000;</p>')
+        test('<p>\U0010fffd\ufffd</p>',
+             '<p>&#x10FFFD;&#x10FFFE;&#x10FFFF;&#x110000;</p>')
         test("<p>&amp;#abcd;</p>",      '<p>&#abcd;</p>')
-        test('<p>&amp;#%d;</p>' % (sys.maxsize + 1),
-             '<p>&#%d;</p>' % (sys.maxsize + 1))
+        test('<p>\ufffd</p>',           '<p>&#%d;</p>' % (sys.maxsize + 1))
 
     def test_special_characters_attribute(self):
         self._assert_sanitize('<img title="&amp;"/>', '<img title="&amp;"/>')
@@ -334,21 +333,18 @@ class TracHTMLSanitizerTestCaseBase(unittest.TestCase):
                               '<img title="&amp;hellip;"/>')
         self._assert_sanitize('<img title="&amp;unknown;"/>',
                               '<img title="&unknown;"/>')
-        self._assert_sanitize('<img title="\U0010ffff"/>',
-                              '<img title="&#1114111;"/>')
-        self._assert_sanitize('<img title="\U0010ffff"/>',
-                              '<img title="&#x10ffff;"/>')
-        self._assert_sanitize('<img title="\U0010ffff"/>',
-                              '<img title="&#X10FFFF;"/>')
-        self._assert_sanitize('<img title="&amp;#1114112;"/>',
-                              '<img title="&#1114112;"/>')
-        self._assert_sanitize('<img title="&amp;#x110000;"/>',
-                              '<img title="&#x110000;"/>')
-        self._assert_sanitize('<img title="&amp;#X110000;"/>',
-                              '<img title="&#X110000;"/>')
+        self._assert_sanitize(
+            '<img title="\U0010fffd\ufffd"/>',
+            '<img title="&#1114109;&#1114110;&#1114111;&#1114112;"/>')
+        self._assert_sanitize(
+            '<img title="\U0010fffd\ufffd"/>',
+            '<img title="&#x10fffd;&#x10fffe;&#x10ffff;&#x110000;"/>')
+        self._assert_sanitize(
+            '<img title="\U0010fffd\ufffd"/>',
+            '<img title="&#x10FFFD;&#x10FFFE;&#x10FFFF;&#x110000;"/>')
         self._assert_sanitize('<img title="&amp;#abcd;"/>',
                               '<img title="&#abcd;"/>')
-        self._assert_sanitize('<img title="&amp;#%d;"/>' % (sys.maxsize + 1),
+        self._assert_sanitize('<img title="\ufffd"/>',
                               '<img title="&#%d;"/>' % (sys.maxsize + 1))
 
     def _assert_sanitize(self, expected, content):
