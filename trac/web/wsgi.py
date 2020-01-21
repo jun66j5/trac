@@ -18,8 +18,13 @@ from abc import ABCMeta, abstractmethod
 import errno
 import sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from socketserver import ForkingMixIn, ThreadingMixIn
+from socketserver import ThreadingMixIn
 import urllib.parse
+
+try:
+    from socketserver import ForkingMixIn
+except ImportError:
+    ForkingMixIn = None
 
 
 # winsock errors
@@ -273,7 +278,8 @@ class WSGIServer(HTTPServer):
         self.application = application
 
         gateway.wsgi_multithread = isinstance(self, ThreadingMixIn)
-        gateway.wsgi_multiprocess = isinstance(self, ForkingMixIn)
+        gateway.wsgi_multiprocess = bool(ForkingMixIn and
+                                         isinstance(self, ForkingMixIn))
         self.gateway = gateway
 
         self.environ = {'SERVER_NAME': self.server_name,
