@@ -63,7 +63,8 @@ else:
                     if _match:
                         _libpq_pathname = _match.group(1)
                 else:
-                    if re.search(r'\0libpq\.dll\0', _f.read(), re.IGNORECASE):
+                    if re.search(r'\0libpq\.dll\0'.encode('utf-8'), _f.read(),
+                                 re.IGNORECASE):
                         _libpq_pathname = find_library('libpq')
         except AttributeError:
             pass
