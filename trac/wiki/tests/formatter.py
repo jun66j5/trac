@@ -135,7 +135,7 @@ class WikiProcessorSampleMacro(WikiMacroBase):
             return 'Called as a macro: ' + content
         else:
             return 'Called as a processor with params: <dl>%s</dl>' % \
-                ''.join('<dt>%s</dt><dd>%s</dd>' % kv for kv in list(args.items())) \
+                ''.join('<dt>%s</dt><dd>%s</dd>' % kv for kv in args.items()) \
                 + content
 
 

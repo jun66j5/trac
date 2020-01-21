@@ -82,13 +82,13 @@ def parse_workflow_config(rawactions):
             elif isinstance(known_attrs[attribute], list):
                 actions[name][attribute] = to_list(value)
 
-    for action, attributes in list(actions.items()):
+    for action, attributes in actions.items():
         if 'label' not in attributes:
             if 'name' in attributes:  # backwards-compatibility, #11828
                 attributes['label'] = attributes['name']
             else:
                 attributes['label'] = action.replace("_", " ").strip()
-        for key, val in list(required_attrs.items()):
+        for key, val in required_attrs.items():
             attributes.setdefault(key, val)
         for val in ('<none>', '< none >'):
             sub_val(attributes['oldstates'], val, None)
@@ -176,7 +176,7 @@ class ConfigurableTicketWorkflow(Component):
 
         resource = ticket.resource
         allowed_actions = []
-        for action_name, action_info in list(self.actions.items()):
+        for action_name, action_info in self.actions.items():
             operations = action_info['operations']
             newstate = action_info['newstate']
             if 'leave_status' not in operations and newstate == '*':
@@ -219,7 +219,7 @@ class ConfigurableTicketWorkflow(Component):
 
         """
         all_status = set()
-        for attributes in list(self.actions.values()):
+        for attributes in self.actions.values():
             all_status.update(attributes['oldstates'])
             all_status.add(attributes['newstate'])
         all_status.discard('*')
@@ -471,7 +471,7 @@ class ConfigurableTicketWorkflow(Component):
                 'operations': ['reset_workflow'],
                 'permissions': ['TICKET_ADMIN']
             }
-            for key, val in list(reset.items()):
+            for key, val in reset.items():
                 actions['_reset'].setdefault(key, val)
 
         for name, info in actions.items():
@@ -485,7 +485,7 @@ class ConfigurableTicketWorkflow(Component):
         (for use in the controller's get_all_status())
         """
         actions = [(info['default'], action) for action, info
-                   in list(self.actions.items())
+                   in self.actions.items()
                    if operation in info['operations']]
         return actions
 
@@ -499,7 +499,7 @@ class ConfigurableTicketWorkflow(Component):
         # Be sure to look at the original status.
         status = ticket._old.get('status', ticket['status'])
         actions = [(info['default'], action)
-                   for action, info in list(self.actions.items())
+                   for action, info in self.actions.items()
                    if operation in info['operations'] and
                       ('*' in info['oldstates'] or
                        status in info['oldstates']) and
@@ -678,10 +678,10 @@ class WorkflowMacro(WikiMacroBase):
             {state for action in actions.values()
                    for state in action['oldstates']} |
             {action['newstate'] for action in actions.values()})
-        action_labels = [attrs['label'] for attrs in list(actions.values())]
+        action_labels = [attrs['label'] for attrs in actions.values()]
         action_names = list(actions)
         edges = []
-        for name, action in list(actions.items()):
+        for name, action in actions.items():
             new_index = states.index(action['newstate'])
             name_index = action_names.index(name)
             for old_state in action['oldstates']:

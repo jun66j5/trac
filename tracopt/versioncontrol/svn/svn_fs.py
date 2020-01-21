@@ -1168,8 +1168,7 @@ class FileContentStream(object):
         'id': ['Id'],
         'header': ['Header'],
         }
-    KEYWORDS = functools.reduce(set.union,
-                                map(set, list(KEYWORD_GROUPS.values())))
+    KEYWORDS = functools.reduce(set.union, map(set, KEYWORD_GROUPS.values()))
     KEYWORD_SPLIT_RE = re.compile(r'[ \t\v\n\b\r\f]+')
     KEYWORD_EXPAND_RE = re.compile(r'%[abdDPrRu_%HI]')
     NEWLINES = {'LF': b'\n', 'CRLF': b'\r\n', 'CR': b'\r',

@@ -590,7 +590,7 @@ def convert(_db, _host, _user, _password, _env, _force):
             all_components.setdefault(product, []).append(comp)
             all_owners[(product, comp)] = owner
         component_list = []
-        for product, components in list(all_components.items()):
+        for product, components in all_components.items():
             # find best default owner
             default = None
             for comp in DEFAULT_COMPONENTS:

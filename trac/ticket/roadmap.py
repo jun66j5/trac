@@ -223,8 +223,7 @@ class DefaultTicketGroupStatsProvider(Component):
                                                       'order': order})
                 group[qualifier] = value
                 order = max(order, int(group['order'])) + 1
-            return [group for group in sorted(list(groups.values()),
-                                              key=lambda g: int(g['order']))]
+            return sorted(groups.values(), key=lambda g: int(g['order']))
         else:
             return self.default_milestone_groups
 
@@ -568,8 +567,8 @@ class RoadmapModule(Component):
             return '\\n'.join(re.split(r'[\r\n]+', s))
 
         def write_prop(name, value, params={}):
-            text = ';'.join([name] + [k + '=' + v for k, v
-                                                  in list(params.items())]) + \
+            text = ';'.join([name] +
+                            [k + '=' + v for k, v in params.items()]) + \
                    ':' + escape_value(value)
             firstline = 1
             text = to_unicode(text)

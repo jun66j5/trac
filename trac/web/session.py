@@ -206,7 +206,7 @@ class DetachedSession(SessionDict):
                 db("""DELETE FROM session_attribute
                       WHERE sid=%s AND authenticated=%s
                       """, (self.sid, authenticated))
-                self._old = dict(list(self.items()))
+                self._old = dict(self.items())
                 # The session variables might already have been updated by a
                 # concurrent request.
                 try:

@@ -350,10 +350,9 @@ for x in TEXT_X_TYPES.split():
 # Default mapping from keywords/extensions to known MIME types:
 
 MIME_MAP = {}
-for t, exts in list(KNOWN_MIME_TYPES.items()):
+for t, exts in KNOWN_MIME_TYPES.items():
     MIME_MAP[t] = t
-    for e in exts:
-        MIME_MAP[e] = t
+    MIME_MAP.update((e, t) for e in exts)
 
 # Simple builtin autodetection from the content using a regexp
 MODE_RE = re.compile(r"""

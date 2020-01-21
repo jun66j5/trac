@@ -363,7 +363,7 @@ class RepositoryManager(Component):
 
     def pre_process_request(self, req, handler):
         if handler is not Chrome(self.env):
-            for repo_info in list(self.get_all_repositories().values()):
+            for repo_info in self.get_all_repositories().values():
                 if not as_bool(repo_info.get('sync_per_request')):
                     continue
                 start = time_now()

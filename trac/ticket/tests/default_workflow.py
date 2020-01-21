@@ -62,7 +62,7 @@ class ConfigurableTicketWorkflowTestCase(unittest.TestCase):
         all_actions = self.ctlr.get_all_actions()
 
         resolve_action = None
-        for name, attrs in list(all_actions.items()):
+        for name, attrs in all_actions.items():
             if name == 'resolve':
                 resolve_action = attrs
 
