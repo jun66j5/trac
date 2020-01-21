@@ -327,11 +327,17 @@ if os.name == 'nt':
     def touch_file(filename):
         """Update modified time of the given file. The file is created if
         missing."""
-        # Use f.truncate() to avoid low resolution of GetSystemTime()
+        # Use time_now() to avoid low resolution of GetSystemTime()
         # on Windows
-        with open(filename, 'ab') as f:
-            stat = os.fstat(f.fileno())
-            f.truncate(stat.st_size)
+        now = time_now()
+        try:
+            os.utime(filename, (now, now))
+        except OSError as e:
+            if e.errno == errno.ENOENT:
+                with open(filename, 'ab'):
+                    pass
+            else:
+                raise
 else:
     def touch_file(filename):
         """Update modified time of the given file. The file is created if
