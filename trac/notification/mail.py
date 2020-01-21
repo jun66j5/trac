@@ -16,7 +16,6 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
-import base64
 import hashlib
 import os
 import re
@@ -149,9 +148,11 @@ def create_header(key, value, charset):
 def create_address_header(addresses):
     """Create address header instance to pass to `set_header`.
 
-    The `addresses` is a list of addresses. The item can either be `str`,
-    a `(name, address)` tuple or a `(None, address)`.
+    The `addresses` is a list or an iterable of addresses. The item can
+    either be `str`, a `(name, address)` tuple or a `(None, address)`.
     """
+    if isinstance(addresses, str):
+        addresses = [(None, addresses)]
     l = []
     for item in addresses:
         if isinstance(item, Address):
@@ -169,35 +170,56 @@ def create_address_header(addresses):
         else:
             username = addr
             domain = ''
-        l.append(Address(name or '', username, domain))
+        l.append(Address(_replace_encoded_words(name or ''), username, domain))
     return l
 
 
-def set_header(message, key, value, charset):
+def set_header(message, key, value=None, charset=None, addresses=None):
     """Create and add or replace a header in a `EmailMessage`.
 
-    The `key` is always a string and will be converted to the
-    appropriate `charset`. The `value` can either be a string or a
-    two-element tuple where the first item is the name and the
-    second item is the email address.
+    The `key` is always a string. The `value` can either be `None`, a
+    string or a two-element tuple where the first item is the name and
+    the second item is the email address.
 
-    The `charset` should be created using `create_charset()`
+    The `addresses` can either be a list or an iterable of a two-element
+    tuple. When the `addresses` is given, the `value` will be ignored.
+
+    The `charset` is no longer used.
 
     Example::
 
-        set_header(my_message, 'From', ('Trac', 'noreply@ourcompany.com'),
-                   my_charset)
+        set_header(my_message, 'From', ('Trac', 'noreply@ourcompany.com'))
+
+        set_header(my_message, 'To',
+                   addresses=[('Foo', 'foo@example.org'),
+                              ('Bar', 'bar@example.org')])
     """
-    if isinstance(value, (list, tuple)):
+    if addresses is not None:
+        header = create_address_header(addresses)
+    elif isinstance(value, (list, tuple)):  # a pair of name and address
         header = create_address_header([value])
     elif isinstance(value, Address):
         header = value
+    elif value is None:
+        header = ''
     else:
-        header = str(value)
+        header = _replace_encoded_words(str(value))
     if key in message:
         message.replace_header(key, header)
     else:
         message[key] = header
+
+
+_encoded_words_re = re.compile(r'=\?')
+
+
+def _replace_encoded_words(text):
+    """Replace '=?' with '=\u200b?' to avoid decoding encoded-words by
+    `EmailMessage`.
+    """
+    if text:
+        text = _encoded_words_re.sub('=\u200b?', text)
+    return text
 
 
 def create_mime_multipart(subtype):
@@ -613,17 +635,18 @@ class EmailDistributor(Component):
             headers['In-Reply-To'] = rootid
             headers['References'] = rootid
         headers['Date'] = formatdate()
-        headers['From'] = (smtp_from_name, smtp_from) \
-                          if smtp_from_name else smtp_from
         headers['To'] = 'undisclosed-recipients: ;'
-        if cc_addrs:
-            headers['Cc'] = ', '.join(cc_addrs)
-        if bcc_addrs:
-            headers['Bcc'] = ', '.join(bcc_addrs)
-        headers['Reply-To'] = smtp_replyto
-
         for k, v in headers.items():
-            set_header(message, k, v, self._charset)
+            set_header(message, k, v)
+
+        set_header(message, 'From', (smtp_from_name, smtp_from)
+                                    if smtp_from_name else smtp_from)
+        if cc_addrs:
+            set_header(message, 'Cc', addresses=cc_addrs)
+        if bcc_addrs:
+            set_header(message, 'Bcc', addresses=bcc_addrs)
+        set_header(message, 'Reply-To', addresses=[smtp_replyto])
+
         for decorator in self.decorators:
             decorator.decorate_message(event, message, self._charset)
 
@@ -799,4 +822,4 @@ class FromAuthorEmailDecorator(Component):
     def decorate_message(self, event, message, charset):
         from_ = get_from_author(self.env, event)
         if from_:
-            set_header(message, 'From', from_, charset)
+            set_header(message, 'From', addresses=[from_])
