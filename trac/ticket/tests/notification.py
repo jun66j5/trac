@@ -1390,8 +1390,8 @@ Security sensitive:  0                           |          Blocking:
         self.assertEqual(r'"Trac\\" <trac@example.com>', headers['From'])
         message, headers, body = notify(u'Trac"')
         self.assertEqual(r'"Trac\"" <trac@example.com>', headers['From'])
-        message, headers, body = notify(u'=?utf-8?b?****?=')
-        self.assertEqual('"=?utf-8?b?PT91dGYtOD9iPyoqKio/PQ==?=" '
+        message, headers, body = notify(u'=?utf-8?q?e_?=')
+        self.assertEqual('=?utf-8?b?PeKAiz91dGYtOD9xP2VfPz0=?= '
                          '<trac@example.com>', headers['From'])
 
     def test_mime_meta_characters_in_subject_header(self):
@@ -1399,14 +1399,15 @@ Security sensitive:  0                           |          Blocking:
 
         self.env.config.set('notification', 'smtp_from', 'trac@example.com')
         self.env.config.set('notification', 'mime_encoding', 'base64')
-        summary = u'=?utf-8?q?****?='
+        summary = '=?utf-8?q?e_?='
         ticket = insert_ticket(self.env, reporter='joeuser', summary=summary)
         notify_ticket_created(self.env, ticket)
         message = smtpd.get_message()
         headers, body = parse_smtp_message(message)
-        self.assertIn('\nSubject: =?utf-8?b?', message)  # is mime-encoded
-        self.assertEqual(summary,
-                         re.split(r' #[0-9]+: ', headers['Subject'], 1)[1])
+        self.assertEqual('[TracTest] #1: =\u200b?utf-8?q?e_?=',
+                         headers['Subject'])
+        self.assertIn('\nSubject: [TracTest] #1: '
+                      '=?utf-8?b?PeKAiz91dGYtOD9xP2VfPz0=?=', message)
 
     def test_mail_headers(self):
         def validates(headers):

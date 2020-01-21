@@ -25,9 +25,9 @@ from trac.config import *
 from trac.notification.api import (IEmailDecorator, INotificationFormatter,
                                    INotificationSubscriber,
                                    NotificationEvent, NotificationSystem)
-from trac.notification.mail import (RecipientMatcher, create_header,
-                                    create_message_id, get_from_author,
-                                    get_message_addresses, set_header)
+from trac.notification.mail import (RecipientMatcher, create_message_id,
+                                    get_from_author, get_message_addresses,
+                                    set_header)
 from trac.notification.model import Subscription
 from trac.perm import PermissionSystem
 from trac.ticket.api import translation_deactivated
@@ -515,15 +515,15 @@ class TicketFormatter(Component):
             msgid = self._get_message_id(targetid, from_email, None, more)
             url = self.env.abs_href.ticket(ticket.id)
             if event.category != 'created':
-                set_header(message, 'In-Reply-To', msgid, charset)
-                set_header(message, 'References', msgid, charset)
+                set_header(message, 'In-Reply-To', msgid)
+                set_header(message, 'References', msgid)
                 msgid = self._get_message_id(targetid, from_email, event.time,
                                              more)
                 cnum = ticket.get_comment_number(event.time)
                 if cnum is not None:
                     url += '#comment:%d' % cnum
-            set_header(message, 'X-Trac-Ticket-ID', ticket.id, charset)
-            set_header(message, 'X-Trac-Ticket-URL', url, charset)
+            set_header(message, 'X-Trac-Ticket-ID', ticket.id)
+            set_header(message, 'X-Trac-Ticket-URL', url)
             # When owner, reporter and updater are listed in the Cc header,
             # move the address to To header.
             if NotificationSystem(self.env).use_public_cc:
@@ -540,18 +540,15 @@ class TicketFormatter(Component):
                     cc_addrs = get_message_addresses(message, 'Cc')
                     to_addrs &= set(addr for name, addr in cc_addrs)
                 if to_addrs:
-                    cc_header = ', '.join(create_header('Cc', (name, addr),
-                                                        charset)
-                                          for name, addr in cc_addrs
-                                          if addr not in to_addrs)
-                    if cc_header:
-                        set_header(message, 'Cc', cc_header, charset)
+                    cc_addrs = [(name, addr) for name, addr in cc_addrs
+                                             if addr not in to_addrs]
+                    if cc_addrs:
+                        set_header(message, 'Cc', addresses=cc_addrs)
                     elif 'Cc' in message:
                         del message['Cc']
-                    to_header = ', '.join(sorted(to_addrs))
-                    set_header(message, 'To', to_header, charset)
-        set_header(message, 'Subject', subject, charset)
-        set_header(message, 'Message-ID', msgid, charset)
+                    set_header(message, 'To', addresses=to_addrs)
+        set_header(message, 'Subject', subject)
+        set_header(message, 'Message-ID', msgid)
 
 
 class TicketOwnerSubscriber(Component):
