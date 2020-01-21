@@ -521,11 +521,14 @@ try:
                         data['plural_expr'] = pluralexpr(val)
                         break
         data['messages'] = messages
+        data = to_json(data)
+        if isinstance(data, bytes):
+            data = str(data, 'utf-8')
 
         fileobj.write('// Generated messages javascript file '
                       'from compiled MO file\n')
         fileobj.write('babel.Translations.load(')
-        fileobj.write(to_json(data).encode('utf-8'))
+        fileobj.write(data)
         fileobj.write(').install();\n')
 
     def pluralexpr(forms):
