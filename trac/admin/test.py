@@ -55,8 +55,9 @@ def _execute(func, strip_trailing_space=True, input=None):
                          type(input))
 
     with io.BytesIO(input) as rbuf, io.BytesIO() as wbuf:
-        stdin = io.TextIOWrapper(rbuf, encoding='utf-8')
-        stdout = io.TextIOWrapper(wbuf, encoding='utf-8', write_through=True)
+        stdin = io.TextIOWrapper(rbuf, encoding='utf-8', newline='\n')
+        stdout = io.TextIOWrapper(wbuf, encoding='utf-8', newline='\n',
+                                  write_through=True)
         _files = sys.stdin, sys.stdout, sys.stderr
         try:
             sys.stdin = stdin

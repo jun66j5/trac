@@ -895,6 +895,7 @@ class ReportModule(Component):
         def iterate():
             out = io.BytesIO()
             writer = csv.writer(io.TextIOWrapper(out, encoding='utf-8',
+                                                 newline='\n',
                                                  write_through=True),
                                 delimiter=sep, quoting=csv.QUOTE_MINIMAL)
 

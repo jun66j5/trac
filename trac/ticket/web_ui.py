@@ -1188,7 +1188,7 @@ class TicketModule(Component):
         content = io.BytesIO()
         content.write(b'\xef\xbb\xbf')   # BOM
         writer = csv.writer(io.TextIOWrapper(content, encoding='utf-8',
-                                             write_through=True),
+                                             newline='\n', write_through=True),
                             delimiter=sep, quoting=csv.QUOTE_MINIMAL)
         writer.writerow(['id'] + [f['name'] for f in fields])
 
