@@ -278,8 +278,7 @@ def classes(*args, **kwargs):
     ''
 
     """
-    classes = list(filter(None, args)) + \
-              [k for k, v in list(kwargs.items()) if v]
+    classes = list(filter(None, args)) + [k for k, v in kwargs.items() if v]
     return u' '.join(classes)
 
 def styles(*args, **kwargs):
@@ -812,7 +811,7 @@ class Deuglifier(object):
         return re.sub(self._compiled_rules, self.replace, indata)
 
     def replace(self, fullmatch):
-        for mtype, match in list(fullmatch.groupdict().items()):
+        for mtype, match in fullmatch.groupdict().items():
             if match:
                 if mtype == 'font':
                     return '<span>'

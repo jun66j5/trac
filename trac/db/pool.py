@@ -191,7 +191,7 @@ class ConnectionPoolBackend(object):
         when = time_now() - delay
         with self._available:
             if tid is None: # global shutdown, also close active connections
-                for db, num in list(self._active.values()):
+                for db, num in self._active.values():
                     db.close()
                 self._active = {}
             while self._pool_time and self._pool_time[0] <= when:

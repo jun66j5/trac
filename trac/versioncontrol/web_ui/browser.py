@@ -595,7 +595,7 @@ class BrowserModule(Component):
             min_s = req.args.get('range_min_secs')
             parent_range = [timerange.from_seconds(int(s))
                             for s in [max_s, min_s] if s]
-            this_range = [c.date for c in list(changes.values()) if c]
+            this_range = [c.date for c in changes.values() if c]
             for dt in this_range + parent_range:
                 timerange.insert(dt)
             custom_colorizer = self.get_custom_colorizer()
@@ -915,7 +915,7 @@ class BrowserModule(Component):
         desc = as_bool(kwargs.get('desc', 0))
 
         rm = RepositoryManager(self.env)
-        all_repos = dict(rdata for rdata in list(rm.get_all_repositories().items())
+        all_repos = dict(rdata for rdata in rm.get_all_repositories().items()
                          if fnmatchcase(rdata[0], glob))
 
         if format == 'table':

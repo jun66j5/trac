@@ -205,7 +205,7 @@ class RequestDispatcher(Component):
         try:
             # Select the component that should handle the request
             chosen_handler = None
-            for handler in list(self._request_handlers.values()):
+            for handler in self._request_handlers.values():
                 if handler.match_request(req):
                     chosen_handler = handler
                     break
@@ -823,7 +823,7 @@ def send_project_index(environ, start_response, parent_dir=None,
 
     href = Href(req.base_path)
     projects = []
-    for env_name, env_path in list(get_environments(environ).items()):
+    for env_name, env_path in get_environments(environ).items():
         try:
             env = open_environment(env_path,
                                    use_cache=not environ['wsgi.run_once'])

@@ -136,7 +136,7 @@ class Query(object):
 
         constraint_cols = {}
         for clause in self.constraints:
-            for k, v in list(clause.items()):
+            for k, v in clause.items():
                 if k == 'id' or k in field_names:
                     constraint_cols.setdefault(k, []).append(v)
                 else:
@@ -721,7 +721,7 @@ class Query(object):
         clauses = []
         for clause in self.constraints:
             constraints = {}
-            for k, v in list(clause.items()):
+            for k, v in clause.items():
                 constraint = {'values': [], 'mode': ''}
                 for val in v:
                     neg = val.startswith('!')
@@ -955,7 +955,7 @@ class QueryModule(Component):
             # Substitute $USER, or ensure no field constraints that depend
             # on $USER are used if we have no username.
             for clause in constraints:
-                for field, vals in list(clause.items()):
+                for field, vals in clause.items():
                     for (i, val) in enumerate(vals):
                         if user:
                             vals[i] = val.replace('$USER', user)

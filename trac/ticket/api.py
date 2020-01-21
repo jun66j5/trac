@@ -303,8 +303,8 @@ class TicketSystem(Component):
                     actions[action] = max(actions[action], weight)
                 else:
                     actions[action] = weight
-        all_weighted_actions = [(weight, action) for action, weight in
-                                list(actions.items())]
+        all_weighted_actions = [(weight, action) for action, weight
+                                                 in actions.items()]
         return [x[1] for x in sorted(all_weighted_actions, reverse=True)]
 
     def get_all_status(self):

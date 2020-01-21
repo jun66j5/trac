@@ -409,7 +409,7 @@ class PostProcessRequestTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         from trac.core import ComponentMeta
-        for component in list(cls.request_filter.values()):
+        for component in cls.request_filter.values():
             ComponentMeta.deregister(component)
 
     def setUp(self):

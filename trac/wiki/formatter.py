@@ -1253,7 +1253,7 @@ class Formatter(object):
     # -- Wiki engine
 
     def handle_match(self, fullmatch):
-        for itype, match in list(fullmatch.groupdict().items()):
+        for itype, match in fullmatch.groupdict().items():
             if match and itype not in self.wikiparser.helper_patterns:
                 # Check for preceding escape character '!'
                 if match[0] == '!':

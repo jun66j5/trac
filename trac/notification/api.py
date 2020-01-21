@@ -181,11 +181,11 @@ def parse_subscriber_config(rawsubscriptions):
             byname[name][attribute] = value
 
     byclass = defaultdict(list)
-    for name, attributes in list(byname.items()):
-        for key, value in list(required_attrs.items()):
+    for name, attributes in byname.items():
+        for key, value in required_attrs.items():
             attributes.setdefault(key, value)
         byclass[attributes['class']].append(attributes)
-    for values in list(byclass.values()):
+    for values in byclass.values():
         values.sort(key=lambda value: (value['priority'], value['name']))
 
     return byclass

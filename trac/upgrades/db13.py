@@ -64,7 +64,7 @@ def do_upgrade(env, ver, cursor):
     reports = {}
     for id, rsql in cursor:
         reports[id] = rsql
-    for id, rsql in list(reports.items()):
+    for id, rsql in reports.items():
         parts = rsql.split('ORDER BY', 1)
         ending = len(parts)>1 and 'ORDER BY'+parts[1] or ''
         cursor.execute("UPDATE report SET sql=%s WHERE id=%s",

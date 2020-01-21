@@ -121,7 +121,7 @@ def Mock(bases=(), *initargs, **kw):
 
     cls = type('Mock', bases, attrs)
     mock = cls(*initargs)
-    for k, v in list(kw.items()):
+    for k, v in kw.items():
         setattr(mock, k, v)
     return mock
 

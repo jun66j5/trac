@@ -343,9 +343,9 @@ class FunctionalTestEnvironment(object):
             create_file(authz_file, authz_content)
         else:
             parser = UnicodeConfigParser()
-            for section, options in list(authz_content.items()):
+            for section, options in authz_content.items():
                 parser.add_section(section)
-                for key, value in list(options.items()):
+                for key, value in options.items():
                     parser.set(section, key, value)
             with open(authz_file, 'w', encoding='utf-8') as f:
                 parser.write(f)

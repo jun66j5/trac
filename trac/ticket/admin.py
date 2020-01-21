@@ -690,7 +690,7 @@ class AbstractEnumAdminPanel(TicketAdminPanel):
                     order = {str(int(key[6:])): str(req.args.getint(key))
                              for key in req.args
                              if key.startswith('value_')}
-                    values = {val: True for val in list(order.values())}
+                    values = {val: True for val in order.values()}
                     if len(order) != len(values):
                         raise TracError(_("Order numbers must be unique"))
                     changed = False

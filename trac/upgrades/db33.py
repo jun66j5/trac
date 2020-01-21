@@ -38,11 +38,11 @@ def do_upgrade(env, version, cursor):
                for state in action['oldstates']} |
         {action['newstate'] for action in all_actions.values()})
 
-    for action, attributes in list(new_actions.items()):
+    for action, attributes in new_actions.items():
         if action == 'create_and_assign' and 'assigned' not in all_states:
             continue
         if action not in env.config['ticket-workflow']:
-            for attr, value in list(attributes.items()):
+            for attr, value in attributes.items():
                 key = action + ('.' + attr if attr else '')
                 env.config.set('ticket-workflow', key, value)
             save = True
