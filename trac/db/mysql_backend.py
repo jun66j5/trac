@@ -380,19 +380,18 @@ class MySQLConnection(ConnectionBase, ConnectionWrapper):
             port = 3306
         opts = {'charset': 'utf8'}
         for name, value in params.items():
-            key = name.encode('utf-8')
             if name == 'read_default_group':
-                opts[key] = value
+                opts[name] = value
             elif name == 'init_command':
-                opts[key] = value.encode('utf-8')
+                opts[name] = value
             elif name in ('read_default_file', 'unix_socket'):
-                opts[key] = value.encode(sys.getfilesystemencoding())
+                opts[name] = value
             elif name in ('compress', 'named_pipe'):
-                opts[key] = as_int(value, 0)
+                opts[name] = as_int(value, 0)
             elif name == 'charset':
                 value = value.lower()
                 if value in ('utf8', 'utf8mb4'):
-                    opts[key] = value
+                    opts[name] = value
                 else:
                     self.log.warning("Invalid connection string parameter "
                                      "'%s=%s'", name, value)
