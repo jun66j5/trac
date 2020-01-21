@@ -255,6 +255,7 @@ class RequestDispatcher(Component):
                     req.perm.require('TRAC_ADMIN')
                     # debugging helper - no need to render first
                     with io.TextIOWrapper(io.BytesIO(), encoding='utf-8',
+                                          newline='\n',
                                           write_through=True) as out:
                         pprint({'template': template,
                                 'metadata': metadata,
