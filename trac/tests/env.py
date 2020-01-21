@@ -225,7 +225,7 @@ class EnvironmentDataTestCase(unittest.TestCase):
     def test_dumped_values_in_tracini(self):
         parser = RawConfigParser()
         filename = self.env.config.filename
-        self.assertEqual([filename], parser.read(filename))
+        self.assertEqual([filename], parser.read(filename, 'utf-8'))
         self.assertEqual('#cc0,#0c0,#0cc,#00c,#c0c,#c00',
                          parser.get('revisionlog', 'graph_colors'))
         self.assertEqual('disabled', parser.get('trac', 'secure_cookies'))
@@ -233,7 +233,7 @@ class EnvironmentDataTestCase(unittest.TestCase):
     def test_dumped_values_in_tracini_sample(self):
         parser = RawConfigParser()
         filename = self.env.config.filename + '.sample'
-        self.assertEqual([filename], parser.read(filename))
+        self.assertEqual([filename], parser.read(filename, 'utf-8'))
         self.assertEqual('#cc0,#0c0,#0cc,#00c,#c0c,#c00',
                          parser.get('revisionlog', 'graph_colors'))
         self.assertEqual('disabled', parser.get('trac', 'secure_cookies'))

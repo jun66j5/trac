@@ -1129,7 +1129,7 @@ class EnvironmentAdmin(Component):
 
     def _create_env(self, env_path, dburi):
         parser = RawConfigParser()
-        parser.read(self.env.config_file_path)
+        parser.read(self.env.config_file_path, 'utf-8')
         options = dict(((section, name), value)
                        for section in parser.sections()
                        for name, value in parser.items(section))
