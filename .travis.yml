@@ -11,6 +11,7 @@ cache:
   - "$HOME/.pyenv"
   - "$HOME/venv-lib"
 before_install:
+- set -e
 - test -n "$pyver" || pyver="$(python -c "$print_version")"
 - test -d "$HOME/.pip" || mkdir "$HOME/.pip"
 - |
@@ -32,20 +33,16 @@ before_install:
     python -m virtualenv $venv
     source $venv/bin/activate
   fi
-- |
-  case "$pyver" in
-    2.7)
-      pip install --upgrade pip setuptools wheel
-      ;;
-  esac
+- pip install --upgrade pip setuptools wheel
 - pyenv --version
 - pyenv versions
 - python --version
 - pip --version
 - pip list
 install:
+- set -e
 - |
-  requires='Jinja2 lxml twill==0.9.1'
+  requires='Jinja2 lxml'
   if [ "$build" != minimum ]; then requires="$requires Babel Pygments docutils textile pytz"; fi
   if [ "$tracdb" = postgresql ]; then requires="$requires psycopg2"; fi
   if [ "$tracdb" = mysql ]; then requires="$requires PyMySQL"; fi
@@ -103,6 +100,7 @@ before_script:
   echo ".uri = $tracdb_uri" >Makefile.cfg
 - echo "$tracdb_version"
 script:
+- set -e
 - if [ "$build" != minimum ]; then make compile; fi
 - make Trac.egg-info unit-test functional-test;
 before_deploy:
@@ -120,54 +118,18 @@ notifications:
       secure: lIn4a3G6ww61t3o12DS4aWwEwD6Hl2kxcsZgkxvhU2MgzviJ5j3EBV5F/BlbQmR1BqM51qgDOXoQTO+y9cvzAYBkIy/gfLqZjAl0hfZep6iGZgl1cnUW4c5i9+wkF8PzTaQm+q9gwlIQ7JVedWw9jzHBIn80tCgTcavahAzyelk=
 jobs:
   include:
-  - name: Linux | Python 2.7 | SQLite (in-mem) | Minimal
-    os: linux
-    python: 2.7
-    virtualenv:
-      system_site_packages: true
-    env: tracdb= build=minimum
-  - name: Linux | Python 2.7 | SQLite (in-mem)
-    os: linux
-    python: 2.7
-    virtualenv:
-      system_site_packages: true
-    env: tracdb=
-  - name: Linux | Python 2.7 | SQLite
-    os: linux
-    python: 2.7
-    virtualenv:
-      system_site_packages: true
-    env: tracdb=sqlite
-  - name: Linux | Python 2.7 | PostgreSQL
-    os: linux
-    python: 2.7
-    virtualenv:
-      system_site_packages: true
-    services: postgresql
-    env: tracdb=postgresql
-  - name: Linux | Python 2.7 | MySQL
-    os: linux
-    python: 2.7
-    virtualenv:
-      system_site_packages: true
-    services: mysql
-    env: tracdb=mysql
-  - name: Linux | Python 2.7 | SQLite (in-mem) | Minimal
-    os: osx
-    language: generic
-    env: pyver=2.7 tracdb= build=minimum
-  - name: Linux | Python 2.7 | SQLite (in-mem)
-    os: osx
-    language: generic
-    env: pyver=2.7 tracdb=
-  - name: OSX | Python 2.7 | SQLite
-    os: osx
-    language: generic
-    env: pyver=2.7 tracdb=sqlite
-  - name: OSX | Python 2.7 | PostgreSQL
-    os: osx
-    language: generic
-    env: pyver=2.7 tracdb=postgresql
+  - {os: linux, python: '3.8', env: 'tracdb= build=minimum'}
+  - {os: linux, python: '3.8', env: 'tracdb='}
+  - {os: linux, python: '3.7', env: 'tracdb='}
+  - {os: linux, python: '3.6', env: 'tracdb='}
+  - {os: linux, python: '3.5', env: 'tracdb='}
+  - {os: linux, python: '3.8', env: 'tracdb=sqlite'}
+  - {os: linux, python: '3.8', env: 'tracdb=postgresql', services: postgresql}
+  - {os: linux, python: '3.8', env: 'tracdb=mysql', services: mysql}
+  - {os: osx, language: generic, env: 'pyver=3.8 tracdb= build=minimum'}
+  - {os: osx, language: generic, env: 'pyver=3.8 tracdb='}
+  - {os: osx, language: generic, env: 'pyver=3.8 tracdb=sqlite'}
+  - {os: osx, language: generic, env: 'pyver=3.8 tracdb=postgresql'}
   - stage: deploy
     before_script: skip
     script: skip
