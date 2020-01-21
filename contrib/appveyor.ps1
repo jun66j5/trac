@@ -55,7 +55,6 @@ $pgPassword = 'Password12!'
 $pipPackages = @(
     'jinja2',
     'babel',
-    'twill==0.9.1',
     'docutils',
     'passlib',
     'pygments',
