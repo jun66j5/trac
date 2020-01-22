@@ -42,10 +42,6 @@ else:
     pymsql_version = get_pkginfo(pymysql).get('version', pymysql.__version__)
 
     class MySQLUnicodeCursor(pymysql.cursors.Cursor):
-        def _convert_row(self, row):
-            return tuple(v.decode('utf-8') if isinstance(v, bytes) else v
-                         for v in row)
-
         def execute(self, query, args=None):
             if args:
                 args = tuple(str(arg) if isinstance(arg, Markup) else arg
@@ -59,19 +55,8 @@ else:
                         for arg in args]
             return super(MySQLUnicodeCursor, self).executemany(query, args)
 
-        def fetchone(self):
-            row = super(MySQLUnicodeCursor, self).fetchone()
-            return self._convert_row(row) if row else None
-
-        def fetchmany(self, num):
-            rows = super(MySQLUnicodeCursor, self).fetchmany(num)
-            return [self._convert_row(row) for row in rows] \
-                   if rows is not None else []
-
         def fetchall(self):
-            rows = super(MySQLUnicodeCursor, self).fetchall()
-            return [self._convert_row(row) for row in rows] \
-                   if rows is not None else []
+            return list(super(MySQLUnicodeCursor, self).fetchall())
 
     class MySQLSilentCursor(MySQLUnicodeCursor):
         def _show_warnings(self, conn=None):
