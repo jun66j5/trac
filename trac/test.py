@@ -522,14 +522,13 @@ def locate(fn):
 
 
 def rmtree(path):
-    import errno
     def onerror(function, path, excinfo, retry=1):
-        # `os.remove` fails for a readonly file on Windows.
+        # `os.unlink` and `os.remove` fail for a readonly file on Windows.
         # Then, it attempts to be writable and remove.
-        if function != os.remove:
+        if function not in (os.unlink, os.remove):
             raise
         e = excinfo[1]
-        if isinstance(e, OSError) and e.errno == errno.EACCES:
+        if isinstance(e, PermissionError):
             mode = os.stat(path).st_mode
             os.chmod(path, mode | 0o666)
             try:
