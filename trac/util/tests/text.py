@@ -54,23 +54,21 @@ class ToUnicodeTestCase(unittest.TestCase):
 
     def test_from_windows_error(self):
         try:
-            os.stat('non\\existent\\file.txt')
+            os.stat(r'non\existent\file.txt')
         except OSError as e:
             uc = to_unicode(e)
             self.assertIsInstance(uc, str, uc)
-            self.assertTrue(uc.startswith('[Error '), uc)
-            self.assertIn(e.strerror.decode('mbcs'), uc)
-            self.assertTrue(uc.endswith(u": 'non\\existent\\file.txt'"), uc)
+            self.assertIsInstance(e.strerror, str)
+            self.assertIn(r": 'non\existent\file.txt'", uc)
 
     def test_from_windows_error_with_unicode_path(self):
         try:
-            os.stat(u'nön\\existént\\file.txt')
+            os.stat(r'nön\existént\file.txt')
         except OSError as e:
             uc = to_unicode(e)
             self.assertIsInstance(uc, str, uc)
-            self.assertTrue(uc.startswith('[Error '), uc)
-            self.assertIn(e.strerror.decode('mbcs'), uc)
-            self.assertTrue(uc.endswith(u": 'nön\\existént\\file.txt'"), uc)
+            self.assertIsInstance(e.strerror, str)
+            self.assertIn(r": 'nön\existént\file.txt'", uc)
 
     def test_from_socket_error(self):
         for res in socket.getaddrinfo('127.0.0.1', 65536, 0,
@@ -82,8 +80,7 @@ class ToUnicodeTestCase(unittest.TestCase):
             except socket.error as e:
                 uc = to_unicode(e)
                 self.assertIsInstance(uc, str, uc)
-                if hasattr(e, 'strerror'):
-                    self.assertIn(e.strerror.decode('mbcs'), uc)
+                self.assertIsInstance(e.strerror, str)
 
     if os.name != 'nt':
         del test_from_windows_error

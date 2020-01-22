@@ -110,10 +110,19 @@ def to_unicode(text, charset=None):
         # two possibilities for storing unicode strings in exception data:
         try:
             # custom __str__ method on the exception (e.g. PermissionError)
-            return str(text)
+            result = str(text)
         except UnicodeError:
             # unicode arguments given to the exception (e.g. parse_date)
-            return ' '.join(to_unicode(arg) for arg in text.args)
+            result = ' '.join(to_unicode(arg) for arg in text.args)
+        else:
+            # remove duplicated backslashes from filename in the message
+            if os.name == 'nt' and isinstance(text, EnvironmentError) and \
+                    text.filename:
+                filename = repr(text.filename)
+                if result.endswith(filename):
+                    result = result[:-len(filename)] + \
+                             filename.replace(r'\\', '\\')
+        return result
     return str(text)
 
 
