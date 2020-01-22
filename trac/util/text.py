@@ -359,7 +359,7 @@ def raw_input(prompt):
     appropriate.
     """
     printout(prompt, newline=False)
-    return to_unicode(__builtins__.input(), sys.stdin.encoding)
+    return to_unicode(input(), sys.stdin.encoding)
 
 
 _preferredencoding = locale.getpreferredencoding()
