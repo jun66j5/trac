@@ -637,11 +637,13 @@ def parse_date(text, tzinfo=None, locale=None, hint='date'):
                     'not known. Try "%(hint)s" or "%(isohint)s" instead.',
                     date=text, hint=formatted_hint, isohint=isohint)
         raise TracError(msg, _('Invalid Date'))
-    # Make sure we can convert it to a timestamp and back - fromtimestamp()
-    # may raise ValueError if larger than platform C localtime() or gmtime()
+    # Make sure we can convert it to a timestamp and back -
+    # utcfromtimestamp() may raise OverflowError and OSError if out of
+    # range by platform C gmtime() and gmtime() failure
+    ts = to_timestamp(dt)
     try:
-        datetime.utcfromtimestamp(to_timestamp(dt))
-    except (ValueError, OverflowError):
+        datetime.utcfromtimestamp(ts)
+    except (ValueError, OverflowError, OSError):
         raise TracError(_('The date "%(date)s" is outside valid range. '
                           'Try a date closer to present time.', date=text),
                           _('Invalid Date'))
