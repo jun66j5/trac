@@ -617,7 +617,7 @@ class Environment(Component, ComponentManager):
         path = self.path
         for dir in dirs:
             path = os.path.join(path, dir)
-        return os.path.realpath(path)
+        return os.path.normcase(os.path.realpath(path))
 
     @lazy
     def attachments_dir(self):

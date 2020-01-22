@@ -156,7 +156,8 @@ def get_plugin_info(env, include_core=False):
 
         dist = find_distribution(module)
         plugin_filename = None
-        if os.path.realpath(os.path.dirname(dist.location)) == plugins_dir:
+        if os.path.normcase(os.path.realpath(os.path.dirname(dist.location))) \
+                == plugins_dir:
             plugin_filename = os.path.basename(dist.location)
 
         if dist.project_name not in plugins:
