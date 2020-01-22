@@ -503,7 +503,8 @@ def mkdtemp():
     """Create a temp directory with prefix `trac-tempenv`
     and return the directory name.
     """
-    return os.path.realpath(tempfile.mkdtemp(prefix='trac-testdir-'))
+    tmpdir = tempfile.mkdtemp(prefix='trac-testdir-')
+    return os.path.normcase(os.path.realpath(tmpdir))
 
 
 def locate(fn):
