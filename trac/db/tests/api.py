@@ -135,10 +135,18 @@ class StringsTestCase(unittest.TestCase):
         from trac.util.html import Markup
         with self.env.db_transaction as db:
             quoted = db.quote('system')
-            db("INSERT INTO " + quoted + " (name,value) VALUES (%s,%s)",
-               ('test-markup', Markup(u'<em>märkup</em>')))
-        self.assertEqual([(u'<em>märkup</em>',)], self.env.db_query(
-            "SELECT value FROM " + quoted + " WHERE name='test-markup'"))
+            query = "INSERT INTO {} (name,value) VALUES (%s,%s)".format(quoted)
+            db(query, ('test-markup', Markup(u'<em>märkup</em>')))
+            db.executemany(query, [('test-markup.%d' % i,
+                                    Markup(u'<em>märkup.%d</em>' % i))
+                                   for i in range(3)])
+        values = dict(self.env.db_query(
+            "SELECT name, value FROM {} WHERE name LIKE %s".format(quoted),
+            ('test-markup%',)))
+        self.assertEqual({'test-markup': '<em>märkup</em>',
+                          'test-markup.0': '<em>märkup.0</em>',
+                          'test-markup.1': '<em>märkup.1</em>',
+                          'test-markup.2': '<em>märkup.2</em>'}, values)
 
     def test_quote(self):
         with self.env.db_query as db:

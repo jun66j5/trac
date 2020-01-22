@@ -46,6 +46,19 @@ else:
             return tuple(v.decode('utf-8') if isinstance(v, bytes) else v
                          for v in row)
 
+        def execute(self, query, args=None):
+            if args:
+                args = tuple(str(arg) if isinstance(arg, Markup) else arg
+                             for arg in args)
+            return super(MySQLUnicodeCursor, self).execute(query, args)
+
+        def executemany(self, query, args):
+            if args:
+                args = [tuple(str(item) if isinstance(item, Markup) else item
+                              for item in arg)
+                        for arg in args]
+            return super(MySQLUnicodeCursor, self).executemany(query, args)
+
         def fetchone(self):
             row = super(MySQLUnicodeCursor, self).fetchone()
             return self._convert_row(row) if row else None
@@ -411,9 +424,6 @@ class MySQLConnection(ConnectionBase, ConnectionWrapper):
             cnx = pymysql.connect(db=path, user=user, passwd=password,
                                   host=host, port=port, **opts)
         self.schema = path
-        if hasattr(cnx, 'encoders'):
-            # 'encoders' undocumented but present since 1.2.1 (r422)
-            cnx.encoders[Markup] = cnx.encoders[str]
         ConnectionWrapper.__init__(self, cnx, log)
         self._is_closed = False
 
