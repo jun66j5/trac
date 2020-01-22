@@ -660,7 +660,7 @@ class IntegrationTestCase(BaseTestCase):
         self.assertRaises(ConfigurationError, getattr, foo, 'invalid')
 
     def test_getpath(self):
-        base = os.path.normcase(os.path.dirname(self.filename))
+        base = os.path.dirname(self.filename)
         config = self._read()
         config.set('a', 'path_a', os.path.join(base, 'here', 'absolute.txt'))
         config.set('a', 'path_b', 'thisdir.txt')
@@ -913,7 +913,7 @@ class IntegrationTestCase(BaseTestCase):
     def test_inherit_multiple(self):
         class Foo(object):
             option_b = Option('b', 'option2', 'default')
-        base = os.path.normcase(os.path.dirname(self.filename))
+        base = os.path.dirname(self.filename)
         relsite1 = os.path.join('sub1', 'trac-site1.ini')
         site1 = os.path.join(base, relsite1)
         relsite2 = os.path.join('sub2', 'trac-site2.ini')
