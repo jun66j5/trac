@@ -577,8 +577,6 @@ def is_path_below(path, parent):
     at any level.
     """
     def normalize(path):
-        if os.name == 'nt' and not isinstance(path, str):
-            path = path.decode('mbcs')
         return os.path.normcase(os.path.abspath(path))
     path = normalize(path)
     parent = normalize(parent)
