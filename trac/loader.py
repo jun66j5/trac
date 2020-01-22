@@ -70,6 +70,8 @@ def load_eggs(entry_point_name):
                             c.__name__ == name:
                         ComponentMeta.deregister(c)
 
+        if auto_enable:
+            auto_enable = os.path.normcase(auto_enable)
         for entry in sorted(working_set.iter_entry_points(entry_point_name),
                             key=lambda entry: entry.name):
             env.log.debug('Loading plugin "%s" from "%s"',
@@ -80,7 +82,8 @@ def load_eggs(entry_point_name):
                 _log_error(entry, e)
                 deregister_components(entry)
             else:
-                if os.path.dirname(entry.dist.location) == auto_enable:
+                if os.path.normcase(os.path.dirname(entry.dist.location)) == \
+                        auto_enable:
                     _enable_plugin(env, entry.module_name)
     return _load_eggs
 
