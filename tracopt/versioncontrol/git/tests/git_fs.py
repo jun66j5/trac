@@ -49,7 +49,7 @@ class GitCommandMixin(object):
         return self._git(*args, **kwargs)
 
     def _spawn_git(self, *args, **kwargs):
-        args = tuple(map(to_utf8, (self.git_bin,) + args))
+        args = (self.git_bin,) + args
         kwargs.setdefault('stdin', DEVNULL)
         kwargs.setdefault('stdout', PIPE)
         kwargs.setdefault('stderr', PIPE)
