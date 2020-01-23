@@ -17,6 +17,15 @@ environment:
     PYTHONHOME: C:\Python38
     TRAC_TEST_DB_URI:
   - SVN_BRANCH: trunk
+    PYTHONHOME: C:\Python37-x64
+    TRAC_TEST_DB_URI:
+  - SVN_BRANCH: trunk
+    PYTHONHOME: C:\Python36-x64
+    TRAC_TEST_DB_URI:
+  - SVN_BRANCH: trunk
+    PYTHONHOME: C:\Python35-x64
+    TRAC_TEST_DB_URI:
+  - SVN_BRANCH: trunk
     PYTHONHOME: C:\Python38-x64
     TRAC_TEST_DB_URI: sqlite:test.db
   - SVN_BRANCH: trunk
