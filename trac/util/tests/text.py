@@ -72,13 +72,13 @@ class ToUnicodeTestCase(unittest.TestCase):
         for res in socket.getaddrinfo('127.0.0.1', 65536, 0,
                                       socket.SOCK_STREAM):
             af, socktype, proto, canonname, sa = res
-            s = socket.socket(af, socktype, proto)
-            try:
-                s.connect(sa)
-            except socket.error as e:
-                uc = to_unicode(e)
-                self.assertIsInstance(uc, str, uc)
-                self.assertIsInstance(e.strerror, str)
+            with socket.socket(af, socktype, proto) as s:
+                try:
+                    s.connect(sa)
+                except socket.error as e:
+                    uc = to_unicode(e)
+                    self.assertIsInstance(uc, str, uc)
+                    self.assertIsInstance(e.strerror, str)
 
     if os.name != 'nt':
         del test_from_windows_error
