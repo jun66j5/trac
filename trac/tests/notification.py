@@ -229,6 +229,7 @@ class SMTPServer(object):
 
     def __init__(self, host, port):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.settimeout(0.25)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._socket.bind((host, port))
         self._socket_service = None
@@ -237,6 +238,8 @@ class SMTPServer(object):
         while self._resume:
             try:
                 nsd = self._socket.accept()
+            except socket.timeout:
+                continue
             except socket.error:
                 return
             self._socket_service = nsd[0]
@@ -324,13 +327,6 @@ class SMTPThreadedServer(threading.Thread):
     def stop(self):
         # run from the main thread
         self.server.stop()
-        # send a message to make the SMTP server quit gracefully
-        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-            try:
-                s.connect(('127.0.0.1', self.port))
-                s.send(b"QUIT\r\n")
-            except socket.error:
-                pass
         # wait for the SMTP server to complete (for up to 2 secs)
         self.join(2.0)
         # clean up the SMTP server (and force quit if needed)
