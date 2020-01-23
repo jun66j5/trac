@@ -25,6 +25,12 @@ environment:
   matrix:
   - PYTHONHOME: C:\Python38
     TRAC_TEST_DB_URI:
+  - PYTHONHOME: C:\Python37-x64
+    TRAC_TEST_DB_URI:
+  - PYTHONHOME: C:\Python36-x64
+    TRAC_TEST_DB_URI:
+  - PYTHONHOME: C:\Python35-x64
+    TRAC_TEST_DB_URI:
   - PYTHONHOME: C:\Python38-x64
     TRAC_TEST_DB_URI: sqlite:test.db
   - PYTHONHOME: C:\Miniconda37
