@@ -19,6 +19,7 @@
 #         Christian Boos <cboos@edgewall.org>
 
 import base64
+import configparser
 import locale
 import os
 import re
@@ -105,22 +106,24 @@ def to_unicode(text, charset=None):
             return str(text, charset or 'utf-8')
         except UnicodeDecodeError:
             return str(text, 'latin1')
-    elif isinstance(text, Exception):
+    if isinstance(text, Exception):
         # two possibilities for storing unicode strings in exception data:
         try:
             # custom __str__ method on the exception (e.g. PermissionError)
             result = str(text)
         except UnicodeError:
             # unicode arguments given to the exception (e.g. parse_date)
-            result = ' '.join(to_unicode(arg) for arg in text.args)
-        else:
+            return ' '.join(to_unicode(arg) for arg in text.args)
+        if os.name == 'nt':
             # remove duplicated backslashes from filename in the message
-            if os.name == 'nt' and isinstance(text, EnvironmentError) and \
-                    text.filename:
-                filename = repr(text.filename)
-                if result.endswith(filename):
-                    result = result[:-len(filename)] + \
-                             filename.replace(r'\\', '\\')
+            if isinstance(text, EnvironmentError) and text.filename:
+                source = repr(text.filename)
+            elif isinstance(text, configparser.ParsingError) and text.source:
+                source = repr(text.source)
+            else:
+                source = None
+            if source:
+                result = result.replace(source, source.replace(r'\\', '\\'))
         return result
     return str(text)
 

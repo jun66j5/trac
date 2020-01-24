@@ -58,7 +58,8 @@ class TracError(TracBaseError):
                        lambda self, v: setattr(self, '_message', v))
 
     def __str__(self):
-        return str(self.message)
+        from trac.util.text import to_unicode
+        return to_unicode(self.message)
 
 
 class TracValueError(TracError, ValueError):
