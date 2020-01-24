@@ -205,9 +205,6 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
         self.assertEqual('master', branches[0][0])
         self.assertEqual(1, len(branches))
 
-    if os.name == 'nt':
-        del test_get_branches_with_cr_in_commitlog
-
     def test_rev_is_anchestor_of(self):
         # regression test for #11215
         path = os.path.join(self.repos_path, '.git')
@@ -285,6 +282,48 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
         # persistent_cache is disabled
         rev = self._factory(True).getInstance().youngest_rev()
         self.assertNotEqual(rev, parent_rev)
+
+    def test_ls_tree_with_control_chars(self):
+        paths = ['normal-path.txt',
+                 '\a\b\t\n\v\f\r\x1b"\\.tx\\t']
+        for path in paths:
+            create_file(os.path.join(self.repos_path, path))
+            self._git('add', path)
+        self._git_commit('-m', 'ticket:11180 and ticket:11198')
+
+        storage = self._storage()
+        rev = storage.head()
+        entries = storage.ls_tree(rev, '/')
+        self.assertEqual(['\a\b\t\n\v\f\r\x1b"\\.tx\\t',
+                          '.gitignore',
+                          'normal-path.txt'],
+                         [entry[4] for entry in entries])
+
+    def test_get_historian_with_control_chars(self):
+        paths = [u'normal-path.txt', u'\a\b\t\n\v\f\r\x1b"\\.tx\\t']
+
+        for path in paths:
+            create_file(os.path.join(self.repos_path, path))
+            self._git('add', path)
+        self._git_commit('-m', 'ticket:11180 and ticket:11198')
+
+        def validate(path, quotepath):
+            self._git('config', 'core.quotepath', quotepath)
+            storage = self._storage()
+            rev = storage.head()
+            with storage.get_historian('HEAD', path) as historian:
+                hrev = storage.last_change('HEAD', path, historian)
+                self.assertEqual(rev, hrev)
+
+        validate(paths[0], 'true')
+        validate(paths[0], 'false')
+        validate(paths[1], 'true')
+        validate(paths[1], 'false')
+
+    if os.name == 'nt':
+        del test_get_branches_with_cr_in_commitlog
+        del test_ls_tree_with_control_chars
+        del test_get_historian_with_control_chars
 
 
 class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
@@ -365,35 +404,25 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
         self.assertIsNotNone(rev)
         self.assertEqual(['v0.42.1'], storage.get_tags(rev))
 
-    def test_ls_tree(self):
-        paths = [u'normal-path.txt',
-                 u'tickét.tx\\t',
-                 u'\a\b\t\n\v\f\r\x1b"\\.tx\\t']
+    def test_ls_tree_with_unicode_chars(self):
+        paths = ['normal-path.txt', 'ŧïckét.txt']
         for path in paths:
             create_file(os.path.join(self.repos_path, path))
             self._git('add', path)
-        self._git_commit('-m', 'ticket:11180 and ticket:11198',
-                         date=datetime(2013, 4, 30, 13, 48, 57))
+        self._git_commit('-m', 'ticket:11180 and ticket:11198')
 
         storage = self._storage()
         rev = storage.head()
         entries = storage.ls_tree(rev, '/')
-        self.assertEqual(4, len(entries))
-        self.assertEqual(u'\a\b\t\n\v\f\r\x1b"\\.tx\\t', entries[0][4])
-        self.assertEqual(u'.gitignore', entries[1][4])
-        self.assertEqual(u'normal-path.txt', entries[2][4])
-        self.assertEqual(u'tickét.tx\\t', entries[3][4])
+        self.assertEqual(['.gitignore', 'normal-path.txt', 'ŧïckét.txt'],
+                         [entry[4] for entry in entries])
 
-    def test_get_historian(self):
-        paths = [u'normal-path.txt',
-                 u'tickét.tx\\t',
-                 u'\a\b\t\n\v\f\r\x1b"\\.tx\\t']
-
+    def test_get_historian_with_unicode_chars(self):
+        paths = ['normal-path.txt', 'ŧïckét.txt']
         for path in paths:
             create_file(os.path.join(self.repos_path, path))
             self._git('add', path)
-        self._git_commit('-m', 'ticket:11180 and ticket:11198',
-                         date=datetime(2013, 4, 30, 17, 48, 57))
+        self._git_commit('-m', 'ticket:11180 and ticket:11198')
 
         def validate(path, quotepath):
             self._git('config', 'core.quotepath', quotepath)
@@ -407,8 +436,6 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
         validate(paths[0], 'false')
         validate(paths[1], 'true')
         validate(paths[1], 'false')
-        validate(paths[2], 'true')
-        validate(paths[2], 'false')
 
 
 class SizedDictTestCase(unittest.TestCase):
@@ -572,9 +599,7 @@ def test_suite():
         suite.addTest(unittest.makeSuite(GitTestCase))
         suite.addTest(unittest.makeSuite(TestParseCommit))
         suite.addTest(unittest.makeSuite(NormalTestCase))
-        if os.name != 'nt':
-            # Popen doesn't accept unicode path and arguments on Windows
-            suite.addTest(unittest.makeSuite(UnicodeNameTestCase))
+        suite.addTest(unittest.makeSuite(UnicodeNameTestCase))
     else:
         print("SKIP: tracopt/versioncontrol/git/tests/PyGIT.py (git cli "
               "binary, 'git', not found)")
