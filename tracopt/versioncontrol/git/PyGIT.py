@@ -148,17 +148,17 @@ class GitCore(object):
         return Popen(self.__build_git_cmd(git_cmd, *cmd_args),
                      close_fds=close_fds, **kw)
 
-    def __execute(self, git_cmd, *cmd_args):
+    def __execute(self, *args):
         """execute git command and return file-like object of stdout"""
 
-        #print("DEBUG:", git_cmd, cmd_args, file=sys.stderr)
+        #print("DEBUG:", args, file=sys.stderr)
 
-        with self.__pipe(git_cmd, *cmd_args, stdin=DEVNULL) as p:
+        with self.__pipe(*args, stdin=DEVNULL) as p:
             stdout_data, stderr_data = p.communicate()
         if self.__log and (p.returncode != 0 or stderr_data):
-            self.__log.debug('%s exits with %d, dir: %r, args: %s %r, '
-                             'stderr: %r', self.__git_bin, p.returncode,
-                             self.__git_dir, git_cmd, cmd_args, stderr_data)
+            self.__log.debug('%s exits with %d, dir: %r, args: %r, stderr: %r',
+                             self.__git_bin, p.returncode, self.__git_dir,
+                             args, stderr_data)
 
         return stdout_data
 
@@ -168,8 +168,12 @@ class GitCore(object):
     def log_pipe(self, *cmd_args):
         return self.__pipe('log', *cmd_args)
 
+    def diff_tree_pipe(self):
+        return self.__pipe('diff-tree', '--stdin', '--root', '-z', '-r', '-M')
+
     def __getattr__(self, name):
-        if name[0] == '_' or name in ['cat_file_batch', 'log_pipe']:
+        if name.startswith('_') or \
+                name in ('cat_file_batch', 'log_pipe', 'diff_tree_pipe'):
             raise AttributeError(name)
         return partial(self.__execute, name.replace('_','-'))
 
@@ -390,6 +394,8 @@ class Storage(object):
 
         self.__cat_file_pipe = None
         self.__cat_file_pipe_lock = Lock()
+        self.__diff_tree_pipe = None
+        self.__diff_tree_pipe_lock = Lock()
 
         if git_fs_encoding is not None:
             # validate encoding name
@@ -447,6 +453,8 @@ class Storage(object):
     def __del__(self):
         with self.__cat_file_pipe_lock:
             self._cleanup_proc(self.__cat_file_pipe)
+        with self.__diff_tree_pipe_lock:
+            self._cleanup_proc(self.__diff_tree_pipe)
 
     #
     # cache handling
@@ -1050,6 +1058,44 @@ class Storage(object):
 
         assert not in_metadata
 
+    def get_changes(self, tree1, tree2):
+        with self.__diff_tree_pipe_lock:
+            if self.__diff_tree_pipe is None:
+                self.__diff_tree_pipe = self.repo.diff_tree_pipe()
+            proc = self.__diff_tree_pipe
+            try:
+                proc.stdin.write(b'%s %s\n\n' % (_rev_b(tree2), _rev_b(tree1))
+                                 if tree1 else
+                                 b'%s\n\n' % _rev_b(tree2))
+                proc.stdin.flush()
+                read = proc.stdout.read
+                entries = []
+                c = read(1)
+                if not c:
+                    raise EOFError()
+                while c != b'\n':
+                    entry = bytearray()
+                    while c != b'\0':
+                        entry.append(c[0])
+                        c = read(1)
+                        if not c:
+                            raise EOFError()
+                    entries.append(bytes(entry))
+                    c = read(1)
+                    if not c:
+                        raise EOFError()
+            except:
+                self.__diff_tree_pipe = None
+                self._cleanup_proc(proc)
+                raise
+        if not entries:
+            return
+        # skip first entry as a sha
+        assert not entries[0].startswith(b':')
+        entries = entries[1:]
+
+        yield from self._iter_diff_tree(entries)
+
     def diff_tree(self, tree1, tree2, path='', find_renames=False):
         """calls `git diff-tree` and returns tuples of the kind
         (mode1,mode2,obj1,obj2,action,path1,path2)"""
@@ -1076,17 +1122,21 @@ class Storage(object):
                 yield result[start:idx]
                 start = idx + 1
 
-        iterate = iter_entry(result)
-
-        def next_entry():
-            return next(iterate)
-
+        entries = list(iter_entry(result))
         if not tree1:
             # if only one tree-sha is given on commandline,
             # the first line is just the redundant tree-sha itself...
-            entry = next_entry()
+            entry = entries.pop(0)
             assert not entry.startswith(b':')
 
+        yield from self._iter_diff_tree(entries)
+
+    def _iter_diff_tree(self, entries):
+
+        def next_entry():
+            return next(iter_entry)
+
+        iter_entry = iter(entries)
         while True:
             try:
                 entry = next_entry()
