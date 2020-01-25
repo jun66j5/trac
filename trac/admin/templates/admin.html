@@ -30,17 +30,17 @@
     <div id="content" class="admin">
       <h1>${_("Administration")}</h1>
       <div id="tabs">
-        # for category, panels in panels|groupby('category'):
-        #   set cat_is_active = category.id == active_cat
+        # for category_id, panels in panels|groupby('category.id'):
+        #   set cat_is_active = category_id == active_cat
         <ul>
           <li${{'class': 'active' if cat_is_active}|htmlattr}>
-            ${category.label}
+            ${panels[0].category.label}
             <ul>
               # for panel in panels:
               #   set panel = panel.panel
               #   set pan_is_active = cat_is_active and panel.id == active_panel
               <li${{'class': 'active' if pan_is_active}|htmlattr}>
-                <a href="${href.admin(category.id, panel.id)}">${
+                <a href="${href.admin(category_id, panel.id)}">${
                   panel.label}</a>
               </li>
               # endfor
