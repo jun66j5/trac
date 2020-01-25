@@ -911,8 +911,8 @@ class GitChangeset(Changeset):
         parent = self.props.get('parent')
         parent = parent[0] if parent else None
 
-        for mode1, mode2, obj1, obj2, action, path1, path2 in \
-                self.repos.git.diff_tree(parent, self.rev, find_renames=True):
+        changes = self.repos.git.get_changes(parent, self.rev)
+        for mode1, mode2, obj1, obj2, action, path1, path2 in changes:
             path = path2 or path1
             p_path, p_rev = path1, parent
 
