@@ -1065,22 +1065,17 @@ from :2
         self.assertEqual(revs, revs2)
 
     def test_sync_too_many_merges(self):
-        data = self._generate_data_many_merges(100)
+        n_merges = 2000
+        data = self._generate_data_many_merges(n_merges)
         self._git_init(data=False, bare=True)
         self._git_fast_import(data)
         self._add_repository('gitrepos', bare=True)
         repos = self._repomgr.get_repository('gitrepos')
-
-        reclimit = sys.getrecursionlimit()
-        try:
-            sys.setrecursionlimit(80)
-            repos.sync()
-        finally:
-            sys.setrecursionlimit(reclimit)
+        repos.sync()
 
         rows = self.env.db_query("SELECT COUNT(*) FROM revision "
                                  "WHERE repos=%s", (repos.id,))
-        self.assertEqual(202, rows[0][0])
+        self.assertEqual(n_merges * 2 + 2, rows[0][0])
 
     def _generate_data_many_merges(self, n, timestamp=1400000000):
         init = b"""\
