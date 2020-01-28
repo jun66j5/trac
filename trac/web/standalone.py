@@ -19,8 +19,6 @@
 #         Matthew Good <trac@matt-good.net>
 #         Christopher Lenz <cmlenz@gmx.de>
 
-from __future__ import print_function
-
 import argparse
 import functools
 import importlib

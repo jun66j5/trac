@@ -10,8 +10,6 @@
 #
 # Author: Matthew Good <matt@matt-good.net>
 
-from __future__ import absolute_import
-
 import io
 import os
 import re

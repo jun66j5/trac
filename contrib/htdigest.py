@@ -15,8 +15,6 @@
 #
 # Author: Matthew Good <matt@matt-good.net>
 
-from __future__ import print_function
-
 import argparse
 import errno
 import fileinput

@@ -22,8 +22,6 @@
 #
 # Make sure to make a backup of the Trac environment before running this!
 
-from __future__ import print_function
-
 import os
 import sys
 
