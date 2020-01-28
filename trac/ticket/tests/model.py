@@ -242,12 +242,12 @@ class TicketTestCase(unittest.TestCase):
             Ticket(self.env, '42')
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual(u'Ticket 42 does not exist.', str(e))
+            self.assertEqual('Ticket 42 does not exist.', str(e))
         try:
             Ticket(self.env, 'blah')
             self.fail('ResourceNotFound not raised')
         except ResourceNotFound as e:
-            self.assertEqual(u'Ticket blah does not exist.', str(e))
+            self.assertEqual('Ticket blah does not exist.', str(e))
 
     def test_can_save_ticket_without_explicit_comment(self):
         ticket = insert_ticket(self.env)

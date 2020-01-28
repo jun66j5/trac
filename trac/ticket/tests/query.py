@@ -166,7 +166,7 @@ ORDER BY COALESCE(t.id,0)=0,t.id""")
         self.assertEqual(self.n_tickets, len(tickets))
 
     def test_all_ordered_by_id_from_unicode(self):
-        query = Query.from_string(self.env, u'order=id')
+        query = Query.from_string(self.env, 'order=id')
         sql, args = query.get_sql()
         self.assertEqualSQL(sql,
 """SELECT t.id AS id,t.summary AS summary,t.owner AS owner,t.type AS type,t.status AS status,t.priority AS priority,t.milestone AS milestone,t.time AS time,t.changetime AS changetime,priority.value AS _priority_value
@@ -1028,8 +1028,8 @@ ORDER BY COALESCE(%(version)s.value,'')='',%(version)s.value,t.id""" % quoted)
         req = Mock(href=self.env.href, perm=MockPerm())
         content, mimetype, ext = Mimeview(self.env).convert_content(
             req, 'trac.ticket.Query', query, 'csv')
-        self.assertEqual(u'\uFEFFid,Owner,Milestone,CustomOne\r\n'
-                         u'1,joe@example.org,milestone1,val1\r\n',
+        self.assertEqual('\uFEFFid,Owner,Milestone,CustomOne\r\n'
+                         '1,joe@example.org,milestone1,val1\r\n',
                          content.decode('utf-8'))
 
     def test_columns_in_ticket_custom_as_custom_field(self):
@@ -1113,16 +1113,16 @@ ORDER BY COALESCE(c.%(ticket)s,'')='',c.%(ticket)s,t.id""" % quoted)
         req = MockRequest(self.env, authname='anonymous')
         content, mimetype, ext = Mimeview(self.env).convert_content(
             req, 'trac.ticket.Query', query, 'csv')
-        self.assertEqual(u'\uFEFFid,Owner,Reporter,Cc\r\n'
-                         u'1,joe@…,foo@…,"cc1@…, cc2"\r\n',
+        self.assertEqual('\uFEFFid,Owner,Reporter,Cc\r\n'
+                         '1,joe@…,foo@…,"cc1@…, cc2"\r\n',
                          content.decode('utf-8'))
 
         req = MockRequest(self.env)
         content, mimetype, ext = Mimeview(self.env).convert_content(
             req, 'trac.ticket.Query', query, 'csv')
         self.assertEqual(
-            u'\uFEFFid,Owner,Reporter,Cc\r\n'
-            u'1,joe@example.org,foo@example.org,"cc1@example.org, cc2"\r\n',
+            '\uFEFFid,Owner,Reporter,Cc\r\n'
+            '1,joe@example.org,foo@example.org,"cc1@example.org, cc2"\r\n',
             content.decode('utf-8'))
 
     def test_template_data(self):
@@ -1370,7 +1370,7 @@ ORDER BY COALESCE(t.id,0)=0,t.id""".format(**quoted))
         self.assertEqual(2, len(matches))
 
         query = Query.from_string(self.env,
-                                  u'id=%s&col=blah&order=id' % id_range)
+                                  'id=%s&col=blah&order=id' % id_range)
         csv, mimetype, ext = Mimeview(self.env).convert_content(
             req, 'trac.ticket.Query', query, 'csv')
         self.assertEqual(b'\xef\xbb\xbf'
@@ -1417,7 +1417,7 @@ class QueryLinksTestCase(unittest.TestCase):
                                                   query, label))
 
     def test_empty_query(self):
-        self.assertEqual(u'<em class="error">[Error: Query filter requires '
+        self.assertEqual('<em class="error">[Error: Query filter requires '
                          'field and constraints separated by a "="]</em>',
                          self._format_link('', 'label'))
 
@@ -1514,7 +1514,7 @@ class TicketQueryMacroTestCase(unittest.TestCase):
                            dict(col='status|summary', max='0', order='id'),
                            'list')
 
-QUERY_TEST_CASES = u"""
+QUERY_TEST_CASES = """
 
 ============================== TicketQuery
 [[TicketQuery]]

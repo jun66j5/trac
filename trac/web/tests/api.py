@@ -466,9 +466,9 @@ new\r\n\
         req.send_header('Content-Length', 0)
         # anyway we're not supposed to send unicode, so we get a ValueError
         with self.assertRaises(ValueError):
-            req.write(u'Föö')
+            req.write('Föö')
         with self.assertRaises(ValueError):
-            req.write((b'F', u'öo'))
+            req.write((b'F', 'öo'))
 
     def test_send_iterable(self):
         def iterable():
@@ -749,29 +749,29 @@ class ParseArgListTestCase(unittest.TestCase):
         args = parse_arg_list('k%C3%A9y=resum%C3%A9&r%C3%A9sum%C3%A9')
         self.assertTrue(str, type(args[0][0]))
         self.assertTrue(str, type(args[0][1]))
-        self.assertEqual(u'kéy', args[0][0])
-        self.assertEqual(u'resumé', args[0][1])
+        self.assertEqual('kéy', args[0][0])
+        self.assertEqual('resumé', args[0][1])
         self.assertTrue(str, type(args[1][0]))
-        self.assertEqual(u'résumé', args[1][0])
+        self.assertEqual('résumé', args[1][0])
 
     def test_qs_str_with_prefix(self):
         """The leading `?` should be stripped from the query string."""
         args = parse_arg_list('?k%C3%A9y=resum%C3%A9&r%C3%A9sum%C3%A9')
         self.assertTrue(str, type(args[0][0]))
         self.assertTrue(str, type(args[0][1]))
-        self.assertEqual(u'kéy', args[0][0])
-        self.assertEqual(u'resumé', args[0][1])
+        self.assertEqual('kéy', args[0][0])
+        self.assertEqual('resumé', args[0][1])
         self.assertTrue(str, type(args[1][0]))
-        self.assertEqual(u'résumé', args[1][0])
+        self.assertEqual('résumé', args[1][0])
 
     def test_qs_unicode(self):
-        args = parse_arg_list(u'ké%3Dy=re%26su=mé&résu%26mé')
+        args = parse_arg_list('ké%3Dy=re%26su=mé&résu%26mé')
         self.assertTrue(str, type(args[0][0]))
         self.assertTrue(str, type(args[0][1]))
-        self.assertEqual(u'ké=y', args[0][0])
-        self.assertEqual(u're&su=mé', args[0][1])
+        self.assertEqual('ké=y', args[0][0])
+        self.assertEqual('re&su=mé', args[0][1])
         self.assertTrue(str, type(args[1][0]))
-        self.assertEqual(u'résu&mé', args[1][0])
+        self.assertEqual('résu&mé', args[1][0])
 
 
 class HTTPExceptionTestCase(unittest.TestCase):
@@ -798,8 +798,8 @@ class HTTPExceptionTestCase(unittest.TestCase):
                          str(e2))
 
     def test_fragment_with_unicode_as_argument(self):
-        e = HTTPInternalServerError(tag.b(u'thé méssägé'))
-        self.assertEqual(u'500 Internal Server Error (<b>thé méssägé</b>)',
+        e = HTTPInternalServerError(tag.b('thé méssägé'))
+        self.assertEqual('500 Internal Server Error (<b>thé méssägé</b>)',
                          str(e))
 
 

@@ -244,10 +244,10 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
         node = repos.get_node('', rev)
         self.assertEqual(rev, repos.git.last_change(rev, ''))
         history = list(node.get_history())
-        self.assertEqual(u'', history[0][0])
+        self.assertEqual('', history[0][0])
         self.assertEqual(rev, history[0][1])
         self.assertEqual(Changeset.EDIT, history[0][2])
-        self.assertEqual(u'', history[1][0])
+        self.assertEqual('', history[1][0])
         self.assertEqual(parent_rev, history[1][1])
         self.assertEqual(Changeset.ADD, history[1][2])
         self.assertEqual(2, len(history))
@@ -300,7 +300,7 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
                          [entry[4] for entry in entries])
 
     def test_get_historian_with_control_chars(self):
-        paths = [u'normal-path.txt', u'\a\b\t\n\v\f\r\x1b"\\.tx\\t']
+        paths = ['normal-path.txt', '\a\b\t\n\v\f\r\x1b"\\.tx\\t']
 
         for path in paths:
             create_file(os.path.join(self.repos_path, path))
@@ -352,8 +352,8 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
 
     def test_unicode_verifyrev(self):
         storage = self._storage()
-        self.assertIsNotNone(storage.verifyrev(u'master'))
-        self.assertIsNone(storage.verifyrev(u'tété'))
+        self.assertIsNotNone(storage.verifyrev('master'))
+        self.assertIsNone(storage.verifyrev('tété'))
 
     def test_unicode_filename(self):
         create_file(os.path.join(self.repos_path, 'tickét.txt'))
@@ -364,10 +364,10 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
                                  in storage.ls_tree('HEAD'))
         self.assertEqual(str, type(filenames[0]))
         self.assertEqual(str, type(filenames[1]))
-        self.assertEqual(u'.gitignore', filenames[0])
-        self.assertEqual(u'tickét.txt', filenames[1])
+        self.assertEqual('.gitignore', filenames[0])
+        self.assertEqual('tickét.txt', filenames[1])
         # check commit author, for good measure
-        self.assertEqual(u'Joé <joe@example.com> 1359912600 +0100',
+        self.assertEqual('Joé <joe@example.com> 1359912600 +0100',
                          storage.read_commit(storage.head())[1]['author'][0])
 
     def test_unicode_branches(self):
@@ -376,15 +376,15 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
         branches = sorted(storage.get_branches())
         self.assertEqual(str, type(branches[0][0]))
         self.assertEqual(str, type(branches[1][0]))
-        self.assertEqual(u'master', branches[0][0])
-        self.assertEqual(u'tickɇt10980', branches[1][0])
+        self.assertEqual('master', branches[0][0])
+        self.assertEqual('tickɇt10980', branches[1][0])
 
         contains = sorted(storage.get_branch_contains(branches[1][1],
                                                       resolve=True))
         self.assertEqual(str, type(contains[0][0]))
         self.assertEqual(str, type(contains[1][0]))
-        self.assertEqual(u'master', contains[0][0])
-        self.assertEqual(u'tickɇt10980', contains[1][0])
+        self.assertEqual('master', contains[0][0])
+        self.assertEqual('tickɇt10980', contains[1][0])
 
     def test_unicode_tags(self):
         self._git('tag', 'tɐg-t10980', 'master')
@@ -394,11 +394,11 @@ class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):
 
         tags = storage.get_tags()
         self.assertEqual(str, type(tags[0]))
-        self.assertEqual([u'tɐg-t10980', 'v0.42.1'], tags)
+        self.assertEqual(['tɐg-t10980', 'v0.42.1'], tags)
 
-        rev = storage.verifyrev(u'tɐg-t10980')
+        rev = storage.verifyrev('tɐg-t10980')
         self.assertIsNotNone(rev)
-        self.assertEqual([u'tɐg-t10980'], storage.get_tags(rev))
+        self.assertEqual(['tɐg-t10980'], storage.get_tags(rev))
 
         rev = storage.verifyrev('v0.42.1')
         self.assertIsNotNone(rev)

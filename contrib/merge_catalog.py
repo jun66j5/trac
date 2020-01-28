@@ -26,7 +26,7 @@ class ScriptError(Exception):
 
 
 def _is_fuzzy(message):
-    return u'fuzzy' in message.flags
+    return 'fuzzy' in message.flags
 
 
 def _has_msgstr(message):

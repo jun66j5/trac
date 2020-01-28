@@ -877,7 +877,7 @@ class Chrome(Component):
             label = section.get(name + '.label')
             if href and href.startswith('/'):
                 href = req.href + href
-            if isinstance(text, Element) and text.tag == u'a':
+            if isinstance(text, Element) and text.tag == 'a':
                 link = text
                 if label:
                     link.children[0] = label

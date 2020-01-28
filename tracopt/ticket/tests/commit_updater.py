@@ -134,7 +134,7 @@ def macro_setup(tc):
     setattr(RepositoryManager(tc.env), 'get_repository', _get_repository)
 
 
-COMMIT_TICKET_REF_MACRO_TEST_CASES = u"""\
+COMMIT_TICKET_REF_MACRO_TEST_CASES = """\
 ============================== No arguments
 [[CommitTicketReference]]
 ------------------------------

@@ -852,7 +852,7 @@ class ChangesetModule(Component):
             if len(repositories) > 1:
                 filters = [
                     ('repo-' + repos.reponame,
-                     u"\xa0\xa0-\xa0" + (repos.reponame or _('(default)')))
+                     "\xa0\xa0-\xa0" + (repos.reponame or _('(default)')))
                     for repos in repositories
                     if not as_bool(repos.params.get('hidden'))
                     and repos.is_viewable(req.perm)]
@@ -983,7 +983,7 @@ class ChangesetModule(Component):
                     files = [tag.li(tag.div(class_=mod), path or '/')
                              for path, mod in sorted(unique_files)]
                     if 0 < show_files < len(files):
-                        files = files[:show_files] + [tag.li(u'\u2026')]
+                        files = files[:show_files] + [tag.li('\u2026')]
                     markup = tag(tag.ul(files, class_="changes"), markup)
             if message:
                 markup += format_to(self.env, None,

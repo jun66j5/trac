@@ -247,11 +247,11 @@ class RegressionTestTicket3663(FunctionalTwillTestCaseSetup):
                 httplib._contains_disallowed_url_pchar_re = \
                     re.compile(r'[\x00-\x20]')
             # invalid PATH_INFO
-            self._tester.go_to_wiki(u'été'.encode('latin1'))
+            self._tester.go_to_wiki('été'.encode('latin1'))
             tc.code(404)
             tc.find('Invalid URL encoding')
             # invalid SCRIPT_NAME
-            tc.go(u'été'.encode('latin1'))
+            tc.go('été'.encode('latin1'))
             tc.code(404)
             tc.find('Invalid URL encoding')
         finally:
@@ -272,13 +272,13 @@ class RegressionTestTicket6318(FunctionalTwillTestCaseSetup):
         self._tester.logout()
         try:
             # also test a regular ascii user name
-            self._testenv.adduser(u'user')
-            self._tester.login(u'user')
+            self._testenv.adduser('user')
+            self._tester.login('user')
             self._tester.go_to_front()
             self._tester.logout()
             # now test utf-8 user name
-            self._testenv.adduser(u'joé')
-            self._tester.login(u'joé')
+            self._testenv.adduser('joé')
+            self._tester.login('joé')
             self._tester.go_to_front()
             # when failed to retrieve session, FakeSession() and FakePerm()
             # are used and the req.perm has no permissions.
@@ -288,7 +288,7 @@ class RegressionTestTicket6318(FunctionalTwillTestCaseSetup):
             # finally restore expected 'admin' login
             self._tester.login('admin')
         finally:
-            self._testenv.deluser(u'joé')
+            self._testenv.deluser('joé')
 
 
 class RegressionTestTicket11434(FunctionalTwillTestCaseSetup):
@@ -354,7 +354,7 @@ class RegressionTestTicket11503b(FunctionalTwillTestCaseSetup):
         env = self._testenv.get_trac_environment()
         try:
             env.config.set('mainnav', 'wiki.href',
-                           u'/wiki/SändBõx?action=history&blah=%252F')
+                           '/wiki/SändBõx?action=history&blah=%252F')
             env.config.save()
             # reloads the environment
             env = self._testenv.get_trac_environment()

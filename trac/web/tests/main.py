@@ -500,9 +500,9 @@ class RequestDispatcherTestCase(unittest.TestCase):
         yield b'line3\n'
 
     def test_invalid_default_date_format_raises_exception(self):
-        self.env.config.set('trac', 'default_date_format', u'ĭšo8601')
+        self.env.config.set('trac', 'default_date_format', 'ĭšo8601')
 
-        self.assertEqual(u'ĭšo8601',
+        self.assertEqual('ĭšo8601',
                          self.env.config.get('trac', 'default_date_format'))
         self.assertRaises(ConfigurationError, getattr,
                           RequestDispatcher(self.env), 'default_date_format')

@@ -152,8 +152,8 @@ def path_to_unicode(path):
     return str(path)
 
 
-_ws_leading_re = re.compile(u'\\A[\\s\u200b]+', re.UNICODE)
-_ws_trailing_re = re.compile(u'[\\s\u200b]+\\Z', re.UNICODE)
+_ws_leading_re = re.compile('\\A[\\s\u200b]+', re.UNICODE)
+_ws_trailing_re = re.compile('[\\s\u200b]+\\Z', re.UNICODE)
 
 def stripws(text, leading=True, trailing=True):
     """Strips unicode white-spaces and ZWSPs from ``text``.
@@ -188,10 +188,10 @@ def strip_line_ws(text, leading=True, trailing=True):
 
 _js_quote = {'\\': '\\\\', '"': '\\"', '\b': '\\b', '\f': '\\f',
              '\n': '\\n', '\r': '\\r', '\t': '\\t', "'": "\\'"}
-for i in list(range(0x20)) + [ord(c) for c in u'&<>\u2028\u2029']:
+for i in list(range(0x20)) + [ord(c) for c in '&<>\u2028\u2029']:
     _js_quote.setdefault(chr(i), '\\u%04x' % i)
-_js_quote_re = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t\'&<>' + u'\u2028\u2029]')
-_js_string_re = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t&<>' + u'\u2028\u2029]')
+_js_quote_re = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t\'&<>' + '\u2028\u2029]')
+_js_string_re = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t&<>' + '\u2028\u2029]')
 
 
 def javascript_quote(text):
@@ -450,7 +450,7 @@ def print_table(data, headers=None, sep='  ', out=None, ambiwidth=None):
     # empty string.
     def to_text(val):
         if val is None:
-            return u''
+            return ''
         return to_unicode(val)
 
     def tw(text):
@@ -488,7 +488,7 @@ def print_table(data, headers=None, sep='  ', out=None, ambiwidth=None):
                     sp = ' ' * tw(sep)  # No separator in header
                 else:
                     sp = sep
-                line = u'%-*s%s' % (col_width[cidx] - tw(cell) + len(cell),
+                line = '%-*s%s' % (col_width[cidx] - tw(cell) + len(cell),
                                     cell, sp)
             out.write(line)
 
@@ -535,8 +535,8 @@ class UnicodeTextWrapper(textwrap.TextWrapper):
         (0xF900, 0xFAFF),   # CJK Compatibility Ideographs
         (0xFE30, 0xFE4F),   # CJK Compatibility Forms
         (0xFF00, 0xFFEF),   # Halfwidth and Fullwidth Forms
-        (0x20000, 0x2FFFF, u'[\uD840-\uD87F][\uDC00-\uDFFF]'), # Plane 2
-        (0x30000, 0x3FFFF, u'[\uD880-\uD8BF][\uDC00-\uDFFF]'), # Plane 3
+        (0x20000, 0x2FFFF, '[\uD840-\uD87F][\uDC00-\uDFFF]'), # Plane 2
+        (0x30000, 0x3FFFF, '[\uD880-\uD8BF][\uDC00-\uDFFF]'), # Plane 3
     ]
 
     split_re = None
@@ -548,13 +548,13 @@ class UnicodeTextWrapper(textwrap.TextWrapper):
         for val in cls.breakable_char_ranges:
             high = chr(val[0])
             low = chr(val[1])
-            char_ranges.append(u'%s-%s' % (high, low))
-        char_ranges = u''.join(char_ranges)
-        pattern = u'[%s]+' % char_ranges
+            char_ranges.append('%s-%s' % (high, low))
+        char_ranges = ''.join(char_ranges)
+        pattern = '[%s]+' % char_ranges
 
         cls.split_re = re.compile(
             r'(\s+|' +                                  # any whitespace
-            pattern + u'|' +                            # breakable text
+            pattern + '|' +                             # breakable text
             r'[^\s\w]*\w+[^0-9\W]-(?=\w+[^0-9\W])|' +   # hyphenated words
             r'(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w))',     # em-dash
             re.UNICODE)
@@ -651,7 +651,7 @@ def wrap(t, cols=75, initial_indent='', subsequent_indent='',
     return linesep.join(wrappedLines)
 
 
-_obfuscation_char = u'@\u2026'
+_obfuscation_char = '@\u2026'
 
 def obfuscate_email_address(address):
     """Replace anything looking like an e-mail address (``'@something'``)
@@ -684,11 +684,11 @@ def breakable_path(path):
     if path.startswith('/'):    # Avoid breaking after a leading /
         prefix = '/'
         path = path[1:]
-    return prefix + path.replace('/', u'/\u200b').replace('\\', u'\\\u200b') \
-                        .replace(' ', u'\u00a0')
+    return prefix + path.replace('/', '/\u200b').replace('\\', '\\\u200b') \
+                        .replace(' ', '\u00a0')
 
 
-def normalize_whitespace(text, to_space=u'\u00a0', remove=u'\u200b'):
+def normalize_whitespace(text, to_space='\u00a0', remove='\u200b'):
     """Normalize whitespace in a string, by replacing special spaces by normal
     spaces and removing zero-width spaces."""
     if not text:

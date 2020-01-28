@@ -341,7 +341,7 @@ class WikiModule(Component):
                 redirection = WikiPage(self.env, old_name)
                 redirection.text = _('See [wiki:"%(name)s"].', name=new_name)
                 author = get_reporter_id(req)
-                comment = u'[wiki:"%s@%d" %s] \u2192 [wiki:"%s"].' % (
+                comment = '[wiki:"%s@%d" %s] \u2192 [wiki:"%s"].' % (
                           new_name, old_version, old_name, new_name)
                 redirection.save(author, comment)
 

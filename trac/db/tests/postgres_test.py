@@ -216,7 +216,7 @@ class PostgresConnectionTestCase(unittest.TestCase):
         self.dbm.insert_into_tables([
             ('test_simple',
              ('username', 'email', 'enabled'),
-             [('joe', 'joe@example.org', 1), (u'joé', 'joe@example.org', 0)]),
+             [('joe', 'joe@example.org', 1), ('joé', 'joe@example.org', 0)]),
             ('test_composite',
              ('id', 'name', 'value', 'enabled'),
              [(1, 'foo', '42', 1),

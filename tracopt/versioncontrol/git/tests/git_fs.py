@@ -289,11 +289,11 @@ class GitNormalTestCase(BaseTestCase):
 
         # git_fs doesn't support non-ANSI strings on Windows
         if os.name != 'nt':
-            self._git('branch', u'tïckét10605', 'master')
+            self._git('branch', 'tïckét10605', 'master')
             repos.sync()
-            self.assertEqual(rev, repos.get_node('/', u'tïckét10605').rev)
+            self.assertEqual(rev, repos.get_node('/', 'tïckét10605').rev)
             self.assertEqual(rev, repos.get_node('/.gitignore',
-                                                 u'tïckét10605').rev)
+                                                 'tïckét10605').rev)
 
     def _test_on_empty_repos(self, cached_repository):
         self.env.config.set('git', 'persistent_cache', 'false')
@@ -1031,7 +1031,7 @@ from :2
 
         changes = list(repos.repos.get_changeset(revs[0]).get_changes())
         self.assertEqual(1, len(changes))
-        self.assertEqual(u'\ufffd\u05b7\ufffd\ufffd\ufffd.txt', changes[0][0])
+        self.assertEqual('\ufffd\u05b7\ufffd\ufffd\ufffd.txt', changes[0][0])
 
     def test_sync_merge(self):
         self._git_init()

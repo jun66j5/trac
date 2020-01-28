@@ -338,7 +338,7 @@ def get_resource_description(env, resource, format='default', **kwargs):
     manager = ResourceSystem(env).get_resource_manager(resource.realm)
     if manager and hasattr(manager, 'get_resource_description'):
         return manager.get_resource_description(resource, format, **kwargs)
-    name = u'%s:%s' % (resource.realm, resource.id)
+    name = '%s:%s' % (resource.realm, resource.id)
     if format == 'summary':
         name = _('%(name)s at version %(version)s',
                  name=name, version=resource.version)

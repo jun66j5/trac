@@ -118,8 +118,8 @@ class StringsTestCase(unittest.TestCase):
         with self.env.db_transaction as db:
             quoted = db.quote('system')
             db("INSERT INTO " + quoted + " (name,value) VALUES (%s,%s)",
-               ('test-unicode', u'ünicöde'))
-        self.assertEqual([(u'ünicöde',)], self.env.db_query(
+               ('test-unicode', 'ünicöde'))
+        self.assertEqual([('ünicöde',)], self.env.db_query(
             "SELECT value FROM " + quoted + " WHERE name='test-unicode'"))
 
     def test_insert_empty(self):
@@ -128,7 +128,7 @@ class StringsTestCase(unittest.TestCase):
             quoted = db.quote('system')
             db("INSERT INTO " + quoted + " (name,value) VALUES (%s,%s)",
                ('test-empty', empty))
-        self.assertEqual([(u'',)], self.env.db_query(
+        self.assertEqual([('',)], self.env.db_query(
             "SELECT value FROM " + quoted + " WHERE name='test-empty'"))
 
     def test_insert_markup(self):
@@ -136,9 +136,9 @@ class StringsTestCase(unittest.TestCase):
         with self.env.db_transaction as db:
             quoted = db.quote('system')
             query = "INSERT INTO {} (name,value) VALUES (%s,%s)".format(quoted)
-            db(query, ('test-markup', Markup(u'<em>märkup</em>')))
+            db(query, ('test-markup', Markup('<em>märkup</em>')))
             db.executemany(query, [('test-markup.%d' % i,
-                                    Markup(u'<em>märkup.%d</em>' % i))
+                                    Markup('<em>märkup.%d</em>' % i))
                                    for i in range(3)])
         values = dict(self.env.db_query(
             "SELECT name, value FROM {} WHERE name LIKE %s".format(quoted),
@@ -183,8 +183,8 @@ class StringsTestCase(unittest.TestCase):
             db.executemany("""
                 INSERT INTO {0} (name,value) VALUES (%s,1)
                 """.format(db.quote('system')),
-                [('blahblah',), ('BlahBlah',), ('BLAHBLAH',), (u'BlähBlah',),
-                 (u'BlahBläh',)])
+                [('blahblah',), ('BlahBlah',), ('BLAHBLAH',), ('BlähBlah',),
+                 ('BlahBläh',)])
 
         with self.env.db_query as db:
             names = sorted(name for name, in db(
@@ -192,7 +192,7 @@ class StringsTestCase(unittest.TestCase):
                 .format(db.quote('system'), db.prefix_match()),
                 (db.prefix_match_value('Blah'),)))
         self.assertEqual('BlahBlah', names[0])
-        self.assertEqual(u'BlahBläh', names[1])
+        self.assertEqual('BlahBläh', names[1])
         self.assertEqual(2, len(names))
 
     def test_prefix_match_metachars(self):

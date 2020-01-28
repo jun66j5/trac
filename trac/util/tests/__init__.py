@@ -81,7 +81,7 @@ class AtomicFileTestCase(unittest.TestCase):
     # to remove the dependency on the locale. So the test is disabled until
     # we require Python 3.
     def _test_unicode_path(self):
-        self.path = os.path.join(self.dir, u'träc-témpfilè')
+        self.path = os.path.join(self.dir, 'träc-témpfilè')
         with util.AtomicFile(self.path) as f:
             f.write('test content')
         self.assertTrue(f.closed)
@@ -185,7 +185,7 @@ class ContentDispositionTestCase(unittest.TestCase):
 
 class SafeReprTestCase(unittest.TestCase):
     def test_normal_repr(self):
-        for x in ([1, 2, 3], "été", u"été"):
+        for x in ([1, 2, 3], "été", "été"):
             self.assertEqual(repr(x), util.safe_repr(x))
 
     def test_buggy_repr(self):

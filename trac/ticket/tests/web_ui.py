@@ -156,19 +156,19 @@ class TicketModuleTestCase(unittest.TestCase):
         # Version with release data.
         req = MockRequest(self.env, method='GET', args={'id': ticket[0].id})
         data = self.ticket_module.process_request(req)[1]
-        self.assertIn(u'title="Released ',
+        self.assertIn('title="Released ',
                       str(version_field(data)['rendered']))
 
         # Version without release data.
         req = MockRequest(self.env, method='GET', args={'id': ticket[1].id})
         data = self.ticket_module.process_request(req)[1]
-        self.assertNotIn(u'title="Released ',
+        self.assertNotIn('title="Released ',
                          str(version_field(data)['rendered']))
 
         # Non-existent version.
         req = MockRequest(self.env, method='GET', args={'id': ticket[2].id})
         data = self.ticket_module.process_request(req)[1]
-        self.assertNotIn(u'title="Released ',
+        self.assertNotIn('title="Released ',
                          str(version_field(data)['rendered']))
 
     def test_quoted_reply_author_is_obfuscated(self):
@@ -181,8 +181,8 @@ class TicketModuleTestCase(unittest.TestCase):
 
         data = self.ticket_module.process_request(req)[1]
 
-        comment = u"Replying to [comment:1 author <author@\u2026>]:\n> " \
-                  u"the comment\n"
+        comment = "Replying to [comment:1 author <author@\u2026>]:\n> " \
+                  "the comment\n"
         self.assertEqual(comment, data['comment'])
         self.assertEqual(comment, data['change_preview']['comment'])
 
@@ -197,8 +197,8 @@ class TicketModuleTestCase(unittest.TestCase):
 
         data = self.ticket_module.process_request(req)[1]
 
-        comment = u"Replying to [comment:1 The Author]:\n> " \
-                  u"the comment\n"
+        comment = "Replying to [comment:1 The Author]:\n> " \
+                  "the comment\n"
         self.assertEqual(comment, data['comment'])
         self.assertEqual(comment, data['change_preview']['comment'])
 
@@ -321,7 +321,7 @@ class TicketModuleTestCase(unittest.TestCase):
         data = self.ticket_module.process_request(req)[1]
         field = data['changes'][0]['fields']['keywords']
 
-        self.assertEqual(u'kw1 kw2 → kw1, kw2', str(field['rendered']))
+        self.assertEqual('kw1 kw2 → kw1, kw2', str(field['rendered']))
 
     def test_ticket_property_diff_keywords_duplicate_added(self):
         t = self._create_ticket_with_change({'keywords': 'kw1 kw2'},
@@ -331,7 +331,7 @@ class TicketModuleTestCase(unittest.TestCase):
         data = self.ticket_module.process_request(req)[1]
         field = data['changes'][0]['fields']['keywords']
 
-        self.assertEqual(u'kw1 kw2 → kw1 kw2 kw2', str(field['rendered']))
+        self.assertEqual('kw1 kw2 → kw1 kw2 kw2', str(field['rendered']))
 
     def _test_invalid_cnum_raises(self, action, cnum=None):
         self._insert_ticket()
@@ -546,11 +546,11 @@ class TicketModuleTestCase(unittest.TestCase):
         dt1_text = user_time(req, format_datetime, dt1)
         dt2_text = user_time(req, format_datetime, dt2)
         self.assertEqual(2, len(changes))
-        self.assertEqual(u'\u2192 <span class="trac-field-new">%s</span>'
+        self.assertEqual('\u2192 <span class="trac-field-new">%s</span>'
                          % dt1_text,
                          str(changes[0]['fields']['timefield']['rendered']))
-        self.assertEqual(u'<span class="trac-field-old">%s</span> \u2192 '
-                         u'<span class="trac-field-new">%s</span>'
+        self.assertEqual('<span class="trac-field-old">%s</span> \u2192 '
+                         '<span class="trac-field-new">%s</span>'
                          % (dt1_text, dt2_text),
                          str(changes[1]['fields']['timefield']['rendered']))
 
