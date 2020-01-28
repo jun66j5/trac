@@ -14,8 +14,6 @@
 #
 # Author: Jonas Borgström <jonas@edgewall.com>
 
-from __future__ import print_function
-
 from abc import ABCMeta, abstractmethod
 from base64 import b64decode, b64encode
 from hashlib import md5, sha1

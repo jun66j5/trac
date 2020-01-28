@@ -11,8 +11,6 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
-from __future__ import absolute_import
-
 import os
 import re
 import sys
@@ -26,11 +24,6 @@ from trac.util import get_pkginfo
 from trac.web.chrome import Chrome, web_context
 from trac.wiki.formatter import format_to_html
 
-# Note: if trac/mimeview/tests is in sys.path, then the absolute
-#       import will try to load this pygments.py file again, which is bad.
-dir_ = os.path.dirname(__file__)
-if dir_ in sys.path:
-    sys.path.remove(dir_)
 try:
     import pygments
 except ImportError:

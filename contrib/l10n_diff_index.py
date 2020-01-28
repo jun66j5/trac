@@ -51,8 +51,6 @@ only, and apply the corresponding chunks if needed.
 
 """
 
-from __future__ import print_function
-
 from bisect import bisect_left
 import re
 

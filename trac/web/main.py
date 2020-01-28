@@ -16,8 +16,6 @@
 # Author: Christopher Lenz <cmlenz@gmx.de>
 #         Matthew Good <trac@matt-good.net>
 
-from __future__ import print_function
-
 import cgi
 import fnmatch
 from functools import partial
