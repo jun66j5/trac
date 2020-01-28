@@ -60,7 +60,7 @@ class TestFormatter(Component):
         if style == 'text/html':
             if 'raise-text-html' in text:
                 raise ValueError()
-            return u'<p>%s</p>' % escape(text)
+            return '<p>%s</p>' % escape(text)
 
 
 class TestSubscriber(Component):
@@ -125,7 +125,7 @@ class EmailDistributorTestCase(unittest.TestCase):
         with self.env.db_transaction:
             self._add_session('foo', email='foo@example.org')
             self._add_session('bar', email='bar@example.org',
-                              name=u"Bäŕ's name")
+                              name="Bäŕ's name")
             self._add_session('baz', name='Baz')
             self._add_session('qux', tz='UTC')
             self._add_session('corge', email='corge-mail')
@@ -531,7 +531,7 @@ class RecipientMatcherTestCase(unittest.TestCase):
     def test_match_recipient_empty(self):
         matcher = RecipientMatcher(self.env)
         self.assertEqual(None, matcher.match_recipient(None))
-        self.assertEqual(None, matcher.match_recipient(u''))
+        self.assertEqual(None, matcher.match_recipient(''))
 
     def test_match_recipient_anonymous(self):
         matcher = RecipientMatcher(self.env)
@@ -546,7 +546,7 @@ class RecipientMatcherTestCase(unittest.TestCase):
         self.assertEqual(expected, matcher.match_recipient(
             'Name name <user@example.org>'))
         self.assertEqual(expected, matcher.match_recipient(
-            u'Námë ńämé <user@example.org>'))
+            'Námë ńämé <user@example.org>'))
 
     def test_match_recipient_admit_domains(self):
         self.config.set('notification', 'admit_domains', 'LOCALDOMAIN')

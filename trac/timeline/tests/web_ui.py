@@ -136,9 +136,9 @@ class TimelineModuleTestCase(unittest.TestCase):
 
         TimelineModule(self.env).process_request(req)
 
-        self.assertIn(u'"2011-02-02T11:38:50 01:00" is an invalid date, '
-                      u'or the date format is not known. Try "%s" or "%s" '
-                      u'instead.' % (get_date_format_hint(locale_en),
+        self.assertIn('"2011-02-02T11:38:50 01:00" is an invalid date, '
+                      'or the date format is not known. Try "%s" or "%s" '
+                      'instead.' % (get_date_format_hint(locale_en),
                                      get_date_format_hint('iso8601')),
                       req.chrome['warnings'])
 

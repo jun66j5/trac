@@ -184,7 +184,7 @@ class TracAdminHelpMacroTestCase(TracAdminTestCaseBase):
         class UnicodeHelpCommand(Component):
             implements(IAdminCommandProvider)
 
-            unicode_help = u'Hélp text with unicöde charàcters'
+            unicode_help = 'Hélp text with unicöde charàcters'
 
             def get_admin_commands(self):
                 yield ('unicode-help', '', self.unicode_help,

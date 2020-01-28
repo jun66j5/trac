@@ -121,12 +121,12 @@ class TestMimeviewConverter(Component):
         if content == 'iterable-unicode':
             def fn_unicode():
                 for idx in range(0x10000):
-                    yield u'ü'
+                    yield 'ü'
             return fn_unicode(), 'text/plain'
         if content == 'bytes':
             return b'a' * 0x10000, 'text/plain'
         if content == 'unicode':
-            return u'Ü' * 0x10000, 'text/plain'
+            return 'Ü' * 0x10000, 'text/plain'
 
 
 class MimeviewConverterTestCase(unittest.TestCase):
@@ -148,7 +148,7 @@ class MimeviewConverterTestCase(unittest.TestCase):
         if iterable:
             self.assertNotIsInstance(content, (str, bytes))
             self.assertIsInstance(content, collections.abc.Iterable)
-            join = u''.join if isinstance(expected, str) else b''.join
+            join = ''.join if isinstance(expected, str) else b''.join
             self.assertEqual(expected, join(content))
         else:
             self.assertEqual(type(expected), type(content))
@@ -160,25 +160,25 @@ class MimeviewConverterTestCase(unittest.TestCase):
         self._test_convert_content(b'c' * 0x10000, 'iterable-bytes', False)
 
     def test_convert_content_iterable_unicode(self):
-        self._test_convert_content(u'ü' * 0x10000, 'iterable-unicode', False)
+        self._test_convert_content('ü' * 0x10000, 'iterable-unicode', False)
 
     def test_convert_content_bytes(self):
         self._test_convert_content(b'a' * 0x10000, 'bytes', False)
 
     def test_convert_content_unicode(self):
-        self._test_convert_content(u'Ü' * 0x10000, 'unicode', False)
+        self._test_convert_content('Ü' * 0x10000, 'unicode', False)
 
     def test_convert_content_iterable_bytes_iterable(self):
         self._test_convert_content(b'c' * 0x10000, 'iterable-bytes', True)
 
     def test_convert_content_iterable_unicode_iterable(self):
-        self._test_convert_content(u'ü' * 0x10000, 'iterable-unicode', True)
+        self._test_convert_content('ü' * 0x10000, 'iterable-unicode', True)
 
     def test_convert_content_bytes_iterable(self):
         self._test_convert_content(b'a' * 0x10000, 'bytes', True)
 
     def test_convert_content_unicode_iterable(self):
-        self._test_convert_content(u'Ü' * 0x10000, 'unicode', True)
+        self._test_convert_content('Ü' * 0x10000, 'unicode', True)
 
     def _test_send_converted(self, expected, content, use_chunked_encoding):
         self.env.config.set('trac', 'use_chunked_encoding',
@@ -203,25 +203,25 @@ class MimeviewConverterTestCase(unittest.TestCase):
         self._test_send_converted(b'c' * 0x10000, 'iterable-bytes', False)
 
     def test_send_converted_iterable_unicode(self):
-        self._test_send_converted(u'ü' * 0x10000, 'iterable-unicode', False)
+        self._test_send_converted('ü' * 0x10000, 'iterable-unicode', False)
 
     def test_send_converted_bytes(self):
         self._test_send_converted(b'a' * 0x10000, 'bytes', False)
 
     def test_send_converted_unicode(self):
-        self._test_send_converted(u'Ü' * 0x10000, 'unicode', False)
+        self._test_send_converted('Ü' * 0x10000, 'unicode', False)
 
     def test_send_converted_iterable_bytes_chunked(self):
         self._test_send_converted(b'c' * 0x10000, 'iterable-bytes', True)
 
     def test_send_converted_iterable_unicode_chunked(self):
-        self._test_send_converted(u'ü' * 0x10000, 'iterable-unicode', True)
+        self._test_send_converted('ü' * 0x10000, 'iterable-unicode', True)
 
     def test_send_converted_bytes_chunked(self):
         self._test_send_converted(b'a' * 0x10000, 'bytes', True)
 
     def test_send_converted_unicode_chunked(self):
-        self._test_send_converted(u'Ü' * 0x10000, 'unicode', True)
+        self._test_send_converted('Ü' * 0x10000, 'unicode', True)
 
 
 class MimeviewRenderTestCase(unittest.TestCase):

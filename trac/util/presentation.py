@@ -126,10 +126,10 @@ def htmlattr_filter(_eval_ctx, d, autospace=True):
         val = d[key]
         val = html_attribute(key, None if isinstance(val, Undefined) else val)
         if val is not None :
-            attrs.append(u'%s="%s"' % (key, val))
-    rv = u' '.join(attrs)
+            attrs.append('%s="%s"' % (key, val))
+    rv = ' '.join(attrs)
     if autospace and rv:
-        rv = u' ' + rv
+        rv = ' ' + rv
     if _eval_ctx.autoescape:
         rv = Markup(rv)
     return rv
@@ -191,7 +191,7 @@ def is_not_in(a, b):
 def captioned_button(req, symbol, text):
     """Return symbol and text or only symbol, according to user preferences."""
     return symbol if req.session.get('ui.use_symbols') \
-        else u'%s %s' % (symbol, text)
+        else '%s %s' % (symbol, text)
 
 
 def first_last(idx, seq):

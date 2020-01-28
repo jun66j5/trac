@@ -139,7 +139,7 @@ def stripentities(text, keepxmlentities=False):
     '\u2026'
     >>> stripentities('&#x2026;')
     '\u2026'
-    >>> stripentities(Markup(u'\u2026'))
+    >>> stripentities(Markup('\u2026'))
     '\u2026'
 
     If the `keepxmlentities` parameter is provided and is a truth value, the
@@ -279,7 +279,7 @@ def classes(*args, **kwargs):
 
     """
     classes = list(filter(None, args)) + [k for k, v in kwargs.items() if v]
-    return u' '.join(classes)
+    return ' '.join(classes)
 
 def styles(*args, **kwargs):
     """Helper function for dynamically assembling a list of CSS style name
@@ -316,7 +316,7 @@ def styles(*args, **kwargs):
             styles.append(arg)
     d.update(kwargs)
     styles.extend('%s: %s' % (k, v) for k, v in d.items() if v)
-    return u'; '.join(styles)
+    return '; '.join(styles)
 
 
 class Fragment(object):
@@ -333,7 +333,7 @@ class Fragment(object):
         return Markup(str(self))
 
     def __str__(self):
-        return u''.join(escape(c, False) for c in self.children)
+        return ''.join(escape(c, False) for c in self.children)
 
     def __add__(self, other):
         return Fragment(self, other)
@@ -350,10 +350,10 @@ class Fragment(object):
                 except TypeError:
                     self.children.append(arg)
         elif arg == 0:
-            self.children.append(u'0')
+            self.children.append('0')
 
     def as_text(self):
-        return u''.join(c.as_text() if isinstance(c, Fragment) else str(c)
+        return ''.join(c.as_text() if isinstance(c, Fragment) else str(c)
                         for c in self.children)
 
 
@@ -369,7 +369,7 @@ class XMLElement(Fragment):
 
     VOID_ELEMENTS = ()
 
-    CLOSE_TAG = u'/>'
+    CLOSE_TAG = '/>'
 
     def __init__(self, tag, *args, **kwargs):
         Fragment.__init__(self, *args)
@@ -404,7 +404,7 @@ class XMLElement(Fragment):
         return self
 
     def __str__(self):
-        elt = u'<' + self.tag
+        elt = '<' + self.tag
         if self.attrib:
             # Sorting the attributes makes the unit-tests more robust
             attrs = []
@@ -413,10 +413,10 @@ class XMLElement(Fragment):
                 if v:
                     attrs.append(' %s="%s"' % (k, v))
             if attrs:
-                elt += u''.join(attrs)
+                elt += ''.join(attrs)
         if self.children or (self.VOID_ELEMENTS and
                              self.tag not in self.VOID_ELEMENTS):
-            elt += u'>' + Fragment.__str__(self) + u'</' + self.tag + u'>'
+            elt += '>' + Fragment.__str__(self) + '</' + self.tag + '>'
         else:
             elt += self.CLOSE_TAG
         return elt
@@ -434,7 +434,7 @@ class Element(XMLElement):
     VOID_ELEMENTS = {'area', 'base', 'br', 'col', 'command', 'embed', 'hr',
                      'img', 'input', 'keygen', 'link', 'meta', 'param',
                      'source', 'track', 'wbr'}
-    CLOSE_TAG = u' />'
+    CLOSE_TAG = ' />'
 
     __slots__ = ()
 
@@ -568,25 +568,25 @@ class TracHTMLSanitizer(object):
 
     # IE6 <http://heideri.ch/jso/#80>
     _EXPRESSION_SEARCH = re.compile(
-        u'[eE\uFF25\uFF45]'         # FULLWIDTH LATIN CAPITAL LETTER E
+        '[eE\uFF25\uFF45]'         # FULLWIDTH LATIN CAPITAL LETTER E
                                     # FULLWIDTH LATIN SMALL LETTER E
-        u'[xX\uFF38\uFF58]'         # FULLWIDTH LATIN CAPITAL LETTER X
+        '[xX\uFF38\uFF58]'         # FULLWIDTH LATIN CAPITAL LETTER X
                                     # FULLWIDTH LATIN SMALL LETTER X
-        u'[pP\uFF30\uFF50]'         # FULLWIDTH LATIN CAPITAL LETTER P
+        '[pP\uFF30\uFF50]'         # FULLWIDTH LATIN CAPITAL LETTER P
                                     # FULLWIDTH LATIN SMALL LETTER P
-        u'[rR\u0280\uFF32\uFF52]'   # LATIN LETTER SMALL CAPITAL R
+        '[rR\u0280\uFF32\uFF52]'   # LATIN LETTER SMALL CAPITAL R
                                     # FULLWIDTH LATIN CAPITAL LETTER R
                                     # FULLWIDTH LATIN SMALL LETTER R
-        u'[eE\uFF25\uFF45]'         # FULLWIDTH LATIN CAPITAL LETTER E
+        '[eE\uFF25\uFF45]'         # FULLWIDTH LATIN CAPITAL LETTER E
                                     # FULLWIDTH LATIN SMALL LETTER E
-        u'[sS\uFF33\uFF53]{2}'      # FULLWIDTH LATIN CAPITAL LETTER S
+        '[sS\uFF33\uFF53]{2}'      # FULLWIDTH LATIN CAPITAL LETTER S
                                     # FULLWIDTH LATIN SMALL LETTER S
-        u'[iI\u026A\uFF29\uFF49]'   # LATIN LETTER SMALL CAPITAL I
+        '[iI\u026A\uFF29\uFF49]'   # LATIN LETTER SMALL CAPITAL I
                                     # FULLWIDTH LATIN CAPITAL LETTER I
                                     # FULLWIDTH LATIN SMALL LETTER I
-        u'[oO\uFF2F\uFF4F]'         # FULLWIDTH LATIN CAPITAL LETTER O
+        '[oO\uFF2F\uFF4F]'         # FULLWIDTH LATIN CAPITAL LETTER O
                                     # FULLWIDTH LATIN SMALL LETTER O
-        u'[nN\u0274\uFF2E\uFF4E]'   # LATIN LETTER SMALL CAPITAL N
+        '[nN\u0274\uFF2E\uFF4E]'   # LATIN LETTER SMALL CAPITAL N
                                     # FULLWIDTH LATIN CAPITAL LETTER N
                                     # FULLWIDTH LATIN SMALL LETTER N
     ).search
@@ -594,7 +594,7 @@ class TracHTMLSanitizer(object):
     # IE6 <http://openmya.hacker.jp/hasegawa/security/expression.txt>
     #     7) Particular bit of Unicode characters
     _URL_FINDITER = re.compile(
-        u'[Uu][Rr\u0280][Ll\u029F]\s*\(([^)]+)').finditer
+        '[Uu][Rr\u0280][Ll\u029F]\s*\(([^)]+)').finditer
 
     def sanitize(self, html):
         """Transforms the incoming HTML by removing anything's that deemed
@@ -709,7 +709,7 @@ class TracHTMLSanitizer(object):
         with a scheme that is not considered safe are removed:
 
         >>> sanitizer = TracHTMLSanitizer()
-        >>> sanitizer.sanitize_css(u'''
+        >>> sanitizer.sanitize_css('''
         ...   background: url(javascript:alert("foo"));
         ...   color: #000;
         ... ''')
@@ -718,7 +718,7 @@ class TracHTMLSanitizer(object):
         Also, the proprietary Internet Explorer function
         ``expression()`` is always stripped:
 
-        >>> sanitizer.sanitize_css(u'''
+        >>> sanitizer.sanitize_css('''
         ...   background: #fff;
         ...   color: #000;
         ...   width: e/**/xpression(alert("F"));
@@ -960,7 +960,7 @@ def plaintext(text, keeplinebreaks=True):
     else:
         text = stripentities(striptags(text))
     if not keeplinebreaks:
-        text = text.replace(u'\n', u' ')
+        text = text.replace('\n', ' ')
     return text
 
 

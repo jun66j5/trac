@@ -159,7 +159,7 @@ class NormalTests(object):
         resource = Resource('repository', REPOS_NAME)
         self.assertTrue(resource_exists(self.env, resource))
         self.assertFalse(resource_exists(self.env, resource(id='xxx')))
-        node = resource.child('source', u'tête')
+        node = resource.child('source', 'tête')
         self.assertTrue(resource_exists(self.env, node))
         self.assertFalse(resource_exists(self.env, node(id='xxx')))
         cset = resource.child('changeset', HEAD)
@@ -170,10 +170,10 @@ class NormalTests(object):
         self.assertEqual('/', self.repos.normalize_path('/'))
         self.assertEqual('/', self.repos.normalize_path(''))
         self.assertEqual('/', self.repos.normalize_path(None))
-        self.assertEqual(u'tête', self.repos.normalize_path(u'tête'))
-        self.assertEqual(u'tête', self.repos.normalize_path(u'/tête'))
-        self.assertEqual(u'tête', self.repos.normalize_path(u'tête/'))
-        self.assertEqual(u'tête', self.repos.normalize_path(u'/tête/'))
+        self.assertEqual('tête', self.repos.normalize_path('tête'))
+        self.assertEqual('tête', self.repos.normalize_path('/tête'))
+        self.assertEqual('tête', self.repos.normalize_path('tête/'))
+        self.assertEqual('tête', self.repos.normalize_path('/tête/'))
 
     def test_repos_normalize_rev(self):
         self.assertEqual(HEAD, self.repos.normalize_rev('latest'))
@@ -220,43 +220,43 @@ class NormalTests(object):
 
     def test_rev_path_navigation(self):
         self.assertEqual(1, self.repos.oldest_rev)
-        self.assertIsNone(self.repos.previous_rev(0, u'tête'))
-        self.assertIsNone(self.repos.previous_rev(1, u'tête'))
+        self.assertIsNone(self.repos.previous_rev(0, 'tête'))
+        self.assertIsNone(self.repos.previous_rev(1, 'tête'))
         self.assertEqual(HEAD, self.repos.youngest_rev)
-        self.assertEqual(6, self.repos.next_rev(5, u'tête'))
-        self.assertEqual(13, self.repos.next_rev(6, u'tête'))
+        self.assertEqual(6, self.repos.next_rev(5, 'tête'))
+        self.assertEqual(13, self.repos.next_rev(6, 'tête'))
         # ...
-        self.assertIsNone(self.repos.next_rev(HEAD, u'tête'))
+        self.assertIsNone(self.repos.next_rev(HEAD, 'tête'))
         # test accentuated characters
-        self.assertIsNone(self.repos.previous_rev(17, u'tête/R\xe9sum\xe9.txt'))
-        self.assertEqual(17, self.repos.next_rev(16, u'tête/R\xe9sum\xe9.txt'))
+        self.assertIsNone(self.repos.previous_rev(17, 'tête/R\xe9sum\xe9.txt'))
+        self.assertEqual(17, self.repos.next_rev(16, 'tête/R\xe9sum\xe9.txt'))
 
     def test_has_node(self):
-        self.assertFalse(self.repos.has_node(u'/tête/dir1', 3))
-        self.assertTrue(self.repos.has_node(u'/tête/dir1', 4))
-        self.assertTrue(self.repos.has_node(u'/tête/dir1'))
+        self.assertFalse(self.repos.has_node('/tête/dir1', 3))
+        self.assertTrue(self.repos.has_node('/tête/dir1', 4))
+        self.assertTrue(self.repos.has_node('/tête/dir1'))
 
     def test_get_node(self):
-        node = self.repos.get_node(u'/')
-        self.assertEqual(u'', node.name)
-        self.assertEqual(u'/', node.path)
+        node = self.repos.get_node('/')
+        self.assertEqual('', node.name)
+        self.assertEqual('/', node.path)
         self.assertEqual(Node.DIRECTORY, node.kind)
         self.assertEqual(HEAD, node.rev)
         self.assertEqual(HEAD, node.created_rev)
         self.assertEqual(datetime(2017, 1, 9, 6, 12, 33, 247657, utc),
                          node.last_modified)
-        self.assertRaises(NoSuchChangeset, self.repos.get_node, u'/', -1)
-        node = self.repos.get_node(u'/tête')
-        self.assertEqual(u'tête', node.name)
-        self.assertEqual(u'/tête', node.path)
+        self.assertRaises(NoSuchChangeset, self.repos.get_node, '/', -1)
+        node = self.repos.get_node('/tête')
+        self.assertEqual('tête', node.name)
+        self.assertEqual('/tête', node.path)
         self.assertEqual(Node.DIRECTORY, node.kind)
         self.assertEqual(HEAD, node.rev)
         self.assertEqual(TETE, node.created_rev)
         self.assertEqual(datetime(2013, 4, 28, 5, 36, 6, 29637, utc),
                          node.last_modified)
-        node = self.repos.get_node(u'/tête/README.txt')
+        node = self.repos.get_node('/tête/README.txt')
         self.assertEqual('README.txt', node.name)
-        self.assertEqual(u'/tête/README.txt', node.path)
+        self.assertEqual('/tête/README.txt', node.path)
         self.assertEqual(Node.FILE, node.kind)
         self.assertEqual(HEAD, node.rev)
         self.assertEqual(3, node.created_rev)
@@ -264,65 +264,65 @@ class NormalTests(object):
                          node.last_modified)
 
     def test_get_node_specific_rev(self):
-        node = self.repos.get_node(u'/tête', 1)
-        self.assertEqual(u'tête', node.name)
-        self.assertEqual(u'/tête', node.path)
+        node = self.repos.get_node('/tête', 1)
+        self.assertEqual('tête', node.name)
+        self.assertEqual('/tête', node.path)
         self.assertEqual(Node.DIRECTORY, node.kind)
         self.assertEqual(1, node.rev)
         self.assertEqual(datetime(2005, 4, 1, 10, 0, 52, 353248, utc),
                          node.last_modified)
-        node = self.repos.get_node(u'/tête/README.txt', 2)
+        node = self.repos.get_node('/tête/README.txt', 2)
         self.assertEqual('README.txt', node.name)
-        self.assertEqual(u'/tête/README.txt', node.path)
+        self.assertEqual('/tête/README.txt', node.path)
         self.assertEqual(Node.FILE, node.kind)
         self.assertEqual(2, node.rev)
         self.assertEqual(datetime(2005, 4, 1, 13, 12, 18, 216267, utc),
                          node.last_modified)
 
     def test_get_dir_entries(self):
-        node = self.repos.get_node(u'/tête')
+        node = self.repos.get_node('/tête')
         entries = node.get_entries()
         names = sorted(entry.name for entry in entries)
         self.assertEqual(['README.txt', 'README3.txt', 'R\xe9sum\xe9.txt',
                           'dir1', 'mpp_proc', 'v2'], names)
 
     def test_get_file_entries(self):
-        node = self.repos.get_node(u'/tête/README.txt')
+        node = self.repos.get_node('/tête/README.txt')
         entries = node.get_entries()
         self.assertRaises(StopIteration, next, entries)
 
     def test_get_dir_content(self):
-        node = self.repos.get_node(u'/tête')
+        node = self.repos.get_node('/tête')
         self.assertIsNone(node.content_length)
         self.assertIsNone(node.content_type)
         self.assertIsNone(node.get_content())
 
     def test_get_file_content(self):
-        node = self.repos.get_node(u'/tête/README.txt')
+        node = self.repos.get_node('/tête/README.txt')
         self.assertEqual(8, node.content_length)
         self.assertEqual('text/plain', node.content_type)
         self.assertEqual(b'A test.\n', node.get_content().read())
 
     def test_get_dir_properties(self):
-        f = self.repos.get_node(u'/tête')
+        f = self.repos.get_node('/tête')
         props = f.get_properties()
         self.assertEqual({'svn:ignore': '*.pyc\n'}, props)
 
     def test_get_file_properties(self):
-        f = self.repos.get_node(u'/tête/README.txt')
+        f = self.repos.get_node('/tête/README.txt')
         self.assertEqual({'svn:eol-style': 'native',
                           'svn:mime-type': 'text/plain'},
                           f.get_properties())
 
     def test_get_file_content_without_native_eol_style(self):
-        f = self.repos.get_node(u'/tête/README.txt', 2)
+        f = self.repos.get_node('/tête/README.txt', 2)
         props = f.get_properties()
         self.assertIsNone(props.get('svn:eol-style'))
         self.assertEqual(b'A text.\n', f.get_content().read())
         self.assertEqual(b'A text.\n', f.get_processed_content().read())
 
     def test_get_file_content_with_native_eol_style(self):
-        f = self.repos.get_node(u'/tête/README.txt', 3)
+        f = self.repos.get_node('/tête/README.txt', 3)
         props = f.get_properties()
         self.assertEqual('native', props.get('svn:eol-style'))
 
@@ -347,7 +347,7 @@ class NormalTests(object):
                          f.get_processed_content(eol_hint='CRLF').read())
 
     def test_get_file_content_with_native_eol_style_and_no_keywords_28(self):
-        f = self.repos.get_node(u'/branches/v4/README.txt', 28)
+        f = self.repos.get_node('/branches/v4/README.txt', 28)
         props = f.get_properties()
         self.assertEqual('native', props.get('svn:eol-style'))
         self.assertIsNone(props.get('svn:keywords'))
@@ -362,7 +362,7 @@ class NormalTests(object):
             f.get_processed_content(eol_hint='CRLF').read())
 
     def test_get_file_content_with_keyword_substitution_23(self):
-        f = self.repos.get_node(u'/tête/Résumé.txt', 23)
+        f = self.repos.get_node('/tête/Résumé.txt', 23)
         props = f.get_properties()
         self.assertEqual('Revision Author URL', props['svn:keywords'])
         self.assertEqual(b'''\
@@ -383,7 +383,7 @@ En r\xe9sum\xe9 ... \xe7a marche.
     #       This is expected.
 
     def test_get_file_content_with_keyword_substitution_24(self):
-        f = self.repos.get_node(u'/tête/Résumé.txt', 24)
+        f = self.repos.get_node('/tête/Résumé.txt', 24)
         props = f.get_properties()
         self.assertEqual('Revision Author URL Id', props['svn:keywords'])
         expected = '''\
@@ -405,7 +405,7 @@ Now with fixed width fields:
 
     @setlocale
     def test_get_file_content_with_keyword_substitution_25(self):
-        f = self.repos.get_node(u'/tête/Résumé.txt', 25)
+        f = self.repos.get_node('/tête/Résumé.txt', 25)
         props = f.get_properties()
         self.assertEqual('Revision Author URL Date Id Header',
                          props['svn:keywords'])
@@ -429,7 +429,7 @@ Now with fixed width fields:
     @setlocale
     def test_get_file_content_with_keyword_substitution_30(self):
         self.maxDiff = None
-        f = self.repos.get_node(u'/branches/v4/Résumé.txt', 30)
+        f = self.repos.get_node('/branches/v4/Résumé.txt', 30)
         expected = [
             b'# Simple test for svn:keywords property substitution (#717)',
             b'# $Rev: 30 $:     Revision of last commit',
@@ -530,7 +530,7 @@ Now with fixed width fields:
         """
         self.assertEqual('john', self.repos.get_changeset(31).author)
         self.assertEqual('jomae', self.repos.get_changeset(26).author)
-        f = self.repos.get_node(u'/tête/Résumé.txt', 31)
+        f = self.repos.get_node('/tête/Résumé.txt', 31)
         self.assertEqual(31, f.rev)
         self.assertEqual(26, f.created_rev)
         props = f.get_properties()
@@ -559,23 +559,23 @@ Overlapped keywords:
                          f.get_processed_content().read().splitlines())
 
     def test_created_path_rev(self):
-        node = self.repos.get_node(u'/tête/README3.txt', 15)
+        node = self.repos.get_node('/tête/README3.txt', 15)
         self.assertEqual(15, node.rev)
-        self.assertEqual(u'/tête/README3.txt', node.path)
+        self.assertEqual('/tête/README3.txt', node.path)
         self.assertEqual(14, node.created_rev)
-        self.assertEqual(u'tête/README3.txt', node.created_path)
+        self.assertEqual('tête/README3.txt', node.created_path)
 
     def test_created_path_rev_parent_copy(self):
         node = self.repos.get_node('/tags/v1/README.txt', 15)
         self.assertEqual(15, node.rev)
         self.assertEqual('/tags/v1/README.txt', node.path)
         self.assertEqual(3, node.created_rev)
-        self.assertEqual(u'tête/README.txt', node.created_path)
+        self.assertEqual('tête/README.txt', node.created_path)
 
     def test_get_annotations(self):
         # svn_client_blame2() requires a canonical uri since Subversion 1.7.
         # If the uri is not canonical, assertion raises (#11167).
-        node = self.repos.get_node(u'/tête/R\xe9sum\xe9.txt', 25)
+        node = self.repos.get_node('/tête/R\xe9sum\xe9.txt', 25)
         self.assertEqual([23, 23, 23, 25, 24, 23, 23, 23, 23, 23, 24, 23, 20],
                          node.get_annotations())
 
@@ -587,7 +587,7 @@ Overlapped keywords:
         DbRepositoryProvider(self.env).add_repository('lowercase', repos_path,
                                                       'direct-svnfs')
         repos = RepositoryManager(self.env).get_repository('lowercase')
-        node = repos.get_node(u'/tête/R\xe9sum\xe9.txt', 25)
+        node = repos.get_node('/tête/R\xe9sum\xe9.txt', 25)
         self.assertEqual([23, 23, 23, 25, 24, 23, 23, 23, 23, 23, 24, 23, 20],
                          node.get_annotations())
 
@@ -595,7 +595,7 @@ Overlapped keywords:
         del test_get_annotations_lower_drive_letter
 
     def test_get_annotations_with_urlencoded_percent_sign(self):
-        node = self.repos.get_node(u'/branches/t10386/READ%25ME.txt')
+        node = self.repos.get_node('/branches/t10386/READ%25ME.txt')
         self.assertEqual([14], node.get_annotations())
 
     def test_get_path_url(self):
@@ -614,87 +614,87 @@ Overlapped keywords:
         self.assertEqual('svn://test/trunk%40/Resume.txt%4042',
                          self.repos.get_path_url('trunk@/Resume.txt@42', 42))
         self.assertEqual('svn://test/tr%C3%BCnk/R%C3%A9sum%C3%A9.txt',
-                         self.repos.get_path_url(u'trünk/Résumé.txt', 42))
+                         self.repos.get_path_url('trünk/Résumé.txt', 42))
 
     # Revision Log / node history
 
     def test_get_node_history(self):
-        node = self.repos.get_node(u'/tête/README3.txt')
+        node = self.repos.get_node('/tête/README3.txt')
         history = node.get_history()
-        self.assertEqual((u'tête/README3.txt', 14, 'copy'), next(history))
-        self.assertEqual((u'tête/README2.txt', 6, 'copy'), next(history))
-        self.assertEqual((u'tête/README.txt', 3, 'edit'), next(history))
-        self.assertEqual((u'tête/README.txt', 2, 'add'), next(history))
+        self.assertEqual(('tête/README3.txt', 14, 'copy'), next(history))
+        self.assertEqual(('tête/README2.txt', 6, 'copy'), next(history))
+        self.assertEqual(('tête/README.txt', 3, 'edit'), next(history))
+        self.assertEqual(('tête/README.txt', 2, 'add'), next(history))
         self.assertRaises(StopIteration, next, history)
 
     def test_get_node_history_limit(self):
-        node = self.repos.get_node(u'/tête/README3.txt')
+        node = self.repos.get_node('/tête/README3.txt')
         history = node.get_history(2)
-        self.assertEqual((u'tête/README3.txt', 14, 'copy'), next(history))
-        self.assertEqual((u'tête/README2.txt', 6, 'copy'), next(history))
+        self.assertEqual(('tête/README3.txt', 14, 'copy'), next(history))
+        self.assertEqual(('tête/README2.txt', 6, 'copy'), next(history))
         self.assertRaises(StopIteration, next, history)
 
     def test_get_node_history_follow_copy(self):
         node = self.repos.get_node('/tags/v1/README.txt')
         history = node.get_history()
         self.assertEqual(('tags/v1/README.txt', 7, 'copy'), next(history))
-        self.assertEqual((u'tête/README.txt', 3, 'edit'), next(history))
-        self.assertEqual((u'tête/README.txt', 2, 'add'), next(history))
+        self.assertEqual(('tête/README.txt', 3, 'edit'), next(history))
+        self.assertEqual(('tête/README.txt', 2, 'add'), next(history))
         self.assertRaises(StopIteration, next, history)
 
     def test_get_copy_ancestry(self):
         node = self.repos.get_node('/tags/v1/README.txt')
         ancestry = node.get_copy_ancestry()
-        self.assertEqual([(u'tête/README.txt', 6)], ancestry)
+        self.assertEqual([('tête/README.txt', 6)], ancestry)
         for path, rev in ancestry:
             self.repos.get_node(path, rev)  # shouldn't raise NoSuchNode
 
-        node = self.repos.get_node(u'/tête/README3.txt')
+        node = self.repos.get_node('/tête/README3.txt')
         ancestry = node.get_copy_ancestry()
-        self.assertEqual([(u'tête/README2.txt', 13),
-                          (u'tête/README.txt', 3)], ancestry)
+        self.assertEqual([('tête/README2.txt', 13),
+                          ('tête/README.txt', 3)], ancestry)
         for path, rev in ancestry:
             self.repos.get_node(path, rev)  # shouldn't raise NoSuchNode
 
         node = self.repos.get_node('/branches/v1x')
         ancestry = node.get_copy_ancestry()
-        self.assertEqual([(u'tags/v1.1', 11),
-                          (u'branches/v1x', 9),
-                          (u'tags/v1', 7),
-                          (u'tête', 6)], ancestry)
+        self.assertEqual([('tags/v1.1', 11),
+                          ('branches/v1x', 9),
+                          ('tags/v1', 7),
+                          ('tête', 6)], ancestry)
         for path, rev in ancestry:
             self.repos.get_node(path, rev)  # shouldn't raise NoSuchNode
 
     def test_get_copy_ancestry_for_move(self):
-        node = self.repos.get_node(u'/tête/dir1/dir2', 5)
+        node = self.repos.get_node('/tête/dir1/dir2', 5)
         ancestry = node.get_copy_ancestry()
-        self.assertEqual([(u'tête/dir2', 4)], ancestry)
+        self.assertEqual([('tête/dir2', 4)], ancestry)
         for path, rev in ancestry:
             self.repos.get_node(path, rev)  # shouldn't raise NoSuchNode
 
     def test_get_branch_origin(self):
         node = self.repos.get_node('/tags/v1/README.txt')
         self.assertEqual(7, node.get_branch_origin())
-        node = self.repos.get_node(u'/tête/README3.txt')
+        node = self.repos.get_node('/tête/README3.txt')
         self.assertEqual(14, node.get_branch_origin())
         node = self.repos.get_node('/branches/v1x')
         self.assertEqual(12, node.get_branch_origin())
-        node = self.repos.get_node(u'/tête/dir1/dir2', 5)
+        node = self.repos.get_node('/tête/dir1/dir2', 5)
         self.assertEqual(5, node.get_branch_origin())
 
     # Revision Log / path history
 
     def test_get_path_history(self):
-        history = self.repos.get_path_history(u'/tête/README2.txt', None)
-        self.assertEqual((u'tête/README2.txt', 14, 'delete'), next(history))
-        self.assertEqual((u'tête/README2.txt', 6, 'copy'), next(history))
-        self.assertEqual((u'tête/README.txt', 3, 'unknown'), next(history))
+        history = self.repos.get_path_history('/tête/README2.txt', None)
+        self.assertEqual(('tête/README2.txt', 14, 'delete'), next(history))
+        self.assertEqual(('tête/README2.txt', 6, 'copy'), next(history))
+        self.assertEqual(('tête/README.txt', 3, 'unknown'), next(history))
         self.assertRaises(StopIteration, next, history)
 
     def test_get_path_history_copied_file(self):
         history = self.repos.get_path_history('/tags/v1/README.txt', None)
         self.assertEqual(('tags/v1/README.txt', 7, 'copy'), next(history))
-        self.assertEqual((u'tête/README.txt', 3, 'unknown'), next(history))
+        self.assertEqual(('tête/README.txt', 3, 'unknown'), next(history))
         self.assertRaises(StopIteration, next, history)
 
     def test_get_path_history_copied_dir(self):
@@ -719,10 +719,10 @@ Overlapped keywords:
         self.assertEqual(expected[2], (got[2], got[3]))
 
     def test_diff_file_different_revs(self):
-        diffs = self.repos.get_changes(u'tête/README.txt', 2,
-                                       u'tête/README.txt', 3)
-        self._cmp_diff(((u'tête/README.txt', 2),
-                        (u'tête/README.txt', 3),
+        diffs = self.repos.get_changes('tête/README.txt', 2,
+                                       'tête/README.txt', 3)
+        self._cmp_diff((('tête/README.txt', 2),
+                        ('tête/README.txt', 3),
                         (Node.FILE, Changeset.EDIT)), next(diffs))
         self.assertRaises(StopIteration, next, diffs)
 
@@ -735,26 +735,26 @@ Overlapped keywords:
         self.assertRaises(StopIteration, next, diffs)
 
     def test_diff_file_no_change(self):
-        diffs = self.repos.get_changes(u'tête/README.txt', 7,
+        diffs = self.repos.get_changes('tête/README.txt', 7,
                                        'tags/v1/README.txt', 7)
         self.assertRaises(StopIteration, next, diffs)
 
     def test_diff_dir_different_revs(self):
-        diffs = self.repos.get_changes(u'tête', 4, u'tête', 8)
-        self._cmp_diff((None, (u'tête/README2.txt', 8),
+        diffs = self.repos.get_changes('tête', 4, 'tête', 8)
+        self._cmp_diff((None, ('tête/README2.txt', 8),
                         (Node.FILE, Changeset.ADD)), next(diffs))
-        self._cmp_diff((None, (u'tête/dir1/dir2', 8),
+        self._cmp_diff((None, ('tête/dir1/dir2', 8),
                         (Node.DIRECTORY, Changeset.ADD)), next(diffs))
-        self._cmp_diff((None, (u'tête/dir1/dir3', 8),
+        self._cmp_diff((None, ('tête/dir1/dir3', 8),
                         (Node.DIRECTORY, Changeset.ADD)), next(diffs))
-        self._cmp_diff(((u'tête/dir2', 4), None,
+        self._cmp_diff((('tête/dir2', 4), None,
                         (Node.DIRECTORY, Changeset.DELETE)), next(diffs))
-        self._cmp_diff(((u'tête/dir3', 4), None,
+        self._cmp_diff((('tête/dir3', 4), None,
                         (Node.DIRECTORY, Changeset.DELETE)), next(diffs))
         self.assertRaises(StopIteration, next, diffs)
 
     def test_diff_dir_different_dirs(self):
-        diffs = self.repos.get_changes(u'tête', 1, 'branches/v1x', 12)
+        diffs = self.repos.get_changes('tête', 1, 'branches/v1x', 12)
         self._cmp_diff((None, ('branches/v1x/README.txt', 12),
                         (Node.FILE, Changeset.ADD)), next(diffs))
         self._cmp_diff((None, ('branches/v1x/README2.txt', 12),
@@ -768,7 +768,7 @@ Overlapped keywords:
         self.assertRaises(StopIteration, next, diffs)
 
     def test_diff_dir_no_change(self):
-        diffs = self.repos.get_changes(u'tête', 7, 'tags/v1', 7)
+        diffs = self.repos.get_changes('tête', 7, 'tags/v1', 7)
         self.assertRaises(StopIteration, next, diffs)
 
     # Changesets
@@ -795,7 +795,7 @@ Overlapped keywords:
                          next(changes))
         self.assertEqual(('tags', Node.DIRECTORY, Changeset.ADD, None, -1),
                          next(changes))
-        self.assertEqual((u'tête', Node.DIRECTORY, Changeset.ADD, None, -1),
+        self.assertEqual(('tête', Node.DIRECTORY, Changeset.ADD, None, -1),
                          next(changes))
         self.assertRaises(StopIteration, next, changes)
 
@@ -808,8 +808,8 @@ Overlapped keywords:
                          chgset.date)
 
         changes = chgset.get_changes()
-        self.assertEqual((u'tête/README.txt', Node.FILE, Changeset.EDIT,
-                          u'tête/README.txt', 2), next(changes))
+        self.assertEqual(('tête/README.txt', Node.FILE, Changeset.EDIT,
+                          'tête/README.txt', 2), next(changes))
         self.assertRaises(StopIteration, next, changes)
 
     def test_changeset_dir_moves(self):
@@ -821,10 +821,10 @@ Overlapped keywords:
                          chgset.date)
 
         changes = chgset.get_changes()
-        self.assertEqual((u'tête/dir1/dir2', Node.DIRECTORY, Changeset.MOVE,
-                          u'tête/dir2', 4), next(changes))
-        self.assertEqual((u'tête/dir1/dir3', Node.DIRECTORY, Changeset.MOVE,
-                          u'tête/dir3', 4), next(changes))
+        self.assertEqual(('tête/dir1/dir2', Node.DIRECTORY, Changeset.MOVE,
+                          'tête/dir2', 4), next(changes))
+        self.assertEqual(('tête/dir1/dir3', Node.DIRECTORY, Changeset.MOVE,
+                          'tête/dir3', 4), next(changes))
         self.assertRaises(StopIteration, next, changes)
 
     def test_changeset_file_copy(self):
@@ -836,8 +836,8 @@ Overlapped keywords:
                          chgset.date)
 
         changes = chgset.get_changes()
-        self.assertEqual((u'tête/README2.txt', Node.FILE, Changeset.COPY,
-                          u'tête/README.txt', 3), next(changes))
+        self.assertEqual(('tête/README2.txt', Node.FILE, Changeset.COPY,
+                          'tête/README.txt', 3), next(changes))
         self.assertRaises(StopIteration, next, changes)
 
     def test_changeset_root_propset(self):
@@ -848,7 +848,7 @@ Overlapped keywords:
         changes = chgset.get_changes()
         self.assertEqual(('/', Node.DIRECTORY, Changeset.EDIT, '/', 12),
                          next(changes))
-        self.assertEqual((u'tête', Node.DIRECTORY, Changeset.EDIT, u'tête', 6),
+        self.assertEqual(('tête', Node.DIRECTORY, Changeset.EDIT, 'tête', 6),
                          next(changes))
         self.assertRaises(StopIteration, next, changes)
 
@@ -857,7 +857,7 @@ Overlapped keywords:
         self.assertEqual(9, chgset.rev)
         changes = chgset.get_changes()
         self.assertEqual(('branches/v1x/README.txt', Node.FILE,
-                          Changeset.EDIT, u'tête/README.txt', 3),
+                          Changeset.EDIT, 'tête/README.txt', 3),
                          next(changes))
         self.assertRaises(StopIteration, next, changes)
 
@@ -865,8 +865,8 @@ Overlapped keywords:
         chgset = self.repos.get_changeset(14)
         self.assertEqual(14, chgset.rev)
         changes = chgset.get_changes()
-        self.assertEqual((u'tête/README3.txt', Node.FILE,
-                          Changeset.MOVE, u'tête/README2.txt', 13),
+        self.assertEqual(('tête/README3.txt', Node.FILE,
+                          Changeset.MOVE, 'tête/README2.txt', 13),
                          next(changes))
         self.assertRaises(StopIteration, next, changes)
 
@@ -878,7 +878,7 @@ Overlapped keywords:
                           'tags/v1.1', 14),
                          next(changes))
         self.assertEqual(('branches/v2/README2.txt', Node.FILE,
-                          Changeset.EDIT, u'tête/README2.txt', 6),
+                          Changeset.EDIT, 'tête/README2.txt', 6),
                          next(changes))
         self.assertRaises(StopIteration, next, changes)
 
@@ -886,18 +886,18 @@ Overlapped keywords:
         chgset = self.repos.get_changeset(19)
         self.assertEqual(19, chgset.rev)
         changes = list(chgset.get_changes())
-        self.assertEqual((u'tête/mpp_proc', Node.DIRECTORY, changes[0][2],
-                          u'tête/Xprimary_proc', 18), changes[0])
-        self.assertEqual((u'tête/mpp_proc/Xprimary_pkg.vhd', Node.FILE,
+        self.assertEqual(('tête/mpp_proc', Node.DIRECTORY, changes[0][2],
+                          'tête/Xprimary_proc', 18), changes[0])
+        self.assertEqual(('tête/mpp_proc/Xprimary_pkg.vhd', Node.FILE,
                           Changeset.DELETE,
-                          u'tête/Xprimary_proc/Xprimary_pkg.vhd', 18),
+                          'tête/Xprimary_proc/Xprimary_pkg.vhd', 18),
                           changes[1])
-        self.assertEqual((u'tête/mpp_proc/Xprimary_proc', Node.DIRECTORY,
-                          changes[2][2], u'tête/Xprimary_proc', 18),
+        self.assertEqual(('tête/mpp_proc/Xprimary_proc', Node.DIRECTORY,
+                          changes[2][2], 'tête/Xprimary_proc', 18),
                           changes[2])
-        self.assertEqual((u'tête/mpp_proc/Xprimary_proc/Xprimary_pkg.vhd',
+        self.assertEqual(('tête/mpp_proc/Xprimary_proc/Xprimary_pkg.vhd',
                           Node.FILE, Changeset.DELETE,
-                          u'tête/Xprimary_proc/Xprimary_pkg.vhd', 18),
+                          'tête/Xprimary_proc/Xprimary_pkg.vhd', 18),
                           changes[3])
         self.assertEqual({Changeset.COPY, Changeset.MOVE},
                          {changes[0][2], changes[2][2]})
@@ -909,18 +909,18 @@ Overlapped keywords:
         self.assertEqual(22, chgset.rev)
         changes = chgset.get_changes()
         expected = [
-            (u'branches/v3', 'dir', 'copy', u'tête', 21),
-            (u'branches/v3/dir1', 'dir', 'delete', u'tête/dir1', 21),
-            (u'branches/v3/mpp_proc', 'dir', 'delete', u'tête/mpp_proc', 21),
-            (u'branches/v3/v2', 'dir', 'delete', u'tête/v2', 21),
+            ('branches/v3', 'dir', 'copy', 'tête', 21),
+            ('branches/v3/dir1', 'dir', 'delete', 'tête/dir1', 21),
+            ('branches/v3/mpp_proc', 'dir', 'delete', 'tête/mpp_proc', 21),
+            ('branches/v3/v2', 'dir', 'delete', 'tête/v2', 21),
         ]
         self.assertEqual(expected, list(changes))
 
     def test_changeset_utf_8(self):
         chgset = self.repos.get_changeset(20)
         self.assertEqual(20, chgset.rev)
-        self.assertEqual(u'Chez moi ça marche\n', chgset.message)
-        self.assertEqual(u'Jonas Borgström', chgset.author)
+        self.assertEqual('Chez moi ça marche\n', chgset.message)
+        self.assertEqual('Jonas Borgström', chgset.author)
 
     def test_canonical_repos_path(self):
         # Assertion `svn_dirent_is_canonical` with leading double slashes
@@ -937,7 +937,7 @@ Overlapped keywords:
         context = _create_context(self.env)
         context = context(self.repos.get_node('branches/v1x', HEAD).resource)
         renderer = svn_prop.SubversionMergePropertyRenderer(self.env)
-        props = {'svn:mergeinfo': textwrap.dedent(u"""\
+        props = {'svn:mergeinfo': textwrap.dedent("""\
             /tête:1-20,23-26
             /branches/v3:22
             /branches/v2:16
@@ -959,7 +959,7 @@ Overlapped keywords:
         node = self._row_col(result, 3, 1)
         self.assertIn(' href="/trac.cgi/browser/repo/%s?rev=%d"'
                       % ('t%C3%AAte', HEAD), node)
-        self.assertIn(u'>/tête</a>', node)
+        self.assertIn('>/tête</a>', node)
         node = self._row_col(result, 3, 2)
         self.assertIn(' title="1-20, 23-26"', node)
         self.assertIn(' href="/trac.cgi/log/repo/t%C3%AAte?revs=1-20%2C23-26"',
@@ -977,7 +977,7 @@ Overlapped keywords:
         context = _create_context(self.env)
         context = context(self.repos.get_node('branches/v1x', HEAD).resource)
         renderer = svn_prop.SubversionMergePropertyRenderer(self.env)
-        props = {'svn:mergeinfo': textwrap.dedent(u"""\
+        props = {'svn:mergeinfo': textwrap.dedent("""\
             /tête:19
             /branches/v3:22
             /branches/deleted:1,3-5,22
@@ -1000,7 +1000,7 @@ Overlapped keywords:
         self.assertIn(' href="/trac.cgi/browser/repo/%s?rev=%d"'
                       % ('t%C3%AAte', HEAD),
                       node)
-        self.assertIn(u'>/tête</a>', node)
+        self.assertIn('>/tête</a>', node)
         node = self._row_col(result, 2, 2)
         self.assertIn(' title="19"', node)
         self.assertIn(' href="/trac.cgi/changeset/19/repo/t%C3%AAte"', node)
@@ -1014,19 +1014,19 @@ Overlapped keywords:
         self.assertIn('(toggle deleted branches)', str(result))
         self.assertIn('<td>/branches/deleted</td>',
                       self._row_col(result, 3, 1))
-        self.assertIn(u'<td colspan="2">1,\u200b3-5,\u200b22</td>',
+        self.assertIn('<td colspan="2">1,\u200b3-5,\u200b22</td>',
                       self._row_col(result, 3, 2))
 
     def test_merge_prop_diff_renderer_added(self):
         context = _create_context(self.env)
-        old_context = context(self.repos.get_node(u'tête', 20).resource)
-        old_props = {'svn:mergeinfo': textwrap.dedent(u"""\
+        old_context = context(self.repos.get_node('tête', 20).resource)
+        old_props = {'svn:mergeinfo': textwrap.dedent("""\
             /branches/v2:1,8-9,12-15
             /branches/v1x:12
             /branches/deleted:1,3-5,22
             """)}
-        new_context = context(self.repos.get_node(u'tête', 21).resource)
-        new_props = {'svn:mergeinfo': textwrap.dedent(u"""\
+        new_context = context(self.repos.get_node('tête', 21).resource)
+        new_props = {'svn:mergeinfo': textwrap.dedent("""\
             /branches/v2:1,8-9,12-16
             /branches/v1x:12
             /branches/deleted:1,3-5,22
@@ -1047,9 +1047,9 @@ Overlapped keywords:
     def test_merge_prop_diff_renderer_wrong_mergeinfo(self):
         rev = HEAD
         context = _create_context(self.env)
-        old_context = context(self.repos.get_node(u'tête', rev - 1).resource)
+        old_context = context(self.repos.get_node('tête', rev - 1).resource)
         old_mergeinfo = '/missing:12\n'
-        new_context = context(self.repos.get_node(u'tête', rev).resource)
+        new_context = context(self.repos.get_node('tête', rev).resource)
         new_mergeinfo = '/missing:12-15\n'
         renderer = svn_prop.SubversionMergePropertyDiffRenderer(self.env)
         result = renderer.render_property_diff(
@@ -1069,12 +1069,12 @@ Overlapped keywords:
         svnmerge.py, used prior to svn 1.5) is rendered correctly.
         """
         context = _create_context(self.env)
-        old_context = context(self.repos.get_node(u'tête', 20).resource)
-        old_props = {'svnmerge-integrated': u"""\
+        old_context = context(self.repos.get_node('tête', 20).resource)
+        old_props = {'svnmerge-integrated': """\
         /branches/v2:1,8-9,12-15 /branches/v1x:12 /branches/deleted:1,3-5,22
         """}
-        new_context = context(self.repos.get_node(u'tête', 21).resource)
-        new_props = {'svnmerge-integrated': u"""\
+        new_context = context(self.repos.get_node('tête', 21).resource)
+        new_props = {'svnmerge-integrated': """\
         /branches/v2:1,8-9,12-16 /branches/v1x:12 /branches/deleted:1,3-5,22
         """}
 
@@ -1097,7 +1097,7 @@ Overlapped keywords:
         self.env.config.set('trac', 'htdocs_location', htdocs_location)
         context = _create_context(self.env)
         context.req.chrome['htdocs_location'] = htdocs_location
-        context = context(self.repos.get_node(u'tête', HEAD).resource)
+        context = context(self.repos.get_node('tête', HEAD).resource)
         renderer = svn_prop.SubversionPropertyRenderer(self.env)
         result = renderer.render_property('svn:needs-lock', None, context,
                                           {'svn:needs-lock': '*'})
@@ -1233,24 +1233,24 @@ class ScopedTests(object):
         self.assertRaises(StopIteration, next, history)
 
     def test_get_copy_ancestry(self):
-        node = self.repos.get_node(u'/README3.txt')
+        node = self.repos.get_node('/README3.txt')
         ancestry = node.get_copy_ancestry()
-        self.assertEqual([(u'README2.txt', 13),
-                          (u'README.txt', 3)], ancestry)
+        self.assertEqual([('README2.txt', 13),
+                          ('README.txt', 3)], ancestry)
         for path, rev in ancestry:
             self.repos.get_node(path, rev)  # shouldn't raise NoSuchNode
 
     def test_get_copy_ancestry_for_move(self):
-        node = self.repos.get_node(u'/dir1/dir2', 5)
+        node = self.repos.get_node('/dir1/dir2', 5)
         ancestry = node.get_copy_ancestry()
-        self.assertEqual([(u'dir2', 4)], ancestry)
+        self.assertEqual([('dir2', 4)], ancestry)
         for path, rev in ancestry:
             self.repos.get_node(path, rev)  # shouldn't raise NoSuchNode
 
     def test_get_branch_origin(self):
-        node = self.repos.get_node(u'/README3.txt')
+        node = self.repos.get_node('/README3.txt')
         self.assertEqual(14, node.get_branch_origin())
-        node = self.repos.get_node(u'/dir1/dir2', 5)
+        node = self.repos.get_node('/dir1/dir2', 5)
         self.assertEqual(5, node.get_branch_origin())
 
     # Revision Log / path history
@@ -1441,11 +1441,11 @@ class ExternalsPropertyTests(object):
             'blah svn://server/repos1',
             'vendor http://example.org/svn/eng-soft'))
         self.assertEqual(
-            {'text()': u'blah', '@href': None,
+            {'text()': 'blah', '@href': None,
              '@title': Markup('No svn:externals configured in trac.ini')},
                          result[0])
         self.assertEqual(
-            {'text()': u'vendor',
+            {'text()': 'vendor',
              '@href': Markup('http://example.org/svn/eng-soft'),
              # XXX           v should be "//"
              '@title': Markup('http:/example.org/svn/eng-soft')},
@@ -1453,10 +1453,10 @@ class ExternalsPropertyTests(object):
         self.assertEqual(2, len(result))
 
     def test_render_property_non_absolute_url(self):
-        externals = [u'blah1 ../src',
-                     u'blah2 ^/src',
-                     u'blah3 /svn/trunk',
-                     u'blah4 //localhost/svn']
+        externals = ['blah1 ../src',
+                     'blah2 ^/src',
+                     'blah3 /svn/trunk',
+                     'blah4 //localhost/svn']
         result = self._parse_result(self._render(*externals))
         self.assertEqual(
             [{'text()': externals[0], '@href': None, '@title': Markup()},
@@ -1473,14 +1473,14 @@ class ExternalsPropertyTests(object):
             '   # path rev url .....',
             'vendor http://example.org/svn/eng-soft'))
         self.assertEqual(
-            {'text()': u'   # For blah', '@href': None, '@title':  Markup()},
+            {'text()': '   # For blah', '@href': None, '@title':  Markup()},
             result[0])
-        self.assertEqual(u'blah', result[1]['text()'])
+        self.assertEqual('blah', result[1]['text()'])
         self.assertEqual(
-            {'text()': u'   # path rev url .....', '@href': None,
+            {'text()': '   # path rev url .....', '@href': None,
              '@title': Markup()},
             result[2])
-        self.assertEqual(u'vendor', result[3]['text()'])
+        self.assertEqual('vendor', result[3]['text()'])
         self.assertEqual(4, len(result))
 
     def test_render_property_with_tracini(self):
@@ -1586,8 +1586,8 @@ def test_suite():
         REPOS_PATH = mkdtemp()
         os.rmdir(REPOS_PATH)
         tests = [(NormalTests, ''),
-                 (ScopedTests, u'/tête'),
-                 (RecentPathScopedTests, u'/tête/dir1'),
+                 (ScopedTests, '/tête'),
+                 (RecentPathScopedTests, '/tête/dir1'),
                  (NonSelfContainedScopedTests, '/tags/v1'),
                  (AnotherNonSelfContainedScopedTests, '/branches'),
                  (ExternalsPropertyTests, ''),

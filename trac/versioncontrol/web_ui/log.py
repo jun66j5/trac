@@ -481,7 +481,7 @@ class RevRanges(object):
             return
 
         pairs = []
-        for rev in re.split(u',\u200b?', revs):
+        for rev in re.split(',\u200b?', revs):
             a = b = None
             if self._cset_range_re.match(rev):
                 for sep in ':-':

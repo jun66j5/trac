@@ -626,7 +626,7 @@ class AttachmentModule(Component):
                 href = get_resource_url(self.env, attachment, formatter.href)
                 return tag(tag.a(label, class_='attachment', title=title,
                                  href=href + params),
-                           tag.a(u'\u200b', class_='trac-rawlink',
+                           tag.a('\u200b', class_='trac-rawlink',
                                  href=raw_href + params, title=_("Download")))
             # FIXME: should be either:
             #

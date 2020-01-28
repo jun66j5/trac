@@ -116,11 +116,11 @@ class SearchModuleTestCase(unittest.TestCase):
             template, data = self._process_request(req)
             return self._render_template(req, template, data)
 
-        self.assertIn(u'<a href="/trac.cgi/query?id=1-2">Quickjump to <em>'
-                      u'ticket:1,\u200b2</em></a>', do_render('ticket:1,2'))
-        self.assertIn(u'<a href="mailto:blah@example.org">Quickjump to <em>'
-                      u'<span class="icon">\u200b</span>blah@example.org'
-                      u'</em></a>', do_render('blah@example.org'))
+        self.assertIn('<a href="/trac.cgi/query?id=1-2">Quickjump to <em>'
+                      'ticket:1,\u200b2</em></a>', do_render('ticket:1,2'))
+        self.assertIn('<a href="mailto:blah@example.org">Quickjump to <em>'
+                      '<span class="icon">\u200b</span>blah@example.org'
+                      '</em></a>', do_render('blah@example.org'))
 
 
 def test_suite():

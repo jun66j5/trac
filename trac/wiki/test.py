@@ -105,7 +105,7 @@ class WikiTestCase(unittest.TestCase):
         """Testing WikiFormatter"""
         formatter = self.formatter()
         v = str(formatter.generate(**self.generate_opts))
-        v = v.replace('\r', '').replace(u'\u200b', '')  # FIXME: keep ZWSP
+        v = v.replace('\r', '').replace('\u200b', '')  # FIXME: keep ZWSP
         v = strip_line_ws(v, leading=False)
         try:
             self.assertEqual(self.expected, v)

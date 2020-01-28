@@ -534,7 +534,7 @@ class BrowserModule(Component):
                     entry = (reponame, repoinfo, repos, youngest, None,
                              raw_href)
                 else:
-                    entry = (reponame, repoinfo, None, None, u"\u2013", None)
+                    entry = (reponame, repoinfo, None, None, "\u2013", None)
             if entry[4] is not None:  # Check permission in case of error
                 root = Resource('repository', reponame).child(self.realm, '/')
                 if 'BROWSER_VIEW' not in context.perm(root):
@@ -842,7 +842,7 @@ class BrowserModule(Component):
             return tag.a(label, class_='missing source')
         link = tag.a(label, class_='source', href=src_href)
         if raw_href:
-            link = tag(link, tag.a(u'\u200b', href=raw_href + fragment,
+            link = tag(link, tag.a('\u200b', href=raw_href + fragment,
                                    title=title,
                                    class_='trac-rawlink' if node.isfile
                                           else 'trac-ziplink'))

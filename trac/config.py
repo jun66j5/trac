@@ -1025,7 +1025,7 @@ def get_configinfo(env):
                 default = registered.default
                 normalized = registered.normalize(value)
             else:
-                default = u''
+                default = ''
                 normalized = str(value)
             options.append({'name': name, 'value': value,
                             'modified': normalized != default})

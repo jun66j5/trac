@@ -154,7 +154,7 @@ class MilestoneModuleTestCase(unittest.TestCase):
             m = Milestone(self.env)
             m.name = term
             m.due = datetime_now(utc)
-            m.description = u"""\
+            m.description = """\
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod \
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \
 veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea \
@@ -224,7 +224,7 @@ est laborum."""
         self.assertEqual('Milestone ' + milestone.name, results[0][1])
         self.assertEqual(milestone.due, results[0][2])
         self.assertEqual('', results[0][3])
-        shorten_desc = u"""\
+        shorten_desc = """\
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod \
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, \
 quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo \

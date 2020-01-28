@@ -56,7 +56,7 @@ class ToJsonTestCase(unittest.TestCase):
         self.assertEqual(r'"\u003cb\u003e\u0026\u003c/b\u003e"',
                          presentation.to_json('<b>&</b>'))
         self.assertEqual(r'"\n\r\u2028\u2029"',
-                         presentation.to_json(u'\x0a\x0d\u2028\u2029'))
+                         presentation.to_json('\x0a\x0d\u2028\u2029'))
 
     def test_compound_types(self):
         self.assertEqual('[1,2,[true,false]]',
@@ -67,7 +67,7 @@ class ToJsonTestCase(unittest.TestCase):
                          presentation.to_json({"one": 1, "two": 2,
                                                "other": [None, 0],
                                                "three": [3, "&<>'"],
-                                               u"\u2028\x0a": u"\u2029\x0d"}))
+                                               "\u2028\x0a": "\u2029\x0d"}))
 
 
 class PaginatorTestCase(unittest.TestCase):

@@ -44,8 +44,8 @@ hashes = {
     'foo.$$$': 'eefc6aa745dbe129e8067a4a57637883edd83a8a',
     'foo.2.txt': 'a8fcfcc2ef4e400ee09ae53c1aabd7f5a5fda0c7',
     'foo.txt': '9206ac42b532ef8e983470c251f4e1a365fd636c',
-    u'bar.aäc': '70d0e3b813fdc756602d82748719a3ceb85cbf29',
-    u'ÜberSicht': 'a16c6837f6d3d2cc3addd68976db1c55deb694c8',
+    'bar.aäc': '70d0e3b813fdc756602d82748719a3ceb85cbf29',
+    'ÜberSicht': 'a16c6837f6d3d2cc3addd68976db1c55deb694c8',
 }
 
 
@@ -217,11 +217,11 @@ class AttachmentTestCase(unittest.TestCase):
                                       hashes['foo.$$$']),
                          attachment.path)
         attachment = Attachment(self.env, 'wiki', 'SomePage')
-        attachment.filename = u'bar.aäc'
+        attachment.filename = 'bar.aäc'
         self.assertEqual(os.path.join(self.env.attachments_dir, 'wiki',
                                       hashes['SomePage'][0:3],
                                       hashes['SomePage'],
-                                      hashes[u'bar.aäc']),
+                                      hashes['bar.aäc']),
                          attachment.path)
 
     def test_get_path_encoded(self):
@@ -231,11 +231,11 @@ class AttachmentTestCase(unittest.TestCase):
                                       hashes['42'][0:3], hashes['42'],
                                       hashes['Teh foo.txt'] + '.txt'),
                          attachment.path)
-        attachment = Attachment(self.env, 'wiki', u'ÜberSicht')
+        attachment = Attachment(self.env, 'wiki', 'ÜberSicht')
         attachment.filename = 'Teh bar.jpg'
         self.assertEqual(os.path.join(self.env.attachments_dir, 'wiki',
-                                      hashes[u'ÜberSicht'][0:3],
-                                      hashes[u'ÜberSicht'],
+                                      hashes['ÜberSicht'][0:3],
+                                      hashes['ÜberSicht'],
                                       hashes['Teh bar.jpg'] + '.jpg'),
                          attachment.path)
 

@@ -305,9 +305,9 @@ class PreferencesModuleTestCase(unittest.TestCase):
 
         self.assertEqual('prefs_panel_1.html', resp[0])
         self.assertEqual(2, len(resp[1]['children']))
-        self.assertEqual(('child1', 'Child 1', Markup(u'<h2>Child 1</h2>')),
+        self.assertEqual(('child1', 'Child 1', Markup('<h2>Child 1</h2>')),
                          resp[1]['children'][0])
-        self.assertEqual(('child2', 'Child 2', Markup(u'<h2>Child 2</h2>')),
+        self.assertEqual(('child2', 'Child 2', Markup('<h2>Child 2</h2>')),
                          resp[1]['children'][1])
 
 

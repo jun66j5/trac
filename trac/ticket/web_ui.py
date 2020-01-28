@@ -408,7 +408,7 @@ class TicketModule(Component):
         if field == 'url':
             return context.href.query(id=','.join(str(t) for t in tickets))
         elif field == 'title':
-            ticketids = u',\u200b'.join(str(t) for t in tickets)
+            ticketids = ',\u200b'.join(str(t) for t in tickets)
             title = _("Tickets %(ticketids)s", ticketids=ticketids)
             return tag_("Tickets %(ticketlist)s batch updated",
                         ticketlist=tag.em('#', ticketids, title=title))
@@ -1777,14 +1777,14 @@ class TicketModule(Component):
             if added or remvd:
                 return tag(added, added and remvd and _("; "), remvd)
             else:
-                return tag(old, u" \u2192 ", new)
+                return tag(old, " \u2192 ", new)
 
         def render_default(old, new):
             if old and new:
-                rendered = tag(tag.span(old, class_='trac-field-old'), u' → ',
+                rendered = tag(tag.span(old, class_='trac-field-old'), ' → ',
                                tag.span(new, class_='trac-field-new'))
             elif not old and new:
-                rendered = tag(u'→ ', tag.span(new, class_='trac-field-new'))
+                rendered = tag('→ ', tag.span(new, class_='trac-field-new'))
             else:  # old and not new
                 rendered = tag.span(old, class_='trac-field-deleted')
             return rendered

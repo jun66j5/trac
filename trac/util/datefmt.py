@@ -357,7 +357,7 @@ def get_datetime_format_hint(locale=None):
     date.
     """
     if locale == 'iso8601':
-        return u'YYYY-MM-DDThh:mm:ss±hh:mm'
+        return 'YYYY-MM-DDThh:mm:ss±hh:mm'
     if babel and locale:
         date_pattern = get_date_format('medium', locale=locale).pattern
         time_pattern = get_time_format('medium', locale=locale).pattern

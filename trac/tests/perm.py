@@ -850,7 +850,7 @@ class TracAdminTestCase(TracAdminTestCaseBase):
         Tests the 'permission import' command in trac-admin.  This particular
         test exports additional permissions, removes them and imports them back.
         """
-        user = u'test_user\u0250'
+        user = 'test_user\u0250'
         self.execute('permission add ' + user + ' WIKI_VIEW')
         self.execute('permission add ' + user + ' TICKET_VIEW')
         rv, output = self.execute('permission export')

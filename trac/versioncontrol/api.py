@@ -1130,7 +1130,7 @@ class Node(object, metaclass=ABCMeta):
         self.kind = kind
 
     def __repr__(self):
-        name = u'%s:%s' % (self.repos.name, self.path)
+        name = '%s:%s' % (self.repos.name, self.path)
         if self.rev is not None:
             name += '@' + str(self.rev)
         return '<%s %r>' % (self.__class__.__name__, name)
@@ -1281,7 +1281,7 @@ class Changeset(object, metaclass=ABCMeta):
         self.date = date
 
     def __repr__(self):
-        name = u'%s@%s' % (self.repos.name, self.rev)
+        name = '%s@%s' % (self.repos.name, self.rev)
         return '<%s %r>' % (self.__class__.__name__, name)
 
     def get_properties(self):

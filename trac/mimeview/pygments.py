@@ -185,7 +185,7 @@ class PygmentsRenderer(Component):
             return
 
         formatter = HtmlFormatter(style=style_cls)
-        content = u'\n\n'.join([
+        content = '\n\n'.join([
             formatter.get_style_defs('div.code pre'),
             formatter.get_style_defs('table.code td')
         ]).encode('utf-8')
@@ -256,7 +256,7 @@ class PygmentsRenderer(Component):
         out = io.StringIO()
         # Specify `lineseparator` to workaround exception with Pygments 2.2.0:
         # "TypeError: str argument expected, got 'bytes'" with newline input
-        formatter = HtmlFormatter(nowrap=True, lineseparator=u'\n')
+        formatter = HtmlFormatter(nowrap=True, lineseparator='\n')
         formatter.format(lexer.get_tokens(content), out)
         return Markup(out.getvalue())
 

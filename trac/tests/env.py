@@ -563,7 +563,7 @@ class ConvertDatabaseTestCase(unittest.TestCase):
         env = Environment(path, True,
                           [('trac', 'database', dburi),
                            ('trac', 'base_url', 'http://localhost/'),
-                           ('project', 'name', u'Pŕójéćŧ Ńáḿé')])
+                           ('project', 'name', 'Pŕójéćŧ Ńáḿé')])
         dbm = DatabaseManager(env)
         dbm.set_database_version(21, 'initial_database_version')
         att = Attachment(env, 'wiki', 'WikiStart')

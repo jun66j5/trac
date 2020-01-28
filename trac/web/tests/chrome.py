@@ -285,9 +285,9 @@ class ChromeTestCase(unittest.TestCase):
         self.assertIsNone(data['timezone_list'])
 
     def test_invalid_default_dateinfo_format_raises_exception(self):
-        self.env.config.set('trac', 'default_dateinfo_format', u'ābšolute')
+        self.env.config.set('trac', 'default_dateinfo_format', 'ābšolute')
 
-        self.assertEqual(u'ābšolute',
+        self.assertEqual('ābšolute',
                          self.env.config.get('trac', 'default_dateinfo_format'))
         with self.assertRaises(ConfigurationError):
             Chrome(self.env).default_dateinfo_format
@@ -765,7 +765,7 @@ class FormatAuthorTestCase(unittest.TestCase):
     def test_actor_no_email_view(self):
         req = MockRequest(self.env, authname='user2')
         author = Chrome(self.env).format_author(req, 'user@domain.com')
-        self.assertEqual(u'user@\u2026', author)
+        self.assertEqual('user@\u2026', author)
 
     def test_actor_no_email_view_show_email_addresses(self):
         self.env.config.set('trac', 'show_email_addresses', True)
@@ -775,7 +775,7 @@ class FormatAuthorTestCase(unittest.TestCase):
 
     def test_actor_no_email_view_no_req(self):
         author = Chrome(self.env).format_author(None, 'user@domain.com')
-        self.assertEqual(u'user@\u2026', author)
+        self.assertEqual('user@\u2026', author)
 
     def test_actor_has_email_view_for_resource(self):
         format_author = Chrome(self.env).format_author
@@ -789,7 +789,7 @@ class FormatAuthorTestCase(unittest.TestCase):
         req = MockRequest(self.env, authname='user2')
         resource = Resource('wiki', 'TracGuide')
         author = format_author(req, 'user@domain.com', resource)
-        self.assertEqual(u'user@\u2026', author)
+        self.assertEqual('user@\u2026', author)
 
     def test_show_full_names_true(self):
         format_author = Chrome(self.env).format_author
@@ -823,9 +823,9 @@ class FormatAuthorTestCase(unittest.TestCase):
         req = MockRequest(self.env, authname='user1')
 
         author = format_author(None, 'user@domain.com', show_email=False)
-        self.assertEqual(u'user@\u2026', author)
+        self.assertEqual('user@\u2026', author)
         author = format_author(req, 'user@domain.com', show_email=False)
-        self.assertEqual(u'user@\u2026', author)
+        self.assertEqual('user@\u2026', author)
 
     def test_show_full_names_true_actor_has_email_view(self):
         format_author = Chrome(self.env).format_author
@@ -861,7 +861,7 @@ class FormatAuthorTestCase(unittest.TestCase):
         format_author = Chrome(self.env).format_author
         self.env.config.set('trac', 'show_email_addresses', False)
 
-        self.assertEqual(u'user3@\u2026',
+        self.assertEqual('user3@\u2026',
                          format_author(None, 'user3@example.org'))
         self.assertEqual('user3@example.org',
                          format_author(req, 'user3@example.org'))
@@ -870,7 +870,7 @@ class FormatAuthorTestCase(unittest.TestCase):
         format_emails = Chrome(self.env).format_emails
         to_format = 'user1@example.org, user2; user3@example.org'
 
-        self.assertEqual(u'user1@\u2026, user2, user3@\u2026',
+        self.assertEqual('user1@\u2026, user2, user3@\u2026',
                          format_emails(None, to_format))
 
     def test_format_emails_actor_has_email_view(self):
@@ -888,7 +888,7 @@ class FormatAuthorTestCase(unittest.TestCase):
         format_emails = Chrome(self.env).format_emails
         to_format = 'user1@example.org, user2; user3@example.org'
 
-        self.assertEqual(u'user1@\u2026, user2, user3@\u2026',
+        self.assertEqual('user1@\u2026, user2, user3@\u2026',
                          format_emails(context, to_format))
 
 
@@ -953,9 +953,9 @@ class AuthorInfoTestCase(unittest.TestCase):
     def test_actor_no_email_view(self):
         req = MockRequest(self.env, authname='user2')
         authorinfo = Chrome(self.env).authorinfo
-        self.assertEqual(u'<span class="trac-author">user@\u2026</span>',
+        self.assertEqual('<span class="trac-author">user@\u2026</span>',
                          str(authorinfo(req, 'user@domain.com')))
-        self.assertEqual(u'<span class="trac-author">User One &lt;user@\u2026&gt;</span>',
+        self.assertEqual('<span class="trac-author">User One &lt;user@\u2026&gt;</span>',
                          str(authorinfo(req, 'User One <user@domain.com>')))
 
     def test_actor_no_email_view_show_email_addresses(self):
@@ -969,9 +969,9 @@ class AuthorInfoTestCase(unittest.TestCase):
 
     def test_actor_no_email_view_no_req(self):
         authorinfo = Chrome(self.env).authorinfo
-        self.assertEqual(u'<span class="trac-author">user@\u2026</span>',
+        self.assertEqual('<span class="trac-author">user@\u2026</span>',
                          str(authorinfo(None, 'user@domain.com')))
-        self.assertEqual(u'<span class="trac-author">User One &lt;user@\u2026&gt;</span>',
+        self.assertEqual('<span class="trac-author">User One &lt;user@\u2026&gt;</span>',
                          str(authorinfo(None, 'User One <user@domain.com>')))
 
     def test_actor_has_email_view_for_resource(self):
@@ -981,9 +981,9 @@ class AuthorInfoTestCase(unittest.TestCase):
         resource = Resource('wiki', 'WikiStart')
         authorinfo = authorinfo(req, 'user@domain.com', resource=resource)
         author_short = authorinfo_short('user@domain.com')
-        self.assertEqual(u'<span class="trac-author">user@domain.com</span>',
+        self.assertEqual('<span class="trac-author">user@domain.com</span>',
                          str(authorinfo))
-        self.assertEqual(u'<span class="trac-author">user</span>',
+        self.assertEqual('<span class="trac-author">user</span>',
                          str(author_short))
 
     def test_actor_has_email_view_for_resource_negative(self):
@@ -993,9 +993,9 @@ class AuthorInfoTestCase(unittest.TestCase):
         resource = Resource('wiki', 'TracGuide')
         author = authorinfo(req,  'user@domain.com', resource=resource)
         author_short = authorinfo_short('user@domain.com')
-        self.assertEqual(u'<span class="trac-author">user@\u2026</span>',
+        self.assertEqual('<span class="trac-author">user@\u2026</span>',
                          str(author))
-        self.assertEqual(u'<span class="trac-author">user</span>',
+        self.assertEqual('<span class="trac-author">user</span>',
                          str(author_short))
 
 

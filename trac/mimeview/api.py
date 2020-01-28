@@ -449,7 +449,7 @@ def content_to_unicode(env, content, mimetype):
 
     >>> from trac.test import EnvironmentStub
     >>> env = EnvironmentStub()
-    >>> content_to_unicode(env, u"\ufeffNo BOM! h\u00e9 !", '')
+    >>> content_to_unicode(env, "\ufeffNo BOM! h\u00e9 !", '')
     'No BOM! h\\xe9 !'
     >>> content_to_unicode(env, bytes([0xEF, 0xBB, 0xBF]) + b'No BOM! h' +
     ...                         bytes([0xC3, 0xA9]) + b' !', '')
@@ -460,7 +460,7 @@ def content_to_unicode(env, content, mimetype):
     if hasattr(content, 'read'):
         content = content.read(mimeview.max_preview_size)
     u = mimeview.to_unicode(content, mimetype)
-    if u and u[0] == u'\ufeff':
+    if u and u[0] == '\ufeff':
         u = u[1:]
     return u
 
@@ -879,7 +879,7 @@ class Mimeview(Component):
             return tag.tr(
                 [tag.th(labels[a], class_=a, title=titles[a])
                  for a in annotations] +
-                [tag.th(u'\xa0', class_='content')]
+                [tag.th('\xa0', class_='content')]
             )
 
         def _body_rows():

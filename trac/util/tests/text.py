@@ -33,24 +33,24 @@ class ToUnicodeTestCase(unittest.TestCase):
     def test_explicit_charset(self):
         uc = to_unicode(b'\xc3\xa7', 'utf-8')
         self.assertIsInstance(uc, str)
-        self.assertEqual(u'\xe7', uc)
+        self.assertEqual('\xe7', uc)
 
     def test_explicit_charset_with_replace(self):
         uc = to_unicode(b'\xc3', 'utf-8')
         self.assertIsInstance(uc, str)
-        self.assertEqual(u'\xc3', uc)
+        self.assertEqual('\xc3', uc)
 
     def test_implicit_charset(self):
         uc = to_unicode(b'\xc3\xa7')
         self.assertIsInstance(uc, str)
-        self.assertEqual(u'\xe7', uc)
+        self.assertEqual('\xe7', uc)
 
     def test_from_exception_using_unicode_args(self):
-        u = u'\uB144'
+        u = '\uB144'
         try:
             raise ValueError('%s is not a number.' % u)
         except ValueError as e:
-            self.assertEqual(u'\uB144 is not a number.', to_unicode(e))
+            self.assertEqual('\uB144 is not a number.', to_unicode(e))
 
     def test_from_windows_error(self):
         try:
@@ -111,7 +111,7 @@ class JavascriptQuoteTestCase(unittest.TestCase):
         self.assertEqual(r'\u0026\u003c\u003e',
                          javascript_quote('&<>'))
         self.assertEqual(r'\u2028\u2029',
-                         javascript_quote(u'\u2028\u2029'))
+                         javascript_quote('\u2028\u2029'))
 
 
 class ToJsStringTestCase(unittest.TestCase):
@@ -129,38 +129,38 @@ class ToJsStringTestCase(unittest.TestCase):
         self.assertEqual('""',
                          to_js_string(None))
         self.assertEqual(r'"\u2028\u2029"',
-                         to_js_string(u'\u2028\u2029'))
+                         to_js_string('\u2028\u2029'))
 
 
 class UnicodeQuoteTestCase(unittest.TestCase):
     def test_unicode_quote(self):
-        self.assertEqual(u'the%20%C3%9C%20thing',
-                         unicode_quote(u'the Ü thing'))
-        self.assertEqual(u'%2520%C3%9C%20%2520',
-                         unicode_quote(u'%20Ü %20'))
+        self.assertEqual('the%20%C3%9C%20thing',
+                         unicode_quote('the Ü thing'))
+        self.assertEqual('%2520%C3%9C%20%2520',
+                         unicode_quote('%20Ü %20'))
 
     def test_unicode_quote_plus(self):
-        self.assertEqual(u'the+%C3%9C+thing',
-                         unicode_quote_plus(u'the Ü thing'))
-        self.assertEqual(u'%2520%C3%9C+%2520',
-                         unicode_quote_plus(u'%20Ü %20'))
+        self.assertEqual('the+%C3%9C+thing',
+                         unicode_quote_plus('the Ü thing'))
+        self.assertEqual('%2520%C3%9C+%2520',
+                         unicode_quote_plus('%20Ü %20'))
 
     def test_unicode_unquote(self):
-        u = u'the Ü thing'
-        up = u'%20Ü %20'
+        u = 'the Ü thing'
+        up = '%20Ü %20'
         self.assertEqual(u, unicode_unquote(unicode_quote(u)))
         self.assertEqual(up, unicode_unquote(unicode_quote(up)))
 
     def test_unicode_urlencode(self):
         self.assertEqual('thing=%C3%9C&%C3%9C=thing&%C3%9Cthing',
-                         unicode_urlencode({u'Ü': 'thing',
-                                            'thing': u'Ü',
-                                            u'Üthing': empty}))
+                         unicode_urlencode({'Ü': 'thing',
+                                            'thing': 'Ü',
+                                            'Üthing': empty}))
 
 
 class QuoteQueryStringTestCase(unittest.TestCase):
     def test_quote(self):
-        text = u'type=the Ü thing&component=comp\x7fonent'
+        text = 'type=the Ü thing&component=comp\x7fonent'
         self.assertEqual('type=the+%C3%9C+thing&component=comp%7Fonent',
                          quote_query_string(text))
 
@@ -180,8 +180,8 @@ class ToUtf8TestCase(unittest.TestCase):
         self.assertEqual(b'1', to_utf8(1))
 
     def test_utf8(self):
-        self.assertEqual('à'.encode('utf-8'), to_utf8(u'à'))
-        self.assertEqual('ç'.encode('utf-8'), to_utf8(u'ç'))
+        self.assertEqual('à'.encode('utf-8'), to_utf8('à'))
+        self.assertEqual('ç'.encode('utf-8'), to_utf8('ç'))
 
     def test_exception_with_utf8_message(self):
         self.assertEqual('thė mèssägē'.encode('utf-8'),
@@ -189,15 +189,15 @@ class ToUtf8TestCase(unittest.TestCase):
 
     def test_exception_with_unicode_message(self):
         self.assertEqual('thė mèssägē'.encode('utf-8'),
-                         to_utf8(Exception(u'thė mèssägē')))
+                         to_utf8(Exception('thė mèssägē')))
 
 
 class WhitespaceTestCase(unittest.TestCase):
     def test_default(self):
-        self.assertEqual(u'This is text ',
-            normalize_whitespace(u'Th\u200bis\u00a0is te\u200bxt\u00a0'))
-        self.assertEqual(u'Some other text',
-            normalize_whitespace(u'Some\tother\ntext\r', to_space='\t\n',
+        self.assertEqual('This is text ',
+            normalize_whitespace('Th\u200bis\u00a0is te\u200bxt\u00a0'))
+        self.assertEqual('Some other text',
+            normalize_whitespace('Some\tother\ntext\r', to_space='\t\n',
                                  remove='\r'))
 
 
@@ -205,18 +205,18 @@ class TextWidthTestCase(unittest.TestCase):
     def test_single(self):
         def tw1(text):
             return text_width(text, ambiwidth=1)
-        self.assertEqual(8, tw1(u'Alphabet'))
+        self.assertEqual(8, tw1('Alphabet'))
         self.assertEqual(16, tw1('east asian width'))
-        self.assertEqual(16, tw1(u'ひらがなカタカナ'))
-        self.assertEqual(21, tw1(u'色は匂えど…酔ひもせず'))
+        self.assertEqual(16, tw1('ひらがなカタカナ'))
+        self.assertEqual(21, tw1('色は匂えど…酔ひもせず'))
 
     def test_double(self):
         def tw2(text):
             return text_width(text, ambiwidth=2)
-        self.assertEqual(8, tw2(u'Alphabet'))
+        self.assertEqual(8, tw2('Alphabet'))
         self.assertEqual(16, tw2('east asian width'))
-        self.assertEqual(16, tw2(u'ひらがなカタカナ'))
-        self.assertEqual(22, tw2(u'色は匂えど…酔ひもせず'))
+        self.assertEqual(16, tw2('ひらがなカタカナ'))
+        self.assertEqual(22, tw2('色は匂えど…酔ひもせず'))
 
 
 class PrintTableTestCase(unittest.TestCase):
@@ -257,7 +257,7 @@ class PrintTableTestCase(unittest.TestCase):
             ('int',      '0',     0),
             ('float',    '0.0',   0.0),
         )
-        expected = textwrap.dedent(u"""\
+        expected = textwrap.dedent("""\
 
             NoneType | None  |
             bool     | True  | True
@@ -271,10 +271,10 @@ class PrintTableTestCase(unittest.TestCase):
     def test_ambiwidth_1(self):
         data = (
             ('foo@localhost', 'foo@localhost'),
-            (u'bar@….com', 'bar@example.com'),
+            ('bar@….com', 'bar@example.com'),
         )
         headers = ('Obfuscated', 'Email')
-        expected = textwrap.dedent(u"""\
+        expected = textwrap.dedent("""\
 
             Obfuscated      Email
             -------------------------------
@@ -288,10 +288,10 @@ class PrintTableTestCase(unittest.TestCase):
     def test_ambiwidth_2(self):
         data = (
             ('foo@localhost', 'foo@localhost'),
-            (u'bar@….com', 'bar@example.com'),
+            ('bar@….com', 'bar@example.com'),
         )
         headers = ('Obfuscated', 'Email')
-        expected = textwrap.dedent(u"""\
+        expected = textwrap.dedent("""\
 
             Obfuscated      Email
             -------------------------------
@@ -309,7 +309,7 @@ class PrintTableTestCase(unittest.TestCase):
             (43, 'alfa\r\nbravo\r\n', 'zero\r\none\r\ntwo'),
         )
         headers = ('Id', 'Column 1', 'Column 2')
-        expected = textwrap.dedent(u"""\
+        expected = textwrap.dedent("""\
 
             Id   Column 1   Column 2
             --------------------------
@@ -333,16 +333,16 @@ class PrintTableTestCase(unittest.TestCase):
 
 class WrapTestCase(unittest.TestCase):
     def test_wrap_ambiwidth_single(self):
-        text = u'Lorem ipsum dolor sit amet, consectetur adipisicing ' + \
-               u'elit, sed do eiusmod tempor incididunt ut labore et ' + \
-               u'dolore magna aliqua. Ut enim ad minim veniam, quis ' + \
-               u'nostrud exercitation ullamco laboris nisi ut aliquip ex ' + \
-               u'ea commodo consequat. Duis aute irure dolor in ' + \
-               u'reprehenderit in voluptate velit esse cillum dolore eu ' + \
-               u'fugiat nulla pariatur. Excepteur sint occaecat ' + \
-               u'cupidatat non proident, sunt in culpa qui officia ' + \
-               u'deserunt mollit anim id est laborum.'
-        wrapped = textwrap.dedent(u"""\
+        text = 'Lorem ipsum dolor sit amet, consectetur adipisicing ' + \
+               'elit, sed do eiusmod tempor incididunt ut labore et ' + \
+               'dolore magna aliqua. Ut enim ad minim veniam, quis ' + \
+               'nostrud exercitation ullamco laboris nisi ut aliquip ex ' + \
+               'ea commodo consequat. Duis aute irure dolor in ' + \
+               'reprehenderit in voluptate velit esse cillum dolore eu ' + \
+               'fugiat nulla pariatur. Excepteur sint occaecat ' + \
+               'cupidatat non proident, sunt in culpa qui officia ' + \
+               'deserunt mollit anim id est laborum.'
+        wrapped = textwrap.dedent("""\
             > Lorem ipsum dolor sit amet, consectetur adipisicing elit,
             | sed do eiusmod tempor incididunt ut labore et dolore
             | magna aliqua. Ut enim ad minim veniam, quis nostrud
@@ -355,12 +355,12 @@ class WrapTestCase(unittest.TestCase):
         self.assertEqual(wrapped, wrap(text, 59, '> ', '| ', '\n'))
 
     def test_wrap_ambiwidth_double(self):
-        text = u'Trac は BSD ライセンスのもとで配布されて' + \
-               u'います。[1:]このライセンスの全文は、𠀋' + \
-               u'配布ファイルに含まれている[3:CОPYING]ファ' + \
-               u'イルと同じものが[2:オンライン]で参照でき' \
-               u'ます。'
-        wrapped = textwrap.dedent(u"""\
+        text = 'Trac は BSD ライセンスのもとで配布されて' + \
+               'います。[1:]このライセンスの全文は、𠀋' + \
+               '配布ファイルに含まれている[3:CОPYING]ファ' + \
+               'イルと同じものが[2:オンライン]で参照でき' \
+               'ます。'
+        wrapped = textwrap.dedent("""\
             > Trac は BSD ライセンスのもとで配布されています。[1:]この
             | ライセンスの全文は、𠀋配布ファイルに含まれている
             | [3:CОPYING]ファイルと同じものが[2:オンライン]で参照でき
@@ -371,18 +371,18 @@ class WrapTestCase(unittest.TestCase):
 
 class FixEolTestCase(unittest.TestCase):
     def test_mixed_eol(self):
-        text = u'\nLine 2\rLine 3\r\nLine 4\n\r'
-        self.assertEqual(u'\nLine 2\nLine 3\nLine 4\n\n',
+        text = '\nLine 2\rLine 3\r\nLine 4\n\r'
+        self.assertEqual('\nLine 2\nLine 3\nLine 4\n\n',
                          fix_eol(text, '\n'))
-        self.assertEqual(u'\rLine 2\rLine 3\rLine 4\r\r',
+        self.assertEqual('\rLine 2\rLine 3\rLine 4\r\r',
                          fix_eol(text, '\r'))
-        self.assertEqual(u'\r\nLine 2\r\nLine 3\r\nLine 4\r\n\r\n',
+        self.assertEqual('\r\nLine 2\r\nLine 3\r\nLine 4\r\n\r\n',
                          fix_eol(text, '\r\n'))
 
 
 class UnicodeBase64TestCase(unittest.TestCase):
     def test_to_and_from_base64_unicode(self):
-        text = u'Trac は ØÆÅ'
+        text = 'Trac は ØÆÅ'
         text_base64 = unicode_to_base64(text)
         self.assertEqual('VHJhYyDjga8gw5jDhsOF', text_base64)
         self.assertEqual(text, unicode_from_base64(text_base64))
@@ -407,16 +407,16 @@ class UnicodeBase64TestCase(unittest.TestCase):
 
 class StripwsTestCase(unittest.TestCase):
     def test_stripws(self):
-        self.assertEqual(u'stripws',
-                         stripws(u' \u200b\t\u3000stripws \u200b\t\u2008'))
-        self.assertEqual(u'stripws \u3000\t',
-                         stripws(u'\u200b\t\u2008 stripws \u3000\t',
+        self.assertEqual('stripws',
+                         stripws(' \u200b\t\u3000stripws \u200b\t\u2008'))
+        self.assertEqual('stripws \u3000\t',
+                         stripws('\u200b\t\u2008 stripws \u3000\t',
                                  trailing=False))
-        self.assertEqual(u' \t\u3000stripws',
-                         stripws(u' \t\u3000stripws \u200b\t\u2008',
+        self.assertEqual(' \t\u3000stripws',
+                         stripws(' \t\u3000stripws \u200b\t\u2008',
                                  leading=False))
-        self.assertEqual(u' \t\u3000stripws \u200b\t\u2008',
-                         stripws(u' \t\u3000stripws \u200b\t\u2008',
+        self.assertEqual(' \t\u3000stripws \u200b\t\u2008',
+                         stripws(' \t\u3000stripws \u200b\t\u2008',
                                  leading=False, trailing=False))
 
 

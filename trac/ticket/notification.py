@@ -422,7 +422,7 @@ class TicketFormatter(Component):
             else:
                 # Note: f['label'] is a Babel's LazyObject, make sure its
                 # __str__ method won't be called.
-                str_tmp = u'%s:  %s' % (f['label'], str(fval))
+                str_tmp = '%s:  %s' % (f['label'], str(fval))
                 idx = i % 2
                 initial_indent = ' ' * (width[2 * idx] -
                                         self._get_text_width(f['label']) +
@@ -461,7 +461,7 @@ class TicketFormatter(Component):
                 cell_r.append('')
             fmt_width = width_l - self._get_text_width(cell_l[i]) \
                         + len(cell_l[i])
-            txt += u'%-*s|%s%s' % (fmt_width, cell_l[i], cell_r[i], '\n')
+            txt += '%-*s|%s%s' % (fmt_width, cell_l[i], cell_r[i], '\n')
         if big:
             txt += sep
             for name, value in big:

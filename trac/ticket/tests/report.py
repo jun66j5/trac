@@ -228,21 +228,21 @@ class ReportModuleTestCase(unittest.TestCase):
 
     def test_sub_var_no_quotes(self):
         sql, values, missing_args = self.report_module.sql_sub_vars(
-            u"$VAR", {'VAR': 'value'})
+            "$VAR", {'VAR': 'value'})
         self.assertEqual("%s", sql)
         self.assertEqual(['value'], values)
         self.assertEqual([], missing_args)
 
     def test_sub_var_digits_underscore(self):
         sql, values, missing_args = self.report_module.sql_sub_vars(
-            u"$_VAR, $VAR2, $2VAR", {'_VAR': 'value1', 'VAR2': 'value2'})
+            "$_VAR, $VAR2, $2VAR", {'_VAR': 'value1', 'VAR2': 'value2'})
         self.assertEqual("%s, %s, $2VAR", sql)
         self.assertEqual(['value1', 'value2'], values)
         self.assertEqual([], missing_args)
 
     def test_sub_var_quotes(self):
         sql, values, missing_args = self.report_module.sql_sub_vars(
-            u"'$VAR'", {'VAR': 'value'})
+            "'$VAR'", {'VAR': 'value'})
         with self.env.db_query as db:
             concatenated = db.concat("''", '%s', "''")
         self.assertEqual(concatenated, sql)
@@ -251,7 +251,7 @@ class ReportModuleTestCase(unittest.TestCase):
 
     def test_sub_var_missing_args(self):
         sql, values, missing_args = self.report_module.sql_sub_vars(
-            u"$VAR, $PARAM, $MISSING", {'VAR': 'value'})
+            "$VAR, $PARAM, $MISSING", {'VAR': 'value'})
         self.assertEqual("%s, %s, %s", sql)
         self.assertEqual(['value', '', ''], values)
         self.assertEqual(['PARAM', 'MISSING'], missing_args)
@@ -268,7 +268,7 @@ class ReportModuleTestCase(unittest.TestCase):
                          req.response_sent.getvalue())
 
     def test_saved_custom_query_redirect(self):
-        query = u'query:?type=résumé'
+        query = 'query:?type=résumé'
         rid = self._insert_report('redirect', query, '')
         req = MockRequest(self.env)
 
@@ -285,7 +285,7 @@ class ReportModuleTestCase(unittest.TestCase):
         req = MockRequest(self.env)
         name = """%s"`'%%%?"""
         with self.env.db_query as db:
-            sql = u'SELECT 1 AS %s, $USER AS user' % db.quote(name)
+            sql = 'SELECT 1 AS %s, $USER AS user' % db.quote(name)
             rv = self.report_module.execute_paginated_report(req, 1, sql,
                                                              {'USER': 'joe'})
         self.assertEqual(5, len(rv), repr(rv))

@@ -301,7 +301,7 @@ def get_diff_options(req):
         the style and options information represented as
         key/value pairs in dictionaries, for example::
 
-          {'style': u'sidebyside',
+          {'style': 'sidebyside',
            'options': {'contextall': 1, 'contextlines': 2,
                        'ignorecase': 0,  'ignoreblanklines': 0,
                        'ignorewhitespace': 1}}
