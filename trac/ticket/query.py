@@ -15,7 +15,6 @@
 #
 # Author: Christopher Lenz <cmlenz@gmx.de>
 
-from collections import OrderedDict
 from datetime import datetime, timedelta
 from itertools import groupby
 import operator
@@ -136,11 +135,11 @@ class Query(object):
 
         constraint_cols = {}
         for clause in self.constraints:
-            for k, v in clause.items():
-                if k == 'id' or k in field_names:
-                    constraint_cols.setdefault(k, []).append(v)
+            for col in sorted(clause):
+                if col == 'id' or col in field_names:
+                    constraint_cols.setdefault(col, []).append(clause[col])
                 else:
-                    clause.pop(k)
+                    clause.pop(col)
         self.constraint_cols = constraint_cols
 
     _clause_splitter = re.compile(r'(?<!\\)&')
@@ -154,12 +153,12 @@ class Query(object):
         kw_synonyms = {'row': 'rows'}
         # i18n TODO - keys will be unicode
         synonyms = TicketSystem(env).get_field_synonyms()
-        constraints = [OrderedDict()]
+        constraints = [{}]
         cols = []
         report = None
         for filter_ in cls._clause_splitter.split(string):
             if filter_ == 'or':
-                constraints.append(OrderedDict())
+                constraints.append({})
                 continue
             filter_ = filter_.replace(r'\&', '&').split('=', 1)
             if len(filter_) != 2:
@@ -370,14 +369,11 @@ class Query(object):
         if max == self.items_per_page:
             max = None
 
-        constraints = []
-        for clause in self.constraints:
-            constraints.extend(clause.items())
-            constraints.append(("or", empty))
-        del constraints[-1:]
-
         args = []
-        args.extend(constraints)
+        for idx, clause in enumerate(self.constraints):
+            if idx > 0:
+                args.append(('or', empty))
+            args.extend((col, clause[col]) for col in sorted(clause))
         args.extend([
             ('report', id),
             ('group', self.group or None),
@@ -572,7 +568,8 @@ class Query(object):
 
             def get_clause_sql(constraints):
                 clauses = []
-                for k, v in constraints.items():
+                for k in sorted(constraints):
+                    v = constraints[k]
                     if authname is not None:
                         v = [val.replace('$USER', authname) for val in v]
                     # Determine the match mode of the constraint (contains,
@@ -956,7 +953,7 @@ class QueryModule(Component):
             # Substitute $USER, or ensure no field constraints that depend
             # on $USER are used if we have no username.
             for clause in constraints:
-                for field, vals in clause.items():
+                for field, vals in list(clause.items()):
                     for (i, val) in enumerate(vals):
                         if user:
                             vals[i] = val.replace('$USER', user)
@@ -1327,9 +1324,9 @@ class TicketQueryMacro(WikiMacroBase):
     @staticmethod
     def parse_args(content):
         """Parse macro arguments and translate them to a query string."""
-        clauses = [OrderedDict()]
+        clauses = [{}]
         argv = []
-        kwargs = OrderedDict()
+        kwargs = {}
         for arg in TicketQueryMacro._comma_splitter.split(content or ''):
             arg = arg.replace(r'\,', ',')
             m = re.match(r'\s*[^=]+=', arg)
@@ -1348,10 +1345,10 @@ class TicketQueryMacro(WikiMacroBase):
 
         if len(argv) > 0 and 'format' not in kwargs:  # 0.10 compatibility hack
             kwargs['format'] = argv[0]
-        if 'max' not in kwargs:
-            kwargs['max'] = '0'  # unlimited by default
         if 'order' not in kwargs:
             kwargs['order'] = 'id'
+        if 'max' not in kwargs:
+            kwargs['max'] = '0'  # unlimited by default
 
         format = kwargs.pop('format', 'list').strip().lower()
         if format in ('list', 'compact'):  # we need 'status' and 'summary'
@@ -1360,8 +1357,8 @@ class TicketQueryMacro(WikiMacroBase):
             else:
                 kwargs['col'] = 'status|summary'
 
-        query_string = '&or&'.join('&'.join('%s=%s' % item
-                                            for item in clause.items())
+        query_string = '&or&'.join('&'.join('%s=%s' % (key, clause[key])
+                                            for key in sorted(clause))
                                    for clause in clauses)
         return query_string, kwargs, format
 
@@ -1371,7 +1368,8 @@ class TicketQueryMacro(WikiMacroBase):
         if query_string:
             query_string += '&'
 
-        query_string += '&'.join('%s=%s' % item for item in kwargs.items())
+        query_string += '&'.join('%s=%s' % (key, kwargs[key])
+                                 for key in sorted(kwargs))
         try:
             query = Query.from_string(self.env, query_string)
         except QuerySyntaxError as e:
