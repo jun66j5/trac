@@ -270,6 +270,8 @@ def classes(*args, **kwargs):
     'foo bar'
     >>> classes('foo', bar=False)
     'foo'
+    >>> classes(foo=True, bar=True)
+    'bar foo'
 
     If none of the arguments are added to the list, this function
     returns `''`:
@@ -278,7 +280,8 @@ def classes(*args, **kwargs):
     ''
 
     """
-    classes = list(filter(None, args)) + [k for k, v in kwargs.items() if v]
+    classes = list(filter(None, args))
+    classes.extend(k for k in sorted(kwargs) if kwargs[k])
     return ' '.join(classes)
 
 def styles(*args, **kwargs):
@@ -294,9 +297,9 @@ def styles(*args, **kwargs):
     In addition, the names of any supplied keyword arguments are added
     if they have a string value:
 
-    >>> styles(foo='bar', fu='baz')
+    >>> styles('foo: bar', fu='baz')
     'foo: bar; fu: baz'
-    >>> styles(foo='bar', bar=False)
+    >>> styles('foo: bar', bar=False)
     'foo: bar'
 
     If none of the arguments are added to the list, this function
@@ -306,16 +309,17 @@ def styles(*args, **kwargs):
     ''
 
     """
-    args = list(filter(None, args))
     d = {}
     styles = []
-    for arg in args:
+    for arg in filter(None, args):
         if isinstance(arg, dict):
             d.update(arg)
         else:
             styles.append(arg)
     d.update(kwargs)
-    styles.extend('%s: %s' % (k, v) for k, v in d.items() if v)
+    styles.extend('%s: %s' % (k, v)
+                  for k, v in sorted(d.items(), key=lambda i: i[0])
+                  if v)
     return '; '.join(styles)
 
 
@@ -902,8 +906,8 @@ class HTMLSanitization(HTMLTransform):
             return
 
         new_attrs = self.sanitizer.sanitize_attrs(tag, dict(attrs))
-        html_attrs = ''.join(' %s="%s"' % (name, escape(value))
-                             for name, value in new_attrs.items())
+        html_attrs = ''.join(' %s="%s"' % (name, escape(new_attrs[name]))
+                             for name in sorted(new_attrs))
         self._write('<%s%s%s>' % (tag, html_attrs, startend))
 
     def handle_starttag(self, tag, attrs):

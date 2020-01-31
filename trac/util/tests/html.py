@@ -265,15 +265,15 @@ class TracHTMLSanitizerTestCaseBase(unittest.TestCase):
 
         test('<img src="data:image/png,...."/>',
              '<img src="data:image/png,...."/>')
-        test('<img src="http://example.org/login" crossorigin="anonymous"/>',
+        test('<img crossorigin="anonymous" src="http://example.org/login"/>',
              '<img src="http://example.org/login"/>')
-        test('<img src="http://example.org/login" crossorigin="anonymous"/>',
-             '<img src="http://example.org/login"'
-             ' crossorigin="use-credentials"/>')
+        test('<img crossorigin="anonymous" src="http://example.org/login"/>',
+             '<img crossorigin="use-credentials"'
+             ' src="http://example.org/login"/>')
         test('<img src="http://example.net/bar.png"/>',
              '<img src="http://example.net/bar.png"/>')
-        test('<img src="http://example.net:443/qux.png"'
-             ' crossorigin="anonymous"/>',
+        test('<img crossorigin="anonymous"'
+             ' src="http://example.net:443/qux.png"/>',
              '<img src="http://example.net:443/qux.png"/>')
         test('<img src="/path/foo.png"/>', '<img src="/path/foo.png"/>')
         test('<img src="../../bar.png"/>', '<img src="../../bar.png"/>')

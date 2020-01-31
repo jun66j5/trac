@@ -125,7 +125,7 @@ def htmlattr_filter(_eval_ctx, d, autospace=True):
     for key in sorted(d):
         val = d[key]
         val = html_attribute(key, None if isinstance(val, Undefined) else val)
-        if val is not None :
+        if val is not None:
             attrs.append('%s="%s"' % (key, val))
     rv = ' '.join(attrs)
     if autospace and rv:
