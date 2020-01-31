@@ -236,8 +236,9 @@ class Query(object):
 
         # Semi-intelligently remove columns that are restricted to a single
         # value by a query constraint.
-        for col in [k for k in self.constraint_cols
-                      if k != 'id' and k in cols]:
+        for col in sorted(self.constraint_cols):
+            if col == 'id' or col not in cols:
+                continue
             constraints = self.constraint_cols[col]
             for constraint in constraints:
                 if not (len(constraint) == 1 and constraint[0]
@@ -420,7 +421,7 @@ class Query(object):
         if self.rows:
             add_cols('reporter', *self.rows)
         add_cols('status', 'priority', 'time', 'changetime', self.order)
-        add_cols(*list(self.constraint_cols))
+        add_cols(*sorted(self.constraint_cols))
 
         custom_fields = {f['name'] for f in self.fields if f.get('custom')}
         list_fields = {f['name'] for f in self.fields
