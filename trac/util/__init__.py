@@ -1343,8 +1343,9 @@ def embedded_numbers(s):
 
 def partition(iterable, order=None):
     """
-    >>> partition([(1, "a"), (2, "b"), (3, "a")])
-    {'a': [1, 3], 'b': [2]}
+    >>> rv = partition([(1, "a"), (2, "b"), (3, "a")])
+    >>> rv == {'a': [1, 3], 'b': [2]}
+    True
     >>> partition([(1, "a"), (2, "b"), (3, "a")], "ab")
     [[1, 3], [2]]
     """
