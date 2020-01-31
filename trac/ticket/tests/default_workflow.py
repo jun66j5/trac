@@ -305,7 +305,8 @@ class ConfigurableTicketWorkflowTestCase(unittest.TestCase):
         actions = self.ctlr.get_ticket_actions(req, ticket)
 
         # create_and_triage not in actions
-        self.assertEqual([(1, 'create'), (0, 'create_and_assign')], actions)
+        self.assertEqual({(1, 'create'), (0, 'create_and_assign')},
+                         set(actions))
 
     def test_transition_to_star_with_leave_operation(self):
         """Action is rendered by CTW for transition to * with leave_status
