@@ -915,9 +915,9 @@ t.type AS type,t.milestone AS milestone,t.time AS time,\
 t.changetime AS changetime,%(priority)s.value AS %(priority)s
 FROM ticket AS t
   LEFT OUTER JOIN ticket_custom AS %(priority)s ON (%(priority)s.ticket=t.id AND %(priority)s.name='priority')
-WHERE ((COALESCE(t.status,'')!=%%s) AND COALESCE(%(priority)s.value,'') IN (%%s,%%s))
+WHERE (COALESCE(%(priority)s.value,'') IN (%%s,%%s) AND (COALESCE(t.status,'')!=%%s))
 ORDER BY COALESCE(%(priority)s.value,'')='',%(priority)s.value,t.id""" % quoted)
-        self.assertEqual(['closed', 'foo', 'blah'], args)
+        self.assertEqual(['foo', 'blah', 'closed'], args)
 
     def test_without_resolution_enum(self):
         quoted = self._setup_no_defined_values_and_custom_field('resolution')
@@ -935,9 +935,9 @@ t.changetime AS changetime,priority.value AS _priority_value,\
 FROM ticket AS t
   LEFT OUTER JOIN ticket_custom AS %(resolution)s ON (%(resolution)s.ticket=t.id AND %(resolution)s.name='resolution')
   LEFT OUTER JOIN enum AS priority ON (priority.type='priority' AND priority.name=t.priority)
-WHERE ((COALESCE(t.status,'')!=%%s) AND COALESCE(%(resolution)s.value,'') IN (%%s,%%s))
+WHERE (COALESCE(%(resolution)s.value,'') IN (%%s,%%s) AND (COALESCE(t.status,'')!=%%s))
 ORDER BY COALESCE(%(resolution)s.value,'')='',%(resolution)s.value,t.id""" % quoted)
-        self.assertEqual(['closed', 'foo', 'blah'], args)
+        self.assertEqual(['foo', 'blah', 'closed'], args)
 
     def test_without_type_enum(self):
         quoted = self._setup_no_defined_values_and_custom_field('type')
@@ -975,9 +975,9 @@ priority.value AS _priority_value,%(milestone)s.value AS %(milestone)s
 FROM ticket AS t
   LEFT OUTER JOIN ticket_custom AS %(milestone)s ON (%(milestone)s.ticket=t.id AND %(milestone)s.name='milestone')
   LEFT OUTER JOIN enum AS priority ON (priority.type='priority' AND priority.name=t.priority)
-WHERE ((COALESCE(t.status,'')!=%%s) AND COALESCE(%(milestone)s.value,'') IN (%%s,%%s))
+WHERE (COALESCE(%(milestone)s.value,'') IN (%%s,%%s) AND (COALESCE(t.status,'')!=%%s))
 ORDER BY COALESCE(%(milestone)s.value,'')='',%(milestone)s.value,t.id""" % quoted)
-        self.assertEqual(['closed', 'foo', 'blah'], args)
+        self.assertEqual(['foo', 'blah', 'closed'], args)
 
     def test_without_versions(self):
         quoted = self._setup_no_defined_values_and_custom_field('version')
@@ -1311,9 +1311,9 @@ t.changetime AS changetime,priority.value AS _priority_value,\
 FROM ticket AS t
   LEFT OUTER JOIN ticket_custom AS {due} ON ({due}.ticket=t.id AND {due}.name='due')
   LEFT OUTER JOIN enum AS priority ON (priority.type='priority' AND priority.name=t.priority)
-WHERE ((t.id BETWEEN %s AND %s) AND (COALESCE({due}.value,'')=%s))
+WHERE ((COALESCE({due}.value,'')=%s) AND (t.id BETWEEN %s AND %s))
 ORDER BY COALESCE(t.id,0)=0,t.id""".format(**quoted))
-        self.assertEqual([1, 6, ''], args)
+        self.assertEqual(['', 1, 6], args)
 
         req = MockRequest(self.env, path_info='/query',
                           args={'id': '1-6', 'due': '', 'order': 'id',
@@ -1498,7 +1498,7 @@ class TicketQueryMacroTestCase(unittest.TestCase):
 
     def test_owner_and_milestone(self):
         self.assertQueryIs('owner=joe, milestone=milestone1',
-                           'owner=joe&milestone=milestone1',
+                           'milestone=milestone1&owner=joe',
                            dict(col='status|summary', max='0', order='id'),
                            'list')
 
@@ -1510,17 +1510,17 @@ class TicketQueryMacroTestCase(unittest.TestCase):
 
     def test_format_arguments(self):
         self.assertQueryIs('owner=joe, milestone=milestone1, col=component|severity, max=15, order=component, format=compact',
-                           'owner=joe&milestone=milestone1',
+                           'milestone=milestone1&owner=joe',
                            dict(col='status|summary|component|severity', max='15', order='component'),
                            'compact')
         self.assertQueryIs('owner=joe, milestone=milestone1, col=id|summary|component, max=30, order=component, format=table',
-                           'owner=joe&milestone=milestone1',
+                           'milestone=milestone1&owner=joe',
                            dict(col='id|summary|component', max='30', order='component'),
                            'table')
 
     def test_special_char_escaping(self):
         self.assertQueryIs(r'owner=joe|jack, milestone=this\&that\|here\,now',
-                           r'owner=joe|jack&milestone=this\&that\|here,now',
+                           r'milestone=this\&that\|here,now&owner=joe|jack',
                            dict(col='status|summary', max='0', order='id'),
                            'list')
 
@@ -1777,17 +1777,17 @@ QUERY_TEST_CASES = """
   <table>
     <tr>
       <th scope="row">
-        <a href="/query?reporter=santa&amp;project=xmas&amp;max=0&amp;order=id">xmas</a>
+        <a href="/query?project=xmas&amp;reporter=santa&amp;max=0&amp;order=id">xmas</a>
       </th>
       <td>
 
   <table class="progress" style="width: 80%">
     <tr>
       <td class="closed" style="display: none">
-        <a href="/query?reporter=santa&amp;project=xmas&amp;status=closed&amp;group=resolution&amp;max=0&amp;order=time" title="0/1 closed"></a>
+        <a href="/query?project=xmas&amp;reporter=santa&amp;status=closed&amp;group=resolution&amp;max=0&amp;order=time" title="0/1 closed"></a>
       </td>
       <td class="open" style="width: 100%">
-        <a href="/query?reporter=santa&amp;project=xmas&amp;status=accepted&amp;status=assigned&amp;status=new&amp;status=reopened&amp;max=0&amp;order=id" title="1/1 active"></a>
+        <a href="/query?project=xmas&amp;reporter=santa&amp;status=accepted&amp;status=assigned&amp;status=new&amp;status=reopened&amp;max=0&amp;order=id" title="1/1 active"></a>
       </td>
     </tr>
   </table>
@@ -1807,17 +1807,17 @@ QUERY_TEST_CASES = """
   <table>
     <tr>
       <th scope="row">
-        <a href="/query?reporter=santa&amp;project=xmas&amp;or&amp;owner=santa&amp;project=xmas&amp;max=0&amp;order=id">xmas</a>
+        <a href="/query?project=xmas&amp;reporter=santa&amp;or&amp;owner=santa&amp;project=xmas&amp;max=0&amp;order=id">xmas</a>
       </th>
       <td>
 
   <table class="progress" style="width: 80%">
     <tr>
       <td class="closed" style="width: 50%">
-        <a href="/query?reporter=santa&amp;project=xmas&amp;status=closed&amp;or&amp;owner=santa&amp;project=xmas&amp;status=closed&amp;group=resolution&amp;max=0&amp;order=time" title="1/2 closed"></a>
+        <a href="/query?project=xmas&amp;reporter=santa&amp;status=closed&amp;or&amp;owner=santa&amp;project=xmas&amp;status=closed&amp;group=resolution&amp;max=0&amp;order=time" title="1/2 closed"></a>
       </td>
       <td class="open" style="width: 50%">
-        <a href="/query?reporter=santa&amp;project=xmas&amp;status=accepted&amp;status=assigned&amp;status=new&amp;status=reopened&amp;or&amp;owner=santa&amp;project=xmas&amp;status=accepted&amp;status=assigned&amp;status=new&amp;status=reopened&amp;max=0&amp;order=id" title="1/2 active"></a>
+        <a href="/query?project=xmas&amp;reporter=santa&amp;status=accepted&amp;status=assigned&amp;status=new&amp;status=reopened&amp;or&amp;owner=santa&amp;project=xmas&amp;status=accepted&amp;status=assigned&amp;status=new&amp;status=reopened&amp;max=0&amp;order=id" title="1/2 active"></a>
       </td>
     </tr>
   </table>
