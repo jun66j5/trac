@@ -24,9 +24,9 @@ from trac.util import datefmt, presentation
 class FiltersTestCase(unittest.TestCase):
     def test_htmlattr(self):
         self.assertEqual(
-            (' autocomplete="on" checked="checked" class="my list"'
+            (' autocomplete="on" checked="checked" class="list my"'
              ' id="list-42"'
-             ' style="border-radius: 3px; background: #f7f7f7"'),
+             ' style="background: #f7f7f7; border-radius: 3px"'),
             presentation.htmlattr_filter(
                 Mock(autoescape=False),
                 {'class': {'my': 1, 'list': True, 'empty': False},

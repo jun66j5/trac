@@ -89,7 +89,7 @@ class TextileRendererTestCase(unittest.TestCase):
             """))
         self.assertNotIn('href="ftp://', result)
         self.assertIn(
-            '<img src="//example.org/foo.png" crossorigin="anonymous"', result)
+            '<img crossorigin="anonymous" src="//example.org/foo.png"', result)
         self.assertNotIn('url(http://example.org/foo.png)', result)
         self.assertIn('<span>unsafe</span>', result)
 
