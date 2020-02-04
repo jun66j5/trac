@@ -1,15 +1,17 @@
 version: ~> 1.0
+dist: bionic
 language: python
-python: 2.7
+python: 3.8
 addons:
   apt:
-    packages:
-    - python-subversion
+    packages: [libapr1-dev, libaprutil1-dev, liblz4-dev, libutf8proc-dev, swig]
+  homebrew:
+    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig]
 cache:
   directories:
   - "$HOME/.cache/pip"
   - "$HOME/.pyenv"
-  - "$HOME/venv-lib"
+  - "$HOME/src"
 before_install:
 - set -e
 - test -n "$pyver" || pyver="$(python -c "$print_version")"
@@ -23,7 +25,6 @@ before_install:
   } >"$HOME/.pip/pip.conf"
 - |
   if [ "$TRAVIS_OS_NAME" = osx ]; then
-    test -d "$HOME/venv-lib" || mkdir "$HOME/venv-lib"
     eval "$(pyenv init -)"
     pyver_latest="$(pyenv install -l | grep -E "^[ ]*${pyver/./\\.}\.[0-9]+$" | tail -1 | tr -d '[:blank:]')"
     venv="$HOME/venv-$pyver_latest"
@@ -32,12 +33,11 @@ before_install:
     pip install --upgrade virtualenv
     python -m virtualenv $venv
     source $venv/bin/activate
+    pyenv --version
+    pyenv versions
   fi
 - pip install --upgrade pip setuptools wheel
-- pyenv --version
-- pyenv versions
 - python --version
-- pip --version
 - pip list
 install:
 - set -e
@@ -48,7 +48,78 @@ install:
   if [ "$tracdb" = mysql ]; then requires="$requires PyMySQL"; fi
   pip install $requires
   python -c 'import sys, pkg_resources as p; p.require(sys.argv[1:])' $requires
-  pip list
+- pip list
+- |
+  if [ "$build" != minimum ]; then
+  (
+    set -ex
+    test -d "$HOME/src" || mkdir "$HOME/src"
+    if svn info "$HOME/src/subversion" >/dev/null 2>&1; then
+      svn update -q "$HOME/src/subversion"
+    else
+      rm -rf "$HOME/src/subversion"
+      svn checkout -q https://svn.apache.org/repos/asf/subversion/trunk "$HOME/src/subversion"
+    fi
+    svn info "$HOME/src/subversion"
+    if git --git-dir "$HOME/src/py3c" count-objects >/dev/null 2>&1; then
+      git --git-dir "$HOME/src/py3c" fetch origin
+    else
+      rm -rf "$HOME/src/py3c"
+      git clone --mirror https://github.com/encukou/py3c "$HOME/src/py3c"
+    fi
+    test -d "$HOME/work" || mkdir "$HOME/work"
+    svn export -q "$HOME/src/subversion" "$HOME/work/subversion"
+    git --git-dir "$HOME/src/py3c" archive --format=tar --prefix=py3c/ v1.1 | tar xf - -C "$HOME/work"
+    set +ex
+    cd "$HOME/work/subversion"
+    set -ex
+    if [ "$TRAVIS_OS_NAME" = osx ]; then
+      apr_config="$(brew --prefix apr)/bin/apr-1-config"
+      apu_config="$(brew --prefix apr-util)/bin/apu-1-config"
+      swig_bin="$(brew --prefix swig)/bin/swig"
+    else
+      apr_config=/usr/bin/apr-1-config
+      apu_config=/usr/bin/apu-1-config
+      swig_bin=/usr/bin/swig
+    fi
+    ./autogen.sh
+    ./configure \
+      --prefix="$(python -c 'import sys; print(sys.prefix)')" \
+      --with-apr="$apr_config" \
+      --with-apr-util="$apu_config" \
+      --with-swig="$swig_bin" \
+      --with-py3c="$HOME/work/py3c" \
+      --without-apxs \
+      --without-doxygen \
+      --without-berkeley-db \
+      --without-gpg-agent \
+      --without-gnome-keyring \
+      --without-kwallet \
+      --without-jdk \
+      --disable-javahl \
+      PYTHON="$(python -c 'import sys; print(sys.executable)')"
+    sitedir="$(python -c '\
+      import os, sys; \
+      print(os.path.join(sys.prefix, "lib", \
+                         "python{0}.{1}".format(*sys.version_info), \
+                         "site-packages")); \
+      ')"
+    make \
+      swig_pydir="$sitedir/libsvn" \
+      swig_pydir_extra="$sitedir/svn" \
+      all swig-py install install-swig-py
+    python -c 'from svn import core; print(str(core.SVN_VERSION, "ascii"))'
+  )
+  fi
+- |
+  case "$tracdb" in
+    sqlite)   tracdb_uri='sqlite:test.db' ;;
+    postgresql) tracdb_uri='postgres://tracuser:password@localhost/trac?schema=tractest' ;;
+    mysql)    tracdb_uri='mysql://tracuser:password@localhost/trac?charset=utf8mb4' ;;
+    *)        tracdb_uri= ;;
+  esac
+  echo ".uri = $tracdb_uri" >Makefile.cfg
+- echo "$tracdb_version"
 before_script:
 - |  # Link Subversion bindings to the virtualenv.
   if [ "$TRAVIS_OS_NAME" = linux -a "$build" != minimum -a \
