@@ -18,7 +18,7 @@ def _svn_version():
     from svn import core
     version = (core.SVN_VER_MAJOR, core.SVN_VER_MINOR,
                core.SVN_VER_MICRO)
-    return '%d.%d.%d' % version + core.SVN_VER_TAG
+    return '%d.%d.%d' % version + str(core.SVN_VER_TAG, 'utf-8')
 
 PACKAGES = [
     ("Python",            'sys.version'),
