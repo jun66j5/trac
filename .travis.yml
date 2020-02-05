@@ -42,15 +42,19 @@ before_install:
 install:
 - set -e
 - |
-  requires='Jinja2 lxml'
-  if [ "$build" != minimum ]; then requires="$requires Babel Pygments docutils textile pytz"; fi
-  if [ "$tracdb" = postgresql ]; then requires="$requires psycopg2"; fi
-  if [ "$tracdb" = mysql ]; then requires="$requires PyMySQL"; fi
+  if [ "$TRAVIS_BUILD_STAGE_NAME" = test ]; then
+    requires='Jinja2 lxml'
+    if [ "$build" != minimum ]; then requires="$requires Babel Pygments docutils textile pytz"; fi
+    if [ "$tracdb" = postgresql ]; then requires="$requires psycopg2"; fi
+    if [ "$tracdb" = mysql ]; then requires="$requires PyMySQL"; fi
+  else
+    requires='Jinja2 Babel'
+  fi
   pip install $requires
   python -c 'import sys, pkg_resources as p; p.require(sys.argv[1:])' $requires
 - pip list
 - |
-  if [ "$build" != minimum ]; then
+  if [ "$build" != minimum -a "$TRAVIS_BUILD_STAGE_NAME" = test ]; then
   (
     set -ex
     test -d "$HOME/src" || mkdir "$HOME/src"
