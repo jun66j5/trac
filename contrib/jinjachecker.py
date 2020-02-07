@@ -157,10 +157,11 @@ StatementTuple = namedtuple('StatementTuple',
                             ('linenum', 'indent', 'end', 'kw', 'expr', 'colon'))
 
 class Statement(StatementTuple):
-    def __init__(self, *args):
-        super(StatementTuple, self).__init__(*args)
+    def __new__(cls, *args, **kwargs):
+        self = super(Statement, cls).__new__(cls, *args, **kwargs)
         self.is_block = (self.kw in JINJA2_BLOCK_KEYWORDS or
                          self.kw == 'set' and '=' not in self.expr)
+        return self
 
 LINE_STATEMENT_RE = re.compile(r'^(\s*)%s-?(\s*)(end)?(\w+)(.*?)?(:)?$' %
                                LINE_STATEMENT_PREFIX)
@@ -172,6 +173,7 @@ def scan(lines):
     """Scans template lines and separates Jinja2 structure from HTML structure.
     """
     lines = iter(enumerate(lines, 1))
+    get_line = lambda: next(lines)
     line_statements = []
     html = []
     html_hints = []
@@ -182,7 +184,7 @@ def scan(lines):
     try:
         comment_start = -1 # not in a comment
         html_start = start_idx = end_idx = 0
-        linenum, line = lines.next()
+        linenum, line = get_line()
         html_line = []
         while True:
             # skip empty lines
@@ -228,8 +230,8 @@ def scan(lines):
                                               m.group(5), m.group(6) or ''))
                             else:
                                 html_line = line
-            html.append((linenum, ''.join(html_line).rstrip() + '\n'))
-            linenum, line = lines.next()
+            html.append((linenum, ''.join(html_line).rstrip()))
+            linenum, line = get_line()
             html_line = []
             html_start = start_idx = end_idx = 0
     except StopIteration:
@@ -359,7 +361,7 @@ def check_html(filename, html_lines, html_hints, quiet):
     try:
         # lxml will try to convert the URL to unicode by itself,
         # this won't work for non-ascii URLs, so help him
-        etree.parse(io.BytesIO(page), base_url='.') #  base_url ??
+        etree.parse(io.StringIO(page), base_url='.') #  base_url ??
         if not quiet:
             for lineinfo in html_lines:
                 print('%5d %s' % lineinfo),
@@ -438,7 +440,7 @@ def remove_jinja_exprs(linenum, line, opened_braces):
             normalized += attr
         pos = end + 1
     if pos < len(line):
-        normalized += line[pos:-1]
+        normalized += line[pos:]
     return normalized, opened_braces
 
 if __name__ == '__main__':
