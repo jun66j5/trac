@@ -74,19 +74,20 @@ else:
 
 import trac
 from trac.test import TestSetup, TestCaseSetup
-from trac.tests.functional.better_twill import b, tc, twill
+from trac.tests.functional.better_twill import b, tc, selenium
 
 
 internal_error = 'Trac detected an internal error:'
 
 trac_source_tree = os.path.normpath(os.path.join(trac.__file__, '..', '..'))
 
-if twill:
+if selenium:
     from trac.tests.functional.testenv import FunctionalTestEnvironment
     from trac.tests.functional.svntestenv import SvnFunctionalTestEnvironment
 
     from trac.tests.functional.tester import FunctionalTester
 
+    from selenium.common.exceptions import WebDriverException
 
     class FunctionalTestSuite(TestSetup):
         """TestSuite that provides a test fixture containing a
@@ -101,9 +102,9 @@ if twill:
         tester_class = FunctionalTester
 
         def __init__(self):
-            if parse_version(twill.__version__) != parse_version('0.9'):
-                raise ImportError("Twill 0.9 is required. Found version %s."
-                                  % twill.__version__)
+            if parse_version(selenium.__version__) != parse_version('3.141.0'):
+                raise ImportError("Selenium ?.? is required. Found version %s."
+                                  % selenium.__version__)
             super(FunctionalTestSuite, self).__init__()
 
         def setUp(self, port=None):
@@ -133,8 +134,8 @@ if twill:
             # functional-testing.log gets the twill output
             self.functional_test_log = \
                 os.path.join(env_path, 'functional-testing.log')
-            twill.set_output(open(self.functional_test_log, 'w',
-                                  encoding='utf-8'))
+            #twill.set_output(open(self.functional_test_log, 'w',
+            #                      encoding='utf-8'))
 
             self._testenv.start()
             self._tester = self.tester_class(baseurl)
@@ -153,7 +154,7 @@ if twill:
 
 
     class FunctionalTwillTestCaseSetup(FunctionalTestCaseSetup):
-        failureException = twill.errors.TwillAssertionError
+        failureException = WebDriverException
 
 else:
     # We're going to have to skip the functional tests

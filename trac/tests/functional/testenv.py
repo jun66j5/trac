@@ -225,12 +225,12 @@ class FunctionalTestEnvironment(object):
                      stdin=PIPE, stdout=PIPE, stderr=PIPE,
                      close_fds=close_fds, cwd=self.command_cwd)
         if args:
-            if any('\n' in arg for arg in args):
+            if any(b'\n' in to_utf8(arg) for arg in args):
                 raise Exception(
                     "trac-admin in interactive mode doesn't support "
                     "arguments with newline characters: %r" % (args,))
             # Don't quote first token which is sub-command name
-            input = ' '.join(('"%s"' % to_utf8(arg) if idx else arg)
+            input = b' '.join((b'"%s"' % to_utf8(arg) if idx else to_utf8(arg))
                              for idx, arg in enumerate(args))
         else:
             input = None
@@ -243,7 +243,7 @@ class FunctionalTestEnvironment(object):
         else:
             # trac-admin is started in interactive mode, so we strip away
             # everything up to the to the interactive prompt
-            return re.split(r'\r?\nTrac \[[^]]+\]> ', out, 2)[1]
+            return re.split(rb'\r?\nTrac \[[^]]+\]> ', out, 2)[1]
 
     def start(self):
         """Starts the webserver, and waits for it to come up."""

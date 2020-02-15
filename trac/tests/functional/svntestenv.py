@@ -15,7 +15,7 @@ import os
 import re
 from subprocess import call
 
-from testenv import FunctionalTestEnvironment
+from .testenv import FunctionalTestEnvironment
 from trac.util.compat import close_fds
 
 
