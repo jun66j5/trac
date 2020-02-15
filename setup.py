@@ -70,7 +70,6 @@ setup(
         'Topic :: Software Development :: Version Control',
     ],
 
-    packages = find_packages(exclude=['*.tests', 'tests.*', '*.tests.*']),
     package_data = {
         '': ['templates/*.*'],
         'trac': ['htdocs/*.*', 'htdocs/README', 'htdocs/js/*.*',
