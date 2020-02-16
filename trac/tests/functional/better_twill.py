@@ -17,6 +17,7 @@ It also handles twill's absense.
 """
 
 import io
+import re
 import os
 import sys
 import urllib.parse
@@ -44,10 +45,15 @@ if selenium:
     # setup short names to reduce typing
     # This selenium browser (and the tc commands that use it) are essentially
     # global, and not tied to our test fixture.
-    options = webdriver.FirefoxOptions()
-    options.add_argument('--headless')
-    options.log.level = 'trace'
-    driver = webdriver.Firefox(options=options)
+    def create_webdriver():
+        profile = webdriver.FirefoxProfile()
+        profile.set_preference('network.http.phishy-userpass-length', 255)
+        options = webdriver.FirefoxOptions()
+        options.profile = profile
+        options.add_argument('--headless')
+        options.log.level = 'trace'
+        return webdriver.Firefox(options=options)
+
     class Proxy:
         def go(self, url): return driver.get(url)
         def url(self, url):
@@ -57,18 +63,19 @@ if selenium:
                 raise Exception('Unexpected URL: {!r} instead of {!r}'
                                 .format(url2, url))
         def notfind(self, s):
-            if s in driver.page_source:
-                raise Exception('Unexpected {!r} in page source'.format(s))
+            if re.search(s, driver.page_source):
+                raise AssertionError('Unexpected {!r} in page source'.format(s))
         def find(self, s):
-            if not s in driver.page_source:
-                raise Exception('Unexpected {!r} missing in page source'
-                                .format(s))
+            if not re.search(s, driver.page_source):
+                raise AssertionError('Unexpected {!r} missing in page source'
+                                     .format(s))
         def add_auth(self, x, url, username, pw):
             pass
         def follow(self, s):
             element = driver.find_element_by_partial_link_text(s.replace(r'\b', ''))
             element.click()
 
+    driver = create_webdriver()
     import atexit
     atexit.register(driver.quit)
 

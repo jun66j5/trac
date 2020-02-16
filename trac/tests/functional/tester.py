@@ -46,15 +46,20 @@ class FunctionalTester(object):
 
     def login(self, username):
         """Login as the given user"""
-        username = to_utf8(username)
         #tc.add_auth("", self.url, username, username)
-        #self.go_to_front()
-        protocol, rest_url = self.url.split('//')
-        self.go_to_url('%s//%s:%s@%s' % (protocol, username.decode(),
-                                         username.decode(), rest_url))
-
+        self.go_to_front()
+        try:
+            tc.find("Logout")
+        except:
+            pass
+        else:
+            self.logout()
         tc.find("Login")
-        tc.follow(r"\bLogin\b")
+        url = self.url.replace('://',
+                               '://{0}:{0}@'.format(unicode_quote(username)))
+        url = '%s/login?referer=%s' % (url.rstrip('/'),
+                                       unicode_quote(self.url))
+        self.go_to_url(url, self.url)
         # We've provided authentication info earlier, so this should
         # redirect back to the base url.
         tc.find('logged in as[ \t\n]+<span class="trac-author-user">%s</span>'
@@ -113,9 +118,9 @@ class FunctionalTester(object):
         tc.submit()
         tc.notfind(internal_error)
 
-    def go_to_url(self, url):
+    def go_to_url(self, url, expected=None):
         tc.go(url)
-        tc.url(url)
+        tc.url(expected or url)
         tc.notfind(internal_error)
 
     def go_to_front(self):
