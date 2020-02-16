@@ -53,14 +53,15 @@ if selenium:
             url = urllib.parse.urlparse(url).path.rstrip('/')
             url2 = urllib.parse.urlparse(driver.current_url).path.rstrip('/')
             if url != url2:
-                raise Exception(f"Unexpected URL: {url2} instead of {url}")
+                raise Exception('Unexpected URL: {!r} instead of {!r}'
+                                .format(url2, url))
         def notfind(self, s):
             if s in driver.page_source:
-                raise Exception(f"Unexpected {s} in page source")
-                raise Exception(f"Unexpected URL: {url2} instead of {url}")
+                raise Exception('Unexpected {!r} in page source'.format(s))
         def find(self, s):
             if not s in driver.page_source:
-                raise Exception(f"Unexpected {s} missing in page source")
+                raise Exception('Unexpected {!r} missing in page source'
+                                .format(s))
         def add_auth(self, x, url, username, pw):
             pass
         def follow(self, s):
