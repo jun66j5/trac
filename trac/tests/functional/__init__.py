@@ -102,9 +102,10 @@ if selenium:
         tester_class = FunctionalTester
 
         def __init__(self):
-            if parse_version(selenium.__version__) != parse_version('3.141.0'):
-                raise ImportError("Selenium ?.? is required. Found version %s."
-                                  % selenium.__version__)
+            minimum = '3.0.0'
+            if parse_version(selenium.__version__) < parse_version(minimum):
+                raise ImportError('Selenium %s is required. Found version %s.'
+                                  % (minimum, selenium.__version__))
             super(FunctionalTestSuite, self).__init__()
 
         def setUp(self, port=None):
