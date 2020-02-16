@@ -39,7 +39,7 @@ PACKAGES = [
     ("Textile",           'textile.__version__'),
     ("Pytz",              'pytz.__version__'),
     ("Docutils",          'docutils.__version__'),
-    ("Twill",             'twill.__version__'),
+    ("Selenium",          'selenium.__version__'),
     ("LXML",              'lxml.etree.__version__'),
     ("coverage",          'coverage.__version__'),
 ]
@@ -76,7 +76,6 @@ def shift(prefix, block):
     return '\n'.join(prefix + line for line in block.split('\n') if line)
 
 def print_status():
-    warnings.filterwarnings('ignore', '', DeprecationWarning) # Twill 0.9...
     buf = io.StringIO()
     package_versions(PACKAGES, buf)
     printout(shift('  ', buf.getvalue()))
