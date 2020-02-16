@@ -39,7 +39,7 @@ PACKAGES = [
     ("Textile",           'textile.__version__'),
     ("Pytz",              'pytz.__version__'),
     ("Docutils",          'docutils.__version__'),
-    ("Twill",             'twill.__version__'),
+    ("Selenium",          'selenium.__version__'),
     ("LXML",              'lxml.etree.__version__'),
     ("coverage",          'coverage.__version__'),
     ("figleaf",           'figleaf.__version__'),
