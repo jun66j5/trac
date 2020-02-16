@@ -115,7 +115,7 @@ class FunctionalTester(object):
 
     def go_to_url(self, url):
         tc.go(url)
-        tc.url(re.escape(url))
+        tc.url(url)
         tc.notfind(internal_error)
 
     def go_to_front(self):
