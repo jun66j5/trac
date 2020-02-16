@@ -138,7 +138,11 @@ if selenium:
             #                      encoding='utf-8'))
 
             self._testenv.start()
-            self._tester = self.tester_class(baseurl)
+            try:
+                self._tester = self.tester_class(baseurl)
+            except:
+                self._testenv.stop()
+                raise
             self.fixture = (self._testenv, self._tester)
             self._testenv.set_config('project', 'name', 'Functional Tests')
 
