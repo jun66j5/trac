@@ -44,7 +44,10 @@ if selenium:
     # setup short names to reduce typing
     # This selenium browser (and the tc commands that use it) are essentially
     # global, and not tied to our test fixture.
-    driver = webdriver.Firefox()
+    options = webdriver.FirefoxOptions()
+    options.add_argument('--headless')
+    options.log.level = 'trace'
+    driver = webdriver.Firefox(options=options)
     class Proxy:
         def go(self, url): return driver.get(url)
         def url(self, url):
