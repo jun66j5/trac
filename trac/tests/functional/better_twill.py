@@ -35,14 +35,12 @@ except ImportError:
 
 try:
     import selenium
-    from selenium import webdriver 
 except ImportError:
     selenium = None
 
-from selenium.common.exceptions import WebDriverException as ConnectError
-
-
 if selenium:
+    from selenium import webdriver
+    from selenium.common.exceptions import WebDriverException as ConnectError
     # setup short names to reduce typing
     # This selenium browser (and the tc commands that use it) are essentially
     # global, and not tied to our test fixture.
@@ -74,6 +72,7 @@ if selenium:
     tc = Proxy()
     b = tc
 else:
+    class ConnectError(Exception): pass
     b = tc = None
 
 if b is not None and False: # TODO selenium
