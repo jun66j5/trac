@@ -50,7 +50,8 @@ class FunctionalTester(object):
         #tc.add_auth("", self.url, username, username)
         #self.go_to_front()
         protocol, rest_url = self.url.split('//')
-        self.go_to_url(f"{protocol}//{username.decode()}:{username.decode()}@{rest_url}")
+        self.go_to_url('%s//%s:%s@%s' % (protocol, username.decode(),
+                                         username.decode(), rest_url))
 
         tc.find("Login")
         tc.follow(r"\bLogin\b")
