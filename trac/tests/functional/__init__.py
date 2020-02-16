@@ -188,6 +188,11 @@ def functionalSuite():
 def test_suite():
     try:
         suite = functionalSuite()
+    except ImportError as e:
+        print("SKIP: functional tests (%s)" % e)
+        # No tests to run, provide an empty suite.
+        suite = unittest.TestSuite()
+    else:
         import trac.tests.functional.testcases
         trac.tests.functional.testcases.functionalSuite(suite)
         import trac.versioncontrol.tests
@@ -209,10 +214,6 @@ def test_suite():
         # The db tests should be last since the backup test occurs there.
         import trac.db.tests
         trac.db.tests.functionalSuite(suite)
-    except ImportError as e:
-        print("SKIP: functional tests (%s)" % e)
-        # No tests to run, provide an empty suite.
-        suite = unittest.TestSuite()
     return suite
 
 

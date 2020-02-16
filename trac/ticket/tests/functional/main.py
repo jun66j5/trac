@@ -24,7 +24,7 @@ from trac.test import locale_en
 from trac.tests.contentgen import random_sentence, random_unique_camel, \
                                   random_word
 from trac.tests.functional import FunctionalTwillTestCaseSetup, b, \
-                                  internal_error, regex_owned_by, tc, twill
+                                  internal_error, regex_owned_by, tc, selenium
 from trac.util import create_file
 from trac.util.datefmt import datetime_now, format_datetime, localtz, utc
 from trac.util.text import to_utf8
