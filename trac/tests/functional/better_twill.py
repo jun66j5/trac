@@ -60,15 +60,20 @@ if selenium:
             url = urllib.parse.urlparse(url).path.rstrip('/')
             url2 = urllib.parse.urlparse(driver.current_url).path.rstrip('/')
             if url != url2:
-                raise Exception('Unexpected URL: {!r} instead of {!r}'
+                raise AssertionError('Unexpected URL: {!r} instead of {!r}'
                                 .format(url2, url))
         def notfind(self, s):
-            if re.search(s, driver.page_source):
-                raise AssertionError('Unexpected {!r} in page source'.format(s))
+            source = driver.page_source
+            match = re.search(s, source)
+            if match:
+                raise AssertionError('Regex matched: {!r} matches {!r} in {!r}'
+                                     .format(source[match.start():match.end()],
+                                             s, source))
         def find(self, s):
-            if not re.search(s, driver.page_source):
-                raise AssertionError('Unexpected {!r} missing in page source'
-                                     .format(s))
+            source = driver.page_source
+            if not re.search(s, source):
+                raise AssertionError("Regex didn't match: {!r} not found in "
+                                     "{!r}".format(s, source))
         def add_auth(self, x, url, username, pw):
             pass
         def follow(self, s):
