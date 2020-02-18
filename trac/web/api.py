@@ -25,6 +25,7 @@ import mimetypes
 import os
 import re
 import sys
+import tempfile
 import urllib.parse
 
 from trac.core import Interface, TracBaseError, TracError
@@ -261,6 +262,10 @@ del code, exc_name
 
 class _FieldStorage(cgi.FieldStorage):
     """Our own version of cgi.FieldStorage, with tweaks."""
+
+    def make_file(self):
+        # We always use binary mode even if filename parameter is missing
+        return tempfile.TemporaryFile('wb+')
 
     def read_multi(self, *args, **kwargs):
         try:
