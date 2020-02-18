@@ -41,7 +41,7 @@ class TestAdminInvalidRepository(FunctionalTwillTestCaseSetup):
         tc.formvalue('trac-addrepos', 'dir', '/the/invalid/path')
         tc.submit()
         tc.find(('<span class="missing" title="[^"]*">'
-                 '/the/\u200binvalid/\u200bpath</span>').encode('utf-8'))
+                 '/the/\u200binvalid/\u200bpath</span>'))
 
 
 class TestEmptySvnRepo(FunctionalTwillTestCaseSetup):

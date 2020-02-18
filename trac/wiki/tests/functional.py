@@ -13,6 +13,7 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 import os
+import re
 import unittest
 
 from trac.mimeview.rst import has_docutils
@@ -134,8 +135,7 @@ class TestWikiPageManipulator(FunctionalTwillTestCaseSetup):
         try:
             self._tester.go_to_front()
             tc.follow("Wiki")
-            tc.formvalue('modifypage', 'action', 'edit')
-            tc.submit()
+            tc.submit(formname='modifypage')
             tc.submit('save', 'edit')
             tc.url(self._tester.url + '/wiki/WikiStart$')
             tc.find("Invalid Wiki page: The page contains invalid markup at"
@@ -179,32 +179,34 @@ class TestWikiEditComment(FunctionalTwillTestCaseSetup):
         pagename = self._tester.create_wiki_page(comment=initial_comment)
         url = self._tester.url
         tc.follow(r"\bHistory\b")
-        history_url = url + r'/wiki/%s\?action=history' % pagename
-        tc.url(history_url)
+        history_url = url + r'/wiki/%s?action=history' % pagename
+        tc.url(re.escape(history_url) + '$')
 
         # Comment edit from history page
+        tc.move_to('#fieldhist tbody tr:first-child')
         tc.follow(r"\bEdit\b")
-        tc.url(url + r'/wiki/%s\?action=edit_comment&version=1' % pagename)
+        tc.url(re.escape(url + '/wiki/%s?action=edit_comment&version=1' %
+                         pagename) + '$')
         tc.find("Old comment:[ \t\n]+%s" % initial_comment)
         first_comment_edit = "First comment edit"
         tc.formvalue('edit-comment-form', 'new_comment', first_comment_edit)
         tc.submit()
-        tc.url(history_url)
+        tc.url(re.escape(history_url) + '$')
         tc.find(r'<td class="comment">[ \t\n]+%s' % first_comment_edit)
 
         # Comment edit from diff page
         tc.formvalue('history', 'version', '1')
         tc.submit()
-        diff_url = url + r'/wiki/%s\?action=diff&version=1' % pagename
-        tc.url(diff_url)
+        diff_url = url + r'/wiki/%s?action=diff&version=1' % pagename
+        tc.url(re.escape(diff_url) + '#?$')
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % first_comment_edit)
         tc.follow(r"\bEdit\b")
-        tc.url(url + r'/wiki/%s\?action=edit_comment&version=1&redirect_to=diff'
-               % pagename)
+        tc.url(re.escape(url + ('/wiki/%s?action=edit_comment&redirect_to=diff'
+                                '&version=1' % pagename)) + '$')
         second_comment_edit = "Second comment edit"
         tc.formvalue('edit-comment-form', 'new_comment', second_comment_edit)
         tc.submit()
-        tc.url(diff_url)
+        tc.url(re.escape(diff_url) + '$')
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % second_comment_edit)
 
 
@@ -218,21 +220,19 @@ class TestWikiReadonlyAttribute(FunctionalTwillTestCaseSetup):
         permission_policies = \
             self._testenv.get_config('trac', 'permission_policies')
         readonly_checkbox = (
-            '<input type="checkbox" name="readonly" id="readonly"/>')
+            '<input type="checkbox" name="readonly" id="readonly">')
         attach_button = (
-            '<input type="submit" id="attachfilebutton" value="Attach.+file"/>')
+            '<input type="submit" id="attachfilebutton" value="Attach.+file">')
         try:
             # User without WIKI_ADMIN can't set a page read-only
-            tc.formvalue('modifypage', 'action', 'edit')
-            tc.submit()
+            tc.submit(formname='modifypage')
             tc.notfind(readonly_checkbox)
 
             # User with WIKI_ADMIN can set a page read-only
             # and still edit that page
             self._testenv.grant_perm('user', 'WIKI_ADMIN')
             self._tester.go_to_wiki(page_name)
-            tc.formvalue('modifypage', 'action', 'edit')
-            tc.submit()
+            tc.submit(formname='modifypage')
             tc.find(readonly_checkbox)
             tc.formvalue('edit', 'readonly', True)
             tc.submit('save')
@@ -255,8 +255,7 @@ class TestWikiReadonlyAttribute(FunctionalTwillTestCaseSetup):
                                      ', '.join(pp_list))
             self._testenv.grant_perm('user', 'WIKI_ADMIN')
             self._tester.go_to_wiki(page_name)
-            tc.formvalue('modifypage', 'action', 'edit')
-            tc.submit()
+            tc.submit(formname='modifypage')
             tc.notfind(readonly_checkbox)
         finally:
             self._testenv.set_config('trac', 'permission_policies',
@@ -275,8 +274,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         page_url = base_url + "/wiki/" + pagename
 
         def click_rename():
-            tc.formvalue('rename', 'action', 'rename')
-            tc.submit()
+            tc.submit(formname='rename')
             tc.url(page_url + r'\?action=rename')
             tc.find("New name:")
 
@@ -285,22 +283,22 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         click_rename()
         # attempt to give an empty new name
         tc.formvalue('rename-form', 'new_name', '')
-        tc.submit('submit')
+        tc.submit('submit', 'rename-form')
         tc.url(page_url)
         tc.find("A new name is mandatory for a rename")
         # attempt to rename the page to an invalid page name
         tc.formvalue('rename-form', 'new_name', '../WikiStart')
-        tc.submit('submit')
+        tc.submit('submit', 'rename-form')
         tc.url(page_url)
         tc.find("The new name is invalid")
         # attempt to rename the page to the current page name
         tc.formvalue('rename-form', 'new_name', pagename)
-        tc.submit('submit')
+        tc.submit('submit', 'rename-form')
         tc.url(page_url)
         tc.find("The new name must be different from the old name")
         # attempt to rename the page to an existing page name
         tc.formvalue('rename-form', 'new_name', 'WikiStart')
-        tc.submit('submit')
+        tc.submit('submit', 'rename-form')
         tc.url(page_url)
         tc.find("The page WikiStart already exists")
         # correct rename to new page name (old page replaced by a redirection)
@@ -309,7 +307,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         newpagename = pagename + 'Renamed'
         tc.formvalue('rename-form', 'new_name', newpagename)
         tc.formvalue('rename-form', 'redirect', True)
-        tc.submit('submit')
+        tc.submit('submit', 'rename-form')
         # check redirection page
         tc.url(page_url)
         tc.find("See.*/wiki/" + newpagename)
@@ -328,7 +326,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         newpagename = pagename + 'RenamedAgain'
         tc.formvalue('rename-form', 'new_name', newpagename)
         tc.formvalue('rename-form', 'redirect', False)
-        tc.submit('submit')
+        tc.submit('submit', 'rename-form')
         tc.url(base_url + "/wiki/" + newpagename)
         tc.find("The page %s has been renamed to %s."
                 % (pagename, newpagename))
@@ -381,7 +379,7 @@ class ReStructuredTextCodeBlockTest(FunctionalTwillTestCaseSetup):
         self._tester.go_to_wiki(pagename)
         tc.notfind("code-block")
         tc.find('print')
-        tc.find('&quot;123&quot;')
+        tc.find('"123"')
 
 
 class RegressionTestTicket8976(FunctionalTwillTestCaseSetup):
@@ -433,14 +431,16 @@ class RegressionTestTicket8976(FunctionalTwillTestCaseSetup):
 
 
 class RegressionTestTicket10274(FunctionalTwillTestCaseSetup):
+    @unittest.skip('Firefox automatically normalizes url')
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10274"""
-        self._tester.go_to_wiki('WikiStart/..')
-        tc.find("Invalid Wiki page name &#39;WikiStart/..&#39;")
-        self._tester.go_to_wiki('../WikiStart')
-        tc.find("Invalid Wiki page name &#39;../WikiStart&#39;")
-        self._tester.go_to_wiki('WikiStart/./SubPage')
-        tc.find("Invalid Wiki page name &#39;WikiStart/./SubPage&#39;")
+        self._tester.go_to_wiki('WikiStart/..', check=False)
+        tc.url(re.escape(self._tester.url + '/wiki') + '$')
+        tc.find("Invalid Wiki page name 'WikiStart/..'")
+        self._tester.go_to_wiki('../WikiStart', check=False)
+        tc.find("Invalid Wiki page name '../WikiStart'")
+        self._tester.go_to_wiki('WikiStart/./SubPage', check=False)
+        tc.find("Invalid Wiki page name 'WikiStart/./SubPage'")
 
 
 class RegressionTestTicket10850(FunctionalTwillTestCaseSetup):
@@ -491,7 +491,7 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             tc.go(self._tester.url + '/wiki/%s?action=edit' % page_name)
             tc.find("Error: Forbidden")
             tc.find("WIKI_CREATE privileges are required to perform this "
-                    "operation on %s. You don&#39;t have the required permissions."
+                    "operation on %s. You don't have the required permissions."
                     % page_name)
 
             # Check that page can be created when user has WIKI_CREATE
@@ -506,7 +506,7 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             tc.go(self._tester.url + '/wiki/%s?action=edit' % page_name)
             tc.find("Error: Forbidden")
             tc.find("WIKI_MODIFY privileges are required to perform this "
-                    "operation on %s. You don&#39;t have the required permissions."
+                    "operation on %s. You don't have the required permissions."
                     % page_name)
 
             # Check that page can be edited when user has WIKI_MODIFY
@@ -521,8 +521,7 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             # Check that page can be reverted to a previous revision
             tc.go(self._tester.url + '/wiki/%s?version=1' % page_name)
             tc.find("Revert to this version")
-            tc.formvalue('modifypage', 'action', 'edit')
-            tc.submit()
+            tc.submit(formname='modifypage')
             tc.find(content_v1)
 
             # Check that page can't be reverted without WIKI_MODIFY
@@ -532,7 +531,7 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             tc.notfind("Revert to this version")
             tc.go(self._tester.url + '/wiki/%s?action=edit&version=1' % page_name)
             tc.find("WIKI_MODIFY privileges are required to perform this "
-                    "operation on %s. You don&#39;t have the required permissions."
+                    "operation on %s. You don't have the required permissions."
                     % page_name)
 
         finally:

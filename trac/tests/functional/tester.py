@@ -26,6 +26,14 @@ from trac.util.html import tag
 from trac.util.text import to_utf8, unicode_quote
 
 
+_normurl_re = re.compile(r'[a-z]+://[^:/]+:?[0-9]*$')
+
+def _normurl(url):
+    if _normurl_re.match(url):
+        url += '/'
+    return url
+
+
 class FunctionalTester(object):
     """Provides a library of higher-level operations for interacting with a
     test environment.
@@ -59,7 +67,8 @@ class FunctionalTester(object):
                                '://{0}:{0}@'.format(unicode_quote(username)))
         url = '%s/login?referer=%s' % (url.rstrip('/'),
                                        unicode_quote(self.url))
-        self.go_to_url(url, self.url)
+        self.go_to_url(url, check=False)
+        tc.url(re.escape(_normurl(self.url)))
         # We've provided authentication info earlier, so this should
         # redirect back to the base url.
         tc.find('logged in as[ \t\n]+<span class="trac-author-user">%s</span>'
@@ -118,9 +127,11 @@ class FunctionalTester(object):
         tc.submit()
         tc.notfind(internal_error)
 
-    def go_to_url(self, url, expected=None):
+    def go_to_url(self, url, check=True):
+        url = _normurl(url)
         tc.go(url)
-        tc.url(expected or url)
+        if check:
+            tc.url(re.escape(url) + '$')
         tc.notfind(internal_error)
 
     def go_to_front(self):
@@ -138,7 +149,7 @@ class FunctionalTester(object):
         self.go_to_url(ticket_url)
         tc.url(ticket_url + '$')
 
-    def go_to_wiki(self, name, version=None):
+    def go_to_wiki(self, name, version=None, check=True):
         """Surf to the wiki page. By default this will be the latest version
         of the page.
 
@@ -150,13 +161,11 @@ class FunctionalTester(object):
         wiki_url = self.url + '/wiki/%s' % name
         if version:
             wiki_url += '?version=%s' % version
-        self.go_to_url(wiki_url)
+        self.go_to_url(wiki_url, check=check)
 
     def go_to_timeline(self):
         """Surf to the timeline page."""
-        self.go_to_front()
-        tc.follow(r"\bTimeline\b")
-        tc.url(self.url + '/timeline')
+        tc.go(self.url + '/timeline')
 
     def go_to_view_tickets(self, href='report'):
         """Surf to the View Tickets page. By default this will be the Reports
@@ -275,7 +284,7 @@ class FunctionalTester(object):
         # verify the event shows up in the timeline
         self.go_to_timeline()
         tc.formvalue('prefs', 'wiki', True)
-        tc.submit()
+        tc.submit(formname='prefs')
         tc.find(name + ".*created")
 
         self.go_to_wiki(name)
@@ -291,8 +300,7 @@ class FunctionalTester(object):
         if comment is None:
             comment = random_sentence()
         self.go_to_wiki(name)
-        tc.formvalue('modifypage', 'action', 'edit')
-        tc.submit()
+        tc.submit(formname='modifypage')
         tc.formvalue('edit', 'text', content)
         tc.formvalue('edit', 'comment', comment)
         tc.submit('save')
@@ -472,13 +480,13 @@ class FunctionalTester(object):
 
         tc.submit('attachfilebutton', 'attachfile')
         tc.url(self.url + r'/attachment/%s/%s/\?action=new$' % (realm, name))
-        fp = io.BytesIO(data)
+        fp = io.BytesIO(data.encode('utf-8'))
         tc.formfile('attachment', 'attachment', filename,
                     content_type=content_type, fp=fp)
         tc.formvalue('attachment', 'description', description)
         if replace:
             tc.formvalue('attachment', 'replace', True)
-        tc.submit()
+        tc.submit(formname='attachment')
         tc.url(self.url + r'/attachment/%s/%s/$' % (realm, name))
 
         return filename
