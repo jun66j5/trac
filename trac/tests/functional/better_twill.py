@@ -21,10 +21,10 @@ import re
 import os
 import sys
 import tempfile
-import urllib.parse
-import urllib.request
 from os.path import abspath, dirname, join
 from pkg_resources import parse_version as pv
+from urllib.parse import urljoin
+from urllib.request import pathname2url
 
 from trac.test import mkdtemp, rmtree
 from trac.util.text import to_unicode
@@ -92,14 +92,16 @@ if selenium:
             source = self.get_source()
             match = re.search(s, source)
             if match:
-                raise AssertionError('Regex matched: {!r} matches {!r} in {!r}'
+                url = self._write_source(source)
+                raise AssertionError('Regex matched: {!r} matches {!r} in {}'
                                      .format(source[match.start():match.end()],
-                                             s, source))
+                                             s, url))
         def find(self, s):
             source = self.get_source()
             if not re.search(s, source):
-                raise AssertionError("Regex didn't match: {!r} not found in "
-                                     "{!r}".format(s, source))
+                url = self._write_source(source)
+                raise AssertionError("Regex didn't match: {!r} not found in {}"
+                                     .format(s, url))
 
         def add_auth(self, x, url, username, pw):
             pass
@@ -112,8 +114,8 @@ if selenium:
                     element.click()
                     break
             else:
-                raise AssertionError('Unable to find link %r in %r' %
-                                     (s, self.get_source()))
+                url = self._write_source(self.get_source())
+                raise AssertionError('Unable to find link %r in %s' % (s, url))
 
         def formvalue(self, form, field, value):
             form_element = self._find_by(id=form)
@@ -222,6 +224,42 @@ if selenium:
                 return driver.switch_to.active_element
             raise ValueError('Invalid arguments: %r %r' % (args, kwargs))
 
+        # When we can't find something we expected, or find something we didn't
+        # expect, it helps the debugging effort to have a copy of the html to
+        # analyze.
+        def _write_source(self, source):
+            """Write the current html to a file. Name the file based on the
+            current testcase.
+            """
+            import unittest
+
+            frame = sys._getframe()
+            while frame:
+                if frame.f_code.co_name in ('runTest', 'setUp', 'tearDown'):
+                    testcase = frame.f_locals['self']
+                    testname = testcase.__class__.__name__
+                    tracdir = testcase._testenv.tracdir
+                    break
+                elif isinstance(frame.f_locals.get('self'), unittest.TestCase):
+                    testcase = frame.f_locals['self']
+                    testname = '%s.%s' % (testcase.__class__.__name__,
+                                          testcase._testMethodName)
+                    tracdir = testcase._testenv.tracdir
+                    break
+                frame = frame.f_back
+            else:
+                # We didn't find a testcase in the stack, so we have no clue
+                # what's going on.
+                raise Exception("No testcase was found on the stack. This was "
+                                "really not expected, and I don't know how to "
+                                "handle it.")
+
+            filename = os.path.join(tracdir, 'log', '%s.html' % testname)
+            with open(filename, 'w', encoding='utf-8') as html_file:
+                html_file.write(source)
+
+            return urljoin('file:', pathname2url(filename))
+
         def get_url(self):
             return self.driver.current_url
 
@@ -294,40 +332,3 @@ if b is not None and False: # TODO selenium
                     _format_error_log(page, e.error_log))
 
         b._post_load_hooks.append(_validate_xhtml)
-
-    # When we can't find something we expected, or find something we didn't
-    # expect, it helps the debugging effort to have a copy of the html to
-    # analyze.
-    def twill_write_html():
-        """Write the current html to a file.  Name the file based on the
-        current testcase.
-        """
-        import unittest
-
-        frame = sys._getframe()
-        while frame:
-            if frame.f_code.co_name in ('runTest', 'setUp', 'tearDown'):
-                testcase = frame.f_locals['self']
-                testname = testcase.__class__.__name__
-                tracdir = testcase._testenv.tracdir
-                break
-            elif isinstance(frame.f_locals.get('self'), unittest.TestCase):
-                testcase = frame.f_locals['self']
-                testname = '%s.%s' % (testcase.__class__.__name__,
-                                      testcase._testMethodName)
-                tracdir = testcase._testenv.tracdir
-                break
-            frame = frame.f_back
-        else:
-            # We didn't find a testcase in the stack, so we have no clue what's
-            # going on.
-            raise Exception("No testcase was found on the stack.  This was "
-                            "really not expected, and I don't know how to "
-                            "handle it.")
-
-        filename = os.path.join(tracdir, 'log', "%s.html" % testname)
-        with open(filename, 'w', encoding='utf-8') as html_file:
-            html_file.write(b.get_html())
-
-        return urllib.parse.urljoin('file:',
-                                    urllib.request.pathname2url(filename))
