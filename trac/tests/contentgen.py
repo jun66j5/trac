@@ -12,11 +12,13 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 import random
+import re
 import uuid
 
 try:
+    isalpha = re.compile(r'[A-Za-z]+$').match
     with open('/usr/share/dict/words', 'r', encoding='utf-8') as f:
-        all_words = [x.strip() for x in f.readlines() if x.strip().isalpha()]
+        all_words = list(filter(isalpha, map(lambda v: v.strip(), f)))
         del f
 except IOError:
     all_words = [
