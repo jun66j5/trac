@@ -178,7 +178,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
             environ['REMOTE_HOST'] = host
         environ['REMOTE_ADDR'] = self.client_address[0]
 
-        environ['CONTENT_TYPE'] = self.headers.get_content_type()
+        environ['CONTENT_TYPE'] = self.headers.get('content-type')
 
         length = self.headers.get('content-length')
         if length:
