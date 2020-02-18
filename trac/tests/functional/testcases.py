@@ -26,13 +26,13 @@ class TestAttachmentNonexistentParent(FunctionalTwillTestCaseSetup):
         """TracError should be raised when navigating to the attachment
         page for a nonexistent resource."""
         self._tester.go_to_wiki('NonexistentPage')
-        tc.find("The page[ \n]+<strong>NonexistentPage</strong>[ \n]+"
-                "does not exist. You can create it here.")
+        tc.find(r"The page[ \n]+<strong>NonexistentPage</strong>[ \n]+"
+                r"does not exist. You can create it here.")
         tc.find(r"\bCreate this page\b")
 
         tc.go(self._tester.url + '/attachment/wiki/NonexistentPage')
-        tc.find('<h1>Trac Error</h1>\s+<p class="message">'
-                'Parent resource NonexistentPage doesn&#39;t exist</p>')
+        tc.find(r'<h1>Trac Error</h1>\s+<p class="message">'
+                r"Parent resource NonexistentPage doesn't exist</p>")
 
 
 class TestAboutPage(FunctionalTwillTestCaseSetup):
@@ -100,7 +100,7 @@ class RaiseExceptionPlugin(Component):
             tc.find('<form class="newticket" method="get" '
                     'action="http://trac-hacks.org/newticket">')
             tc.find('<input type="hidden" name="component" '
-                    'value="HelloWorldMacro" />')
+                    'value="HelloWorldMacro">')
 
             tc.go(self._tester.url + '/raise-exception?type=tracerror&div=true')
             tc.notfind(internal_error)
@@ -134,7 +134,7 @@ class RegressionTestTicket3833(FunctionalTwillTestCaseSetup):
         def read_log_file(offset):
             with open(trac_log, 'rb') as fd:
                 fd.seek(offset)
-                return fd.read()
+                return str(fd.read(), 'utf-8')
 
         # Verify that file logging is enabled as info level.
         log_size = os.path.getsize(trac_log)
@@ -324,7 +324,7 @@ class RaiseExceptionPlugin(Component):
             tc.find('<form class="newticket" method="get" '
                     'action="http://trac-hacks.org/newticket">')
             tc.find('<input type="hidden" name="component" '
-                    'value="HelloWorldMacro" />')
+                    'value="HelloWorldMacro">')
         finally:
             env.config.set('components', 'RaiseExceptionPlugin.*', 'disabled')
 

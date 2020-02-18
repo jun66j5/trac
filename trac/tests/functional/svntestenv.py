@@ -106,11 +106,10 @@ class SvnFunctionalTestEnvironment(FunctionalTestEnvironment):
                                        'commit', '-m', msg, filename],
                                       environ=environ)
         try:
-            revision = re.search(r'Committed revision ([0-9]+)\.',
+            revision = re.search(b'Committed revision ([0-9]+)\\.',
                                  output).group(1)
         except Exception as e:
-            args = e.args + (output, )
-            raise Exception(*args)
+            raise Exception(output) from e
         return int(revision)
 
     def call_in_workdir(self, args, environ=None):

@@ -20,11 +20,13 @@ import io
 import re
 import os
 import sys
+import tempfile
 import urllib.parse
 import urllib.request
 from os.path import abspath, dirname, join
 from pkg_resources import parse_version as pv
 
+from trac.test import mkdtemp, rmtree
 from trac.util.text import to_unicode
 
 # On OSX lxml needs to be imported before twill to avoid Resolver issues
@@ -32,7 +34,7 @@ from trac.util.text import to_unicode
 try:
     from lxml import etree
 except ImportError:
-    pass
+    etree = None
 
 try:
     import selenium
@@ -42,49 +44,195 @@ except ImportError:
 if selenium:
     from selenium import webdriver
     from selenium.common.exceptions import WebDriverException as ConnectError
+    from selenium.webdriver.common.action_chains import ActionChains
+    from selenium.webdriver.remote import file_detector
+
     # setup short names to reduce typing
     # This selenium browser (and the tc commands that use it) are essentially
     # global, and not tied to our test fixture.
-    def create_webdriver():
-        profile = webdriver.FirefoxProfile()
-        profile.set_preference('network.http.phishy-userpass-length', 255)
-        options = webdriver.FirefoxOptions()
-        options.profile = profile
-        options.add_argument('--headless')
-        options.log.level = 'trace'
-        return webdriver.Firefox(options=options)
 
-    class Proxy:
-        def go(self, url): return driver.get(url)
+    class Proxy(object):
+
+        driver = None
+        tmpdir = None
+
+        def __init__(self):
+            self.tmpdir = mkdtemp()
+            self.driver = self._create_webdriver()
+
+        def _create_webdriver(self):
+            profile = webdriver.FirefoxProfile()
+            profile.set_preference('network.http.phishy-userpass-length', 255)
+            options = webdriver.FirefoxOptions()
+            options.profile = profile
+            options.add_argument('--headless')
+            options.log.level = 'debug'
+            log_path = 'geckodriver.log'
+            open(log_path, 'w').close()
+            return webdriver.Firefox(options=options,
+                                     service_log_path=log_path)
+
+        def close(self):
+            if self.tmpdir:
+                rmtree(self.tmpdir)
+            if self.driver:
+                self.driver.quit()
+
+        def go(self, url):
+            return self.driver.get(url)
+
+        def back(self):
+            self.driver.back()
+
         def url(self, url):
-            url = urllib.parse.urlparse(url).path.rstrip('/')
-            url2 = urllib.parse.urlparse(driver.current_url).path.rstrip('/')
-            if url != url2:
-                raise AssertionError('Unexpected URL: {!r} instead of {!r}'
-                                .format(url2, url))
+            if not re.match(url, self.driver.current_url):
+                raise AssertionError("URL didn't match: {!r} not matched in "
+                                     "{!r}".format(url, self.get_url()))
         def notfind(self, s):
-            source = driver.page_source
+            source = self.get_source()
             match = re.search(s, source)
             if match:
                 raise AssertionError('Regex matched: {!r} matches {!r} in {!r}'
                                      .format(source[match.start():match.end()],
                                              s, source))
         def find(self, s):
-            source = driver.page_source
+            source = self.get_source()
             if not re.search(s, source):
                 raise AssertionError("Regex didn't match: {!r} not found in "
                                      "{!r}".format(s, source))
+
         def add_auth(self, x, url, username, pw):
             pass
+
         def follow(self, s):
-            element = driver.find_element_by_partial_link_text(s.replace(r'\b', ''))
-            element.click()
+            search = re.compile(s).search
+            for element in self.driver.find_elements_by_tag_name('a'):
+                text = element.get_property('textContent')
+                if search(text):
+                    element.click()
+                    break
+            else:
+                raise AssertionError('Unable to find link %r in %r' %
+                                     (s, self.get_source()))
 
-    driver = create_webdriver()
+        def formvalue(self, form, field, value):
+            form_element = self._find_by(id=form)
+            elements = form_element.find_elements_by_name(field)
+            if not elements:
+                raise ValueError('Missing %s in form#%s' % (field, form))
+            element = elements[0]
+            tag = element.tag_name
+            if tag == 'input':
+                type_ = element.get_attribute('type')
+                if type_  in ('text', 'password', 'file'):
+                    element.clear()
+                    element.send_keys(value)
+                elif type_ == 'checkbox':
+                    if element.is_selected() != bool(value):
+                        element.click()
+                elif type_ == 'radio':
+                    for element in elements:
+                        if element.get_attribute('value') == value:
+                            element.click()
+                            break
+                    else:
+                        raise ValueError('Missing input[type=%r][value=%r]' %
+                                         (type_, value))
+                else:
+                    raise ValueError('Unrecognized element: input[type=%r]' %
+                                     type_)
+            elif tag == 'textarea':
+                element.clear()
+                element.send_keys(value)
+            elif tag == 'select':
+                for option in element.find_elements_by_tag_name('option'):
+                    v = option.get_attribute('value') or \
+                            option.get_property('textContent')
+                    if v == value:
+                        option.click()
+                        break
+                    else:
+                        raise ValueError('Missing option[value=%r]' % value)
+            else:
+                raise ValueError('Unrecognized element: %r' % tag)
+
+        fv = formvalue
+
+        def formfile(self, formname, fieldname, filename, content_type=None,
+                     fp=None):
+            if fp:
+                phypath = os.path.join(tempfile.mkdtemp(dir=self.tmpdir),
+                                       filename)
+                with open(phypath, 'wb') as f:
+                    f.write(fp.read())
+            else:
+                phypath = os.path.abspath(filename)
+
+            form = self._find_form(formname)
+            enctype = form.get_attribute('enctype')
+            if enctype != 'multipart/form-data':
+                raise ValueError('ERROR: enctype should be '
+                                 'multipart/form-data: %r' % enctype)
+            field = self._find_field(fieldname, formname)
+            type_ = field.get_attribute('type')
+            if type_ != 'file':
+                raise ValueError('ERROR: type should be file: %r' % type_)
+            field.send_keys(phypath)
+
+        def submit(self, fieldname=None, formname=None):
+            element = self._find_field(fieldname, formname)
+            if element.tag_name == 'form':
+                element.submit()
+            else:
+                element.click()
+
+        def move_to(self, *args, **kwargs):
+            element = self._find_by(*args, **kwargs)
+            ActionChains(self.driver).move_to_element(element).perform()
+
+        def _find_form(self, id_):
+            selector = 'form[id="%(name)s"]' % {'name': id_}
+            return self._find_by(selector)
+
+        def _find_field(self, fieldname=None, formname=None):
+            if fieldname and formname:
+                selector = 'form[id="%(form)s"] [id="%(field)s"], ' \
+                           'form[id="%(form)s"] [name="%(field)s"]' % \
+                           {'form': formname, 'field': fieldname}
+            elif fieldname:
+                selector = '[id="%(field)s"], [name="%(field)s"]' % \
+                           {'field': fieldname}
+            elif formname:
+                selector = 'form[id="%s"] [type="submit"]' % formname
+            else:
+                return self.driver.switch_to.active_element
+            return self._find_by(selector)
+
+        def _find_by(self, *args, **kwargs):
+            driver = self.driver
+            if kwargs.get('id'):
+                return driver.find_element_by_id(kwargs.get('id'))
+            if kwargs.get('name'):
+                return driver.find_element_by_name(kwargs.get('name'))
+            if kwargs.get('class_'):
+                return driver.find_element_by_class_name(kwargs.get('class_'))
+            if len(args) == 1:
+                return driver.find_element_by_css_selector(args[0])
+            if len(args) == 0:
+                return driver.switch_to.active_element
+            raise ValueError('Invalid arguments: %r %r' % (args, kwargs))
+
+        def get_url(self):
+            return self.driver.current_url
+
+        def get_source(self):
+            return self.driver.page_source
+
+        get_html = get_source
+
     import atexit
-    atexit.register(driver.quit)
-
     tc = Proxy()
+    atexit.register(tc.close)
     b = tc
 else:
     class ConnectError(Exception): pass
@@ -183,84 +331,3 @@ if b is not None and False: # TODO selenium
 
         return urllib.parse.urljoin('file:',
                                     urllib.request.pathname2url(filename))
-
-    # Twill isn't as helpful with errors as I'd like it to be, so we replace
-    # the formvalue function.  This would be better done as a patch to Twill.
-    def better_formvalue(form, field, value, fv=tc.formvalue):
-        try:
-            fv(form, field, value)
-        except (twill.errors.TwillAssertionError,
-                twill.errors.TwillException,
-                twill.utils.ClientForm.ItemNotFoundError) as e:
-            filename = twill_write_html()
-            raise twill.errors.TwillAssertionError('%s at %s' %
-                                                   (str(e), filename))
-    tc.formvalue = better_formvalue
-    tc.fv = better_formvalue
-
-    # Twill requires that on pages with more than one form, you have to click a
-    # field within the form before you can click submit.  There are a number of
-    # cases where the first interaction a user would have with a form is
-    # clicking on a button.  This enhancement allows us to specify the form to
-    # click on.
-    def better_browser_submit(fieldname=None, formname=None, browser=b, old_submit=b.submit):
-        if formname is not None: # enhancement to directly specify the form
-            browser._browser.form = browser.get_form(formname)
-        old_submit(fieldname)
-    b.submit = better_browser_submit
-
-    def better_submit(fieldname=None, formname=None):
-        b.submit(fieldname, formname)
-    tc.submit = better_submit
-
-    # Twill's formfile function leaves a file handle open which prevents the
-    # file from being deleted on Windows.  Since we would just assume use a
-    # BytesIO object in the first place, allow the file-like object to be
-    # provided directly.
-    def better_formfile(formname, fieldname, filename, content_type=None,
-                        fp=None):
-        if not fp:
-            filename = filename.replace('/', os.path.sep)
-            with open(filename, 'rb') as ftemp:
-                fp = io.BytesIO(ftemp.read())
-
-        form = b.get_form(formname)
-        control = b.get_form_field(form, fieldname)
-
-        if not control.is_of_kind('file'):
-            raise twill.errors.TwillException("ERROR: field is not a file "
-                                              "upload field!")
-
-        b.clicked(form, control)
-        control.add_file(fp, content_type, filename)
-    tc.formfile = better_formfile
-
-    # Twill's tc.find() does not provide any guidance on what we got
-    # instead of what was expected.
-    def better_find(what, flags='', tcfind=tc.find):
-        try:
-            tcfind(what, flags)
-        except twill.errors.TwillAssertionError as e:
-            filename = twill_write_html()
-            raise twill.errors.TwillAssertionError('%s at %s' %
-                                                   (to_unicode(e), filename))
-    tc.find = better_find
-
-    def better_notfind(what, flags='', tcnotfind=tc.notfind):
-        try:
-            tcnotfind(what, flags)
-        except twill.errors.TwillAssertionError as e:
-            filename = twill_write_html()
-            raise twill.errors.TwillAssertionError('%s at %s' %
-                                                   (to_unicode(e), filename))
-    tc.notfind = better_notfind
-
-    # Same for tc.url - no hint about what went wrong!
-    def better_url(should_be, tcurl=tc.url):
-        try:
-            tcurl(should_be)
-        except twill.errors.TwillAssertionError as e:
-            filename = twill_write_html()
-            raise twill.errors.TwillAssertionError('%s at %s' %
-                                                   (to_unicode(e), filename))
-    tc.url = better_url

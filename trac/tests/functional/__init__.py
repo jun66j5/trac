@@ -146,6 +146,7 @@ if selenium:
                 raise
             self.fixture = (self._testenv, self._tester)
             self._testenv.set_config('project', 'name', 'Functional Tests')
+            self._testenv.set_config('header_logo', 'src', '')
 
         def tearDown(self):
             self._testenv.stop()
