@@ -121,7 +121,9 @@ if selenium:
             form_element = self._find_by(id=form)
             elements = form_element.find_elements_by_name(field)
             if not elements:
-                raise ValueError('Missing %s in form#%s' % (field, form))
+                url = self._write_source()
+                raise ValueError('Missing [name=%r] in form#%s in %s' %
+                                 (field, form, url))
             element = elements[0]
             tag = element.tag_name
             if tag == 'input':
@@ -138,8 +140,9 @@ if selenium:
                             element.click()
                             break
                     else:
-                        raise ValueError('Missing input[type=%r][value=%r]' %
-                                         (type_, value))
+                        url = self._write_source()
+                        raise ValueError('Missing input[type=%r][value=%r] in '
+                                         '%s' % (type_, value, url))
                 else:
                     raise ValueError('Unrecognized element: input[type=%r]' %
                                      type_)
@@ -154,7 +157,9 @@ if selenium:
                         option.click()
                         break
                     else:
-                        raise ValueError('Missing option[value=%r]' % value)
+                        url = self._write_source()
+                        raise ValueError('Missing option[value=%r] in %s' %
+                                         (value, url))
             else:
                 raise ValueError('Unrecognized element: %r' % tag)
 
@@ -173,12 +178,15 @@ if selenium:
             form = self._find_form(formname)
             enctype = form.get_attribute('enctype')
             if enctype != 'multipart/form-data':
-                raise ValueError('ERROR: enctype should be '
-                                 'multipart/form-data: %r' % enctype)
+                url = self._write_source()
+                raise ValueError('enctype should be multipart/form-data: %r '
+                                 'in %s' % (enctype, url))
             field = self._find_field(fieldname, formname)
             type_ = field.get_attribute('type')
             if type_ != 'file':
-                raise ValueError('ERROR: type should be file: %r' % type_)
+                url = self._write_source()
+                raise ValueError('type should be file: %r in %s' %
+                                 (type_, url))
             field.send_keys(phypath)
 
         def submit(self, fieldname=None, formname=None):
@@ -191,7 +199,8 @@ if selenium:
                     if element.is_enabled():
                         break
                 else:
-                    raise ValueError('No active submit elements')
+                    url = self._write_source()
+                    raise ValueError('No active submit elements in %s' % url)
             element.click()
 
         def move_to(self, *args, **kwargs):
@@ -233,7 +242,7 @@ if selenium:
         # When we can't find something we expected, or find something we didn't
         # expect, it helps the debugging effort to have a copy of the html to
         # analyze.
-        def _write_source(self, source):
+        def _write_source(self, source=None):
             """Write the current html to a file. Name the file based on the
             current testcase.
             """
@@ -260,6 +269,8 @@ if selenium:
                                 "really not expected, and I don't know how to "
                                 "handle it.")
 
+            if source is None:
+                source = self.get_source()
             filename = os.path.join(tracdir, 'log', '%s.html' % testname)
             with open(filename, 'w', encoding='utf-8') as html_file:
                 html_file.write(source)
