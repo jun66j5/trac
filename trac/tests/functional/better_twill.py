@@ -80,6 +80,8 @@ if selenium:
                 self.driver.quit()
 
         def go(self, url):
+            if url.startswith('/'):
+                url = urljoin(self.get_url(), url)
             return self.driver.get(url)
 
         def back(self):
