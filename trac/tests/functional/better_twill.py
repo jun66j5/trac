@@ -158,8 +158,9 @@ if selenium:
                 element.send_keys(value)
             elif tag == 'select':
                 for option in element.find_elements_by_tag_name('option'):
-                    v = option.get_attribute('value') or \
-                            option.get_property('textContent')
+                    v = option.get_attribute('value')
+                    if v is None:
+                        v = option.get_property('textContent')
                     if v == value:
                         option.click()
                         element.click()  # to focus the select element
