@@ -161,6 +161,7 @@ if selenium:
                             option.get_property('textContent')
                     if v == value:
                         option.click()
+                        element.click()  # to focus the select element
                         break
                 else:
                     url = self._write_source()
