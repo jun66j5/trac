@@ -183,10 +183,16 @@ if selenium:
 
         def submit(self, fieldname=None, formname=None):
             element = self._find_field(fieldname, formname)
-            if element.tag_name == 'form':
-                element.submit()
-            else:
-                element.click()
+            if element.get_attribute('type') != 'submit':
+                if element.tag_name != 'form':
+                    element = element.get_property('form')
+                for element in element.find_elements_by_css_selector(
+                        '[type="submit"]'):
+                    if element.is_enabled():
+                        break
+                else:
+                    raise ValueError('No active submit elements')
+            element.click()
 
         def move_to(self, *args, **kwargs):
             element = self._find_by(*args, **kwargs)
