@@ -63,6 +63,7 @@ if selenium:
 
         def _create_webdriver(self):
             profile = webdriver.FirefoxProfile()
+            profile.set_preference('intl.accept_languages', 'en-us')
             profile.set_preference('network.http.phishy-userpass-length', 255)
             options = webdriver.FirefoxOptions()
             options.profile = profile
