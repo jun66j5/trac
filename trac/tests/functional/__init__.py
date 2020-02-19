@@ -147,6 +147,7 @@ if selenium:
             self.fixture = (self._testenv, self._tester)
             self._testenv.set_config('project', 'name', 'Functional Tests')
             self._testenv.set_config('header_logo', 'src', '')
+            self._testenv.set_config('trac', 'base_url', baseurl)
 
         def tearDown(self):
             self._testenv.stop()
