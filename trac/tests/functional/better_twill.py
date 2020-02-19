@@ -43,7 +43,8 @@ except ImportError:
 
 if selenium:
     from selenium import webdriver
-    from selenium.common.exceptions import WebDriverException as ConnectError
+    from selenium.common.exceptions import (
+        NoSuchElementException, WebDriverException as ConnectError)
     from selenium.webdriver.common.action_chains import ActionChains
     from selenium.webdriver.remote import file_detector
 
@@ -134,6 +135,7 @@ if selenium:
                     element.clear()
                     element.send_keys(value)
                 elif type_ == 'checkbox':
+                    element.click()  # to focus
                     if element.is_selected() != bool(value):
                         element.click()
                 elif type_ == 'radio':
@@ -158,10 +160,10 @@ if selenium:
                     if v == value:
                         option.click()
                         break
-                    else:
-                        url = self._write_source()
-                        raise ValueError('Missing option[value=%r] in %s' %
-                                         (value, url))
+                else:
+                    url = self._write_source()
+                    raise ValueError('Missing option[value=%r] in %s' %
+                                     (value, url))
             else:
                 raise ValueError('Unrecognized element: %r' % tag)
 
@@ -196,6 +198,9 @@ if selenium:
             if element.get_attribute('type') != 'submit':
                 if element.tag_name != 'form':
                     element = element.get_property('form')
+                    if element is None:
+                        url = self._write_source()
+                        raise ValueError('No form property in %s' % url)
                 for element in element.find_elements_by_css_selector(
                         '[type="submit"]'):
                     if element.is_enabled():
@@ -229,16 +234,21 @@ if selenium:
 
         def _find_by(self, *args, **kwargs):
             driver = self.driver
-            if kwargs.get('id'):
-                return driver.find_element_by_id(kwargs.get('id'))
-            if kwargs.get('name'):
-                return driver.find_element_by_name(kwargs.get('name'))
-            if kwargs.get('class_'):
-                return driver.find_element_by_class_name(kwargs.get('class_'))
-            if len(args) == 1:
-                return driver.find_element_by_css_selector(args[0])
-            if len(args) == 0:
-                return driver.switch_to.active_element
+            try:
+                if kwargs.get('id'):
+                    return driver.find_element_by_id(kwargs['id'])
+                if kwargs.get('name'):
+                    return driver.find_element_by_name(kwargs['name'])
+                if kwargs.get('class_'):
+                    return driver.find_element_by_class_name(kwargs['class_'])
+                if len(args) == 1:
+                    return driver.find_element_by_css_selector(args[0])
+                if len(args) == 0:
+                    return driver.switch_to.active_element
+            except NoSuchElementException as e:
+                url = self._write_source()
+                raise AssertionError('Unable to find element in %s' %
+                                     url) from e
             raise ValueError('Invalid arguments: %r %r' % (args, kwargs))
 
         _re_flag_bits = {'i': re.IGNORECASE, 'm': re.MULTILINE, 's': re.DOTALL}
