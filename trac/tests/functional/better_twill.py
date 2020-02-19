@@ -124,10 +124,11 @@ if selenium:
 
         def formvalue(self, form, field, value):
             form_element = self._find_by(id=form)
-            elements = form_element.find_elements_by_name(field)
+            elements = form_element.find_elements_by_css_selector(
+                                    '[id="{0}"], [name="{0}"]'.format(field))
             if not elements:
                 url = self._write_source()
-                raise ValueError('Missing [name=%r] in form#%s in %s' %
+                raise ValueError('Missing %r elements in form#%s in %s' %
                                  (field, form, url))
             element = elements[0]
             tag = element.tag_name
