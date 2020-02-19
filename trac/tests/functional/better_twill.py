@@ -88,17 +88,19 @@ if selenium:
             if not re.match(url, self.driver.current_url):
                 raise AssertionError("URL didn't match: {!r} not matched in "
                                      "{!r}".format(url, self.get_url()))
-        def notfind(self, s):
+
+        def notfind(self, s, flags=None):
             source = self.get_source()
-            match = re.search(s, source)
+            match = re.search(s, source, self._re_flags(flags))
             if match:
                 url = self._write_source(source)
                 raise AssertionError('Regex matched: {!r} matches {!r} in {}'
                                      .format(source[match.start():match.end()],
                                              s, url))
-        def find(self, s):
+
+        def find(self, s, flags=None):
             source = self.get_source()
-            if not re.search(s, source):
+            if not re.search(s, source, self._re_flags(flags)):
                 url = self._write_source(source)
                 raise AssertionError("Regex didn't match: {!r} not found in {}"
                                      .format(s, url))
@@ -238,6 +240,20 @@ if selenium:
             if len(args) == 0:
                 return driver.switch_to.active_element
             raise ValueError('Invalid arguments: %r %r' % (args, kwargs))
+
+        _re_flag_bits = {'i': re.IGNORECASE, 'm': re.MULTILINE, 's': re.DOTALL}
+
+        def _re_flags(self, flags):
+            bit = 0
+            if flags is not None:
+                for flag in flags:
+                    try:
+                        value = self._re_flag_bits[flag]
+                    except IndexError:
+                        raise ValueError('Invalid flags %r' % flags)
+                    else:
+                        bit |= value
+            return bit
 
         # When we can't find something we expected, or find something we didn't
         # expect, it helps the debugging effort to have a copy of the html to
