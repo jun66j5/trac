@@ -283,22 +283,22 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         click_rename()
         # attempt to give an empty new name
         tc.formvalue('rename-form', 'new_name', '')
-        tc.submit('submit', 'rename-form')
+        tc.submit('submit')
         tc.url(page_url)
         tc.find("A new name is mandatory for a rename")
         # attempt to rename the page to an invalid page name
         tc.formvalue('rename-form', 'new_name', '../WikiStart')
-        tc.submit('submit', 'rename-form')
+        tc.submit('submit')
         tc.url(page_url)
         tc.find("The new name is invalid")
         # attempt to rename the page to the current page name
         tc.formvalue('rename-form', 'new_name', pagename)
-        tc.submit('submit', 'rename-form')
+        tc.submit('submit')
         tc.url(page_url)
         tc.find("The new name must be different from the old name")
         # attempt to rename the page to an existing page name
         tc.formvalue('rename-form', 'new_name', 'WikiStart')
-        tc.submit('submit', 'rename-form')
+        tc.submit('submit')
         tc.url(page_url)
         tc.find("The page WikiStart already exists")
         # correct rename to new page name (old page replaced by a redirection)
@@ -307,7 +307,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         newpagename = pagename + 'Renamed'
         tc.formvalue('rename-form', 'new_name', newpagename)
         tc.formvalue('rename-form', 'redirect', True)
-        tc.submit('submit', 'rename-form')
+        tc.submit('submit')
         # check redirection page
         tc.url(page_url)
         tc.find("See.*/wiki/" + newpagename)
@@ -326,7 +326,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         newpagename = pagename + 'RenamedAgain'
         tc.formvalue('rename-form', 'new_name', newpagename)
         tc.formvalue('rename-form', 'redirect', False)
-        tc.submit('submit', 'rename-form')
+        tc.submit('submit')
         tc.url(base_url + "/wiki/" + newpagename)
         tc.find("The page %s has been renamed to %s."
                 % (pagename, newpagename))
