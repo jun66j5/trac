@@ -224,19 +224,23 @@ if selenium:
             selector = 'form[id="%(name)s"]' % {'name': id_}
             return self._find_by(selector)
 
-        def _find_field(self, fieldname=None, formname=None):
-            if fieldname and formname:
-                selector = 'form[id="%(form)s"] [id="%(field)s"], ' \
-                           'form[id="%(form)s"] [name="%(field)s"]' % \
-                           {'form': formname, 'field': fieldname}
-            elif fieldname:
-                selector = '[id="%(field)s"], [name="%(field)s"]' % \
-                           {'field': fieldname}
-            elif formname:
-                selector = 'form[id="%s"] [type="submit"]' % formname
-            else:
+        def _find_field(self, field=None, form=None):
+            if field is form is None:
                 return self.driver.switch_to.active_element
-            return self._find_by(selector)
+            node = self.driver
+            try:
+                if form:
+                    node = node.find_element_by_css_selector(
+                        'form[id="{0}"], form[name="{0}"]'.format(form))
+                if field:
+                    node = node.find_element_by_css_selector(
+                        '[id="{0}"], [name="{0}"], '
+                        '[type="submit"][value="{0}"]'.format(field))
+                return node
+            except NoSuchElementException as e:
+                url = self._write_source()
+                raise AssertionError('Unable to find element in %s' %
+                                     url) from e
 
         def _find_by(self, *args, **kwargs):
             driver = self.driver
