@@ -13,12 +13,12 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 import os
-import re
 import unittest
 
 from trac.mimeview.rst import has_docutils
 from trac.tests.contentgen import random_sentence, random_unique_camel
-from trac.tests.functional import FunctionalTwillTestCaseSetup, tc
+from trac.tests.functional import FunctionalTwillTestCaseSetup, \
+                                  internal_error, tc
 from trac.util import create_file, get_pkginfo
 from trac.util.html import tag
 
@@ -45,13 +45,12 @@ class TestWikiDelete(FunctionalTwillTestCaseSetup):
         # Delete page with single version.
         name = self._tester.create_wiki_page()
         self._tester.go_to_wiki(name)
-        tc.formvalue('delete', 'action', 'delete')
-        tc.submit('delete_page')
+        tc.submit('Delete page')
         tc.find("Are you sure you want to completely delete this page?")
         tc.notfind("The following attachments will also be deleted:")
         tc.submit('delete', 'delete-confirm')
         tc.find("The page %s has been deleted." % name)
-        tc.url(self._tester.url)
+        tc.url(self._tester.url, regexp=False)
 
         # Delete page with attachment.
         name = self._tester.create_wiki_page()
@@ -64,7 +63,7 @@ class TestWikiDelete(FunctionalTwillTestCaseSetup):
         tc.find(filename)
         tc.submit('delete', 'delete-confirm')
         tc.find("The page %s has been deleted." % name)
-        tc.url(self._tester.url)
+        tc.url(self._tester.url, regexp=False)
 
         # Delete page with multiple versions.
         name = self._tester.create_wiki_page(content="Initial content.")
@@ -78,7 +77,7 @@ class TestWikiDelete(FunctionalTwillTestCaseSetup):
         tc.notfind("The following attachments will also be deleted:")
         tc.submit('delete', 'delete-confirm')
         tc.find("The page %s has been deleted." % name)
-        tc.url(self._tester.url)
+        tc.url(self._tester.url, regexp=False)
 
 
 class TestWikiAddAttachment(FunctionalTwillTestCaseSetup):
@@ -137,7 +136,7 @@ class TestWikiPageManipulator(FunctionalTwillTestCaseSetup):
             tc.follow("Wiki")
             tc.submit(formname='modifypage')
             tc.submit('save', 'edit')
-            tc.url(self._tester.url + '/wiki/WikiStart$')
+            tc.url(self._tester.url + '/wiki/WikiStart', regexp=False)
             tc.find("Invalid Wiki page: The page contains invalid markup at"
                     " line <strong>10</strong>.")
             tc.find("The Wiki page field <strong>comment</strong> is invalid:"
@@ -154,7 +153,7 @@ class TestWikiHistory(FunctionalTwillTestCaseSetup):
         self._tester.edit_wiki_page(pagename)
         url = self._tester.url
         tc.follow(r"\bHistory\b")
-        tc.url(url + r'/wiki/%s\?action=history' % pagename)
+        tc.url('%s/wiki/%s?action=history' % (url, pagename), regexp=False)
         version_link = ('<td class="version">[ \n]*'
                         '<a href="/wiki/%(pagename)s\?version=%%(version)s"'
                         '[ \n]*title="View this version">%%(version)s[ \n]*</a>'
@@ -180,33 +179,33 @@ class TestWikiEditComment(FunctionalTwillTestCaseSetup):
         url = self._tester.url
         tc.follow(r"\bHistory\b")
         history_url = url + r'/wiki/%s?action=history' % pagename
-        tc.url(re.escape(history_url) + '$')
+        tc.url(history_url, regexp=False)
 
         # Comment edit from history page
         tc.move_to('#fieldhist tbody tr:first-child')
         tc.follow(r"\bEdit\b")
-        tc.url(re.escape(url + '/wiki/%s?action=edit_comment&version=1' %
-                         pagename) + '$')
+        tc.url('%s/wiki/%s?action=edit_comment&version=1' % (url, pagename),
+               regexp=False)
         tc.find("Old comment:[ \t\n]+%s" % initial_comment)
         first_comment_edit = "First comment edit"
         tc.formvalue('edit-comment-form', 'new_comment', first_comment_edit)
         tc.submit()
-        tc.url(re.escape(history_url) + '$')
+        tc.url(history_url, regexp=False)
         tc.find(r'<td class="comment">[ \t\n]+%s' % first_comment_edit)
 
         # Comment edit from diff page
         tc.formvalue('history', 'version', '1')
         tc.submit()
         diff_url = url + r'/wiki/%s?action=diff&version=1' % pagename
-        tc.url(re.escape(diff_url) + '#?$')
+        tc.url(diff_url + '#', regexp=False)
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % first_comment_edit)
         tc.follow(r"\bEdit\b")
-        tc.url(re.escape(url + ('/wiki/%s?action=edit_comment&redirect_to=diff'
-                                '&version=1' % pagename)) + '$')
+        tc.url('%s/wiki/%s?action=edit_comment&redirect_to=diff&version=1' %
+               (url, pagename), regexp=False)
         second_comment_edit = "Second comment edit"
         tc.formvalue('edit-comment-form', 'new_comment', second_comment_edit)
         tc.submit()
-        tc.url(re.escape(diff_url) + '$')
+        tc.url(diff_url, regexp=False)
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % second_comment_edit)
 
 
@@ -275,7 +274,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
 
         def click_rename():
             tc.submit(formname='rename')
-            tc.url(page_url + r'\?action=rename')
+            tc.url(page_url + r'?action=rename', regexp=False)
             tc.find("New name:")
 
         tc.go(page_url)
@@ -284,22 +283,22 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         # attempt to give an empty new name
         tc.formvalue('rename-form', 'new_name', '')
         tc.submit('submit')
-        tc.url(page_url)
+        tc.url(page_url, regexp=False)
         tc.find("A new name is mandatory for a rename")
         # attempt to rename the page to an invalid page name
         tc.formvalue('rename-form', 'new_name', '../WikiStart')
         tc.submit('submit')
-        tc.url(page_url)
+        tc.url(page_url, regexp=False)
         tc.find("The new name is invalid")
         # attempt to rename the page to the current page name
         tc.formvalue('rename-form', 'new_name', pagename)
         tc.submit('submit')
-        tc.url(page_url)
+        tc.url(page_url, regexp=False)
         tc.find("The new name must be different from the old name")
         # attempt to rename the page to an existing page name
         tc.formvalue('rename-form', 'new_name', 'WikiStart')
         tc.submit('submit')
-        tc.url(page_url)
+        tc.url(page_url, regexp=False)
         tc.find("The page WikiStart already exists")
         # correct rename to new page name (old page replaced by a redirection)
         tc.go(page_url)
@@ -309,7 +308,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         tc.formvalue('rename-form', 'redirect', True)
         tc.submit('submit')
         # check redirection page
-        tc.url(page_url)
+        tc.url(page_url, regexp=False)
         tc.find("See.*/wiki/" + newpagename)
         tc.find("The page %s has been renamed to %s."
                 % (pagename, newpagename))
@@ -327,12 +326,11 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         tc.formvalue('rename-form', 'new_name', newpagename)
         tc.formvalue('rename-form', 'redirect', False)
         tc.submit('submit')
-        tc.url(base_url + "/wiki/" + newpagename)
+        tc.url(base_url + "/wiki/" + newpagename, regexp=False)
         tc.find("The page %s has been renamed to %s."
                 % (pagename, newpagename))
         # this time, the original page is gone
-        tc.go(page_url)
-        tc.url(page_url)
+        self._tester.go_to_url(page_url)
         tc.find("The page[ \n]+%s[ \n]+does not exist" % tag.strong(pagename))
 
 
@@ -362,7 +360,7 @@ Hello
         tc.find(r'<h1[^>]*>Hello')
         tc.notfind("wiki:WikiStart")
         tc.follow("Some Link")
-        tc.url(self._tester.url + "/wiki/WikiStart")
+        tc.url(self._tester.url + "/wiki/WikiStart", regexp=False)
 
 
 class ReStructuredTextCodeBlockTest(FunctionalTwillTestCaseSetup):
@@ -431,15 +429,16 @@ class RegressionTestTicket8976(FunctionalTwillTestCaseSetup):
 
 
 class RegressionTestTicket10274(FunctionalTwillTestCaseSetup):
-    @unittest.skip('Firefox automatically normalizes url')
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10274"""
-        self._tester.go_to_wiki('WikiStart/..', check=False)
-        tc.url(re.escape(self._tester.url + '/wiki') + '$')
+        # TODO send directly HTTP request using http.client because Firefox
+        # webdriver automatically normalizes URL
+        url = self._tester.url
+        tc.go(url + '/WikiStart/..')
         tc.find("Invalid Wiki page name 'WikiStart/..'")
-        self._tester.go_to_wiki('../WikiStart', check=False)
+        tc.go(url + '../WikiStart')
         tc.find("Invalid Wiki page name '../WikiStart'")
-        self._tester.go_to_wiki('WikiStart/./SubPage', check=False)
+        tc.go(url + 'WikiStart/./SubPage')
         tc.find("Invalid Wiki page name 'WikiStart/./SubPage'")
 
 

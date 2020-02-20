@@ -48,8 +48,7 @@ class TestEmptySvnRepo(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Check empty repository"""
         browser_url = self._tester.url + '/browser'
-        tc.go(browser_url)
-        tc.url(browser_url)
+        self._tester.go_to_url(browser_url)
         # This tests the current behavior; I'm not sure it's the best
         # behavior.
         tc.follow('Last Change')
@@ -72,12 +71,11 @@ class TestRepoCreation(FunctionalTwillTestCaseSetup):
         self._testenv.svn_mkdir(directories, commit_message)
 
         browser_url = self._tester.url + '/browser'
-        tc.go(browser_url)
-        tc.url(browser_url)
+        self._tester.go_to_url(browser_url)
         tc.find('component1')
         tc.find('component2')
         tc.follow('Last Change')
-        tc.url(self._tester.url + '/changeset/1/')
+        tc.url(self._tester.url + '/changeset/1/', regexp=False)
         tc.find(commit_message)
         for directory in directories:
             tc.find(directory)
@@ -111,8 +109,7 @@ class TestRepoBrowse(FunctionalTwillTestCaseSetup):
 
         # Verify that it appears in the browser view:
         browser_url = self._tester.url + '/browser'
-        tc.go(browser_url)
-        tc.url(browser_url)
+        self._tester.go_to_url(browser_url)
         tc.find('component1')
         tc.follow('component1')
         tc.follow('trunk')
@@ -169,7 +166,8 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         def go_to_repository_admin():
             self._tester.go_to_admin()
             tc.follow("\\bRepositories\\b")
-            tc.url(self._tester.url + '/admin/versioncontrol/repository')
+            tc.url(self._tester.url + '/admin/versioncontrol/repository',
+                   regexp=False)
 
         # TracError raised if repository already defined in database.
         go_to_repository_admin()
@@ -177,7 +175,7 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         add_repository(name1)
         tc.find('The repository "%s" has been added.' % name1)
         add_repository(name1)
-        tc.find('The repository &#34;%s&#34; already exists.' % name1)
+        tc.find("The repository '%s' already exists." % name1)
         tc.notfind(internal_error)
 
         # TracError raised if repository already defined in trac.ini.
@@ -187,7 +185,7 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         env.config.save()
         go_to_repository_admin()
         add_repository(name2)
-        tc.find('The repository &#34;%s&#34; already exists.' % name2)
+        tc.find("The repository '%s' already exists." % name2)
         tc.notfind(internal_error)
 
 
@@ -199,7 +197,8 @@ class RegressionTestTicket11186Alias(FunctionalTwillTestCaseSetup):
         """
         self._tester.go_to_admin()
         tc.follow("\\bRepositories\\b")
-        tc.url(self._tester.url + '/admin/versioncontrol/repository')
+        tc.url(self._tester.url + '/admin/versioncontrol/repository',
+               regexp=False)
         word = random_word()
         target = '%s_repos' % word
         name = '%s_alias' % word
@@ -225,7 +224,7 @@ class RegressionTestTicket11186Alias(FunctionalTwillTestCaseSetup):
         tc.formvalue('trac-addalias', 'name', name)
         tc.formvalue('trac-addalias', 'alias', target)
         tc.submit()
-        tc.find('The alias &#34;%s&#34; already exists.' % name)
+        tc.find('The alias "%s" already exists.' % name)
         tc.notfind(internal_error)
 
 
@@ -243,7 +242,8 @@ class RegressionTestTicket11194(FunctionalTwillTestCaseSetup):
         """
         self._tester.go_to_admin()
         tc.follow("\\bRepositories\\b")
-        tc.url(self._tester.url + '/admin/versioncontrol/repository')
+        tc.url(self._tester.url + '/admin/versioncontrol/repository',
+               regexp=False)
 
         word = random_word()
         names = ['%s_%d' % (word, n) for n in range(3)]
@@ -258,17 +258,20 @@ class RegressionTestTicket11194(FunctionalTwillTestCaseSetup):
         tc.notfind(internal_error)
 
         tc.follow('\\b' + names[1] + '\\b')
-        tc.url(self._tester.url + '/admin/versioncontrol/repository/' + names[1])
+        tc.url(self._tester.url + '/admin/versioncontrol/repository/' +
+               names[1], regexp=False)
         tc.formvalue('edit', 'name', names[2])
         tc.submit('save')
         tc.notfind(internal_error)
-        tc.url(self._tester.url + '/admin/versioncontrol/repository')
+        tc.url(self._tester.url + '/admin/versioncontrol/repository',
+               regexp=False)
 
         tc.follow('\\b' + names[2] + '\\b')
-        tc.url(self._tester.url + '/admin/versioncontrol/repository/' + names[2])
+        tc.url(self._tester.url + '/admin/versioncontrol/repository/' +
+               names[2], regexp=False)
         tc.formvalue('edit', 'name', names[0])
         tc.submit('save')
-        tc.find('The repository &#34;%s&#34; already exists.' % names[0])
+        tc.find('The repository "%s" already exists.' % names[0])
         tc.notfind(internal_error)
 
 
@@ -306,17 +309,21 @@ class RegressionTestTicket11355(FunctionalTwillTestCaseSetup):
 
         # Save unmodified form and redirect back to listing page
         tc.follow(r"\b%s\b" % name)
-        tc.url(self._tester.url + '/admin/versioncontrol/repository/' + name)
+        tc.url(self._tester.url + '/admin/versioncontrol/repository/' + name,
+               regexp=False)
         tc.submit('save', formname='edit')
-        tc.url(self._tester.url + '/admin/versioncontrol/repository')
+        tc.url(self._tester.url + '/admin/versioncontrol/repository',
+               regexp=False)
         tc.find("Your changes have been saved.")
 
         # Warning is added when repository dir is not an absolute path
         tc.follow(r"\b%s\b" % name)
-        tc.url(self._tester.url + '/admin/versioncontrol/repository/' + name)
+        tc.url(self._tester.url + '/admin/versioncontrol/repository/' + name,
+               regexp=False)
         tc.formvalue('edit', 'dir', os.path.basename(dir))
         tc.submit('save')
-        tc.url(self._tester.url + '/admin/versioncontrol/repository/' + name)
+        tc.url('%s/admin/versioncontrol/repository/%s#' %
+               (self._tester.url, name), regexp=False)
         tc.find('The repository directory must be an absolute path.')
 
 
@@ -329,7 +336,8 @@ class RegressionTestTicket11438(FunctionalTwillTestCaseSetup):
         rev = self._testenv.svn_add('ticket11438/file1.txt', '')
         rev = self._testenv.svn_add('ticket11438/file2.txt', '')
         tc.go(self._tester.url + '/intertrac/log:@%d:head' % (rev - 1))
-        tc.url(self._tester.url + r'/log/\?revs=' + str(rev - 1) + '-head')
+        tc.url('%s/log/?revs=%d-head' % (self._tester.url, rev - 1),
+               regexp=False)
         tc.notfind('@%d' % (rev + 1))
         tc.find('@%d' % rev)
         tc.find('@%d' % (rev - 1))
@@ -345,7 +353,8 @@ class RegressionTestTicket11584(FunctionalTwillTestCaseSetup):
 
         self._tester.go_to_admin()
         tc.follow("\\bRepositories\\b")
-        tc.url(self._tester.url + '/admin/versioncontrol/repository')
+        tc.url(self._tester.url + '/admin/versioncontrol/repository',
+               regexp=False)
 
         tc.formvalue('trac-addrepos', 'name', 't11584')
         tc.formvalue('trac-addrepos', 'dir', repo_path)
@@ -354,8 +363,7 @@ class RegressionTestTicket11584(FunctionalTwillTestCaseSetup):
         self._testenv._tracadmin('repository', 'sync', 't11584')
 
         browser_url = self._tester.url + '/browser/t11584'
-        tc.go(browser_url)
-        tc.url(browser_url)
+        self._tester.go_to_url(browser_url)
         tc.notfind('Error: No such changeset')
 
 
@@ -371,9 +379,11 @@ class RegressionTestTicket11618(FunctionalTwillTestCaseSetup):
         try:
             self._tester.go_to_admin()
             tc.follow(r'\bRepositories\b')
-            tc.url(self._tester.url + '/admin/versioncontrol/repository')
+            tc.url(self._tester.url + '/admin/versioncontrol/repository',
+                   regexp=False)
             tc.follow(r'\bt11618\b')
-            tc.url(self._tester.url + '/admin/versioncontrol/repository/t11618')
+            tc.url(self._tester.url + '/admin/versioncontrol/repository/t11618',
+                   regexp=False)
             tc.notfind(' readonly="True"')
             tc.find(' readonly="readonly"')
         finally:

@@ -235,15 +235,17 @@ class FunctionalTestEnvironment(object):
             input = None
         out = proc.communicate(input=input)[0]
         if proc.returncode:
-            print(out)
             self.logfile.write(out)
+        out = str(out, 'utf-8')
+        if proc.returncode:
+            print(out)
             raise Exception("Failed while running trac-admin with arguments %r.\n"
                             "Exitcode: %s \n%s"
                             % (args, proc.returncode, out))
         else:
             # trac-admin is started in interactive mode, so we strip away
             # everything up to the to the interactive prompt
-            return re.split(rb'\r?\nTrac \[[^]]+\]> ', out, 2)[1]
+            return re.split(r'\r?\nTrac \[[^]]+\]> ', out, 2)[1]
 
     def start(self):
         """Starts the webserver, and waits for it to come up."""
@@ -277,7 +279,7 @@ class FunctionalTestEnvironment(object):
             timeout -= 1
         else:
             raise Exception('Timed out waiting for server to start.')
-        tc.url(self.url)
+        tc.url(self.url, regexp=False)
 
     def stop(self):
         """Stops the webserver, if running
