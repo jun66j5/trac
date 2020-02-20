@@ -336,15 +336,15 @@ class RegressionTestTicket11503a(FunctionalTwillTestCaseSetup):
 
         tc.go(base + '/notf%C5%91und/')
         tc.notfind(internal_error)
-        tc.url(re.escape(base + '/notf%C5%91und') + r'\Z')
+        tc.url(base + '/notf%C5%91und', regexp=False)
 
         tc.go(base + '/notf%C5%91und/?type=def%C3%A9ct')
         tc.notfind(internal_error)
-        tc.url(re.escape(base + '/notf%C5%91und?type=def%C3%A9ct') + r'\Z')
+        tc.url(base + '/notf%C5%91und?type=def%C3%A9ct', regexp=False)
 
         tc.go(base + '/notf%C5%91und/%252F/?type=%252F')
         tc.notfind(internal_error)
-        tc.url(re.escape(base + '/notf%C5%91und/%252F?type=%252F') + r'\Z')
+        tc.url(base + '/notf%C5%91und/%252F?type=%252F', regexp=False)
 
 
 class RegressionTestTicket11503b(FunctionalTwillTestCaseSetup):
