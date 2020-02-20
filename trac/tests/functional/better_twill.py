@@ -60,6 +60,7 @@ if selenium:
         def __init__(self):
             self.tmpdir = mkdtemp()
             self.driver = self._create_webdriver()
+            self.driver.maximize_window()
 
         def _create_webdriver(self):
             profile = webdriver.FirefoxProfile()
@@ -88,10 +89,26 @@ if selenium:
         def back(self):
             self.driver.back()
 
-        def url(self, url):
-            if not re.match(url, self.driver.current_url):
-                raise AssertionError("URL didn't match: {!r} not matched in "
-                                     "{!r}".format(url, self.get_url()))
+        def click(self, *args, **kwargs):
+            self._find_by(*args, **kwargs).click()
+
+        def reload(self):
+            self.driver.refresh()
+
+        _normurl_re = re.compile(r'[a-z]+://[^:/]+:?[0-9]*$')
+
+        def url(self, url, regexp=True):
+            current_url = self.get_url()
+            if regexp:
+                if not re.match(url, current_url):
+                    raise AssertionError("URL didn't match: {!r} not matched "
+                                         "in {!r}".format(url, current_url))
+            else:
+                if self._normurl_re.match(url):
+                    url += '/'
+                if url != current_url:
+                    raise AssertionError("URL didn't equal: {!r} != {!r}"
+                                         .format(url, current_url))
 
         def notfind(self, s, flags=None):
             source = self.get_source()
@@ -115,63 +132,73 @@ if selenium:
         def follow(self, s):
             search = re.compile(s).search
             for element in self.driver.find_elements_by_tag_name('a'):
-                text = element.get_property('textContent')
-                if search(text):
+                if search(element.get_property('textContent')) or \
+                        search(element.get_attribute('href')):
                     element.click()
                     break
             else:
                 url = self._write_source(self.get_source())
-                raise AssertionError('Unable to find link %r in %s' % (s, url))
+                raise AssertionError('Missing link %r in %s' % (s, url))
 
         def formvalue(self, form, field, value):
             form_element = self._find_by(id=form)
             elements = form_element.find_elements_by_css_selector(
-                                    '[id="{0}"], [name="{0}"]'.format(field))
-            if not elements:
-                url = self._write_source()
-                raise ValueError('Missing %r elements in form#%s in %s' %
-                                 (field, form, url))
-            element = elements[0]
-            tag = element.tag_name
-            if tag == 'input':
-                type_ = element.get_attribute('type')
-                if type_  in ('text', 'password', 'file'):
+                                    '[name="{0}"], [id="{0}"]'.format(field))
+            for element in elements:
+                tag = element.tag_name
+                if tag == 'input':
+                    type_ = element.get_attribute('type')
+                    if type_  in ('text', 'password', 'file'):
+                        element.clear()
+                        element.send_keys(value)
+                        return
+                    if type_ == 'checkbox':
+                        if value in (True, False):
+                            element.click()  # to focus
+                            if element.is_selected() != value:
+                                element.click()
+                        elif isinstance(value, str):
+                            v = [value[1:], value] \
+                                if value.startswith(('+', '-')) else [value]
+                            if element.get_attribute('value') in v:
+                                continue
+                            checked = not value.startswith('-')
+                            element.click()  # to focus
+                            if not element.is_selected() != checked:
+                                element.click()
+                        else:
+                            raise ValueError('Unrecognized value for '
+                                             'checkbox: {!r}'.format(value))
+                        return
+                    if type_ == 'radio':
+                        for element in elements:
+                            if element.get_attribute('value') == value:
+                                element.click()
+                                return
+                        else:
+                            url = self._write_source()
+                            raise ValueError('Missing input[type=%r][name=%r]'
+                                             '[value=%r] in %s' %
+                                             (type_, field, value, url))
+                if tag == 'textarea':
                     element.clear()
                     element.send_keys(value)
-                elif type_ == 'checkbox':
-                    element.click()  # to focus
-                    if element.is_selected() != bool(value):
-                        element.click()
-                elif type_ == 'radio':
-                    for element in elements:
-                        if element.get_attribute('value') == value:
-                            element.click()
-                            break
+                    return
+                if tag == 'select':
+                    for option in element.find_elements_by_tag_name('option'):
+                        if value in (option.get_attribute('value'),
+                                     option.get_property('textContent')):
+                            option.click()
+                            element.click()  # to focus the select element
+                            return
                     else:
                         url = self._write_source()
-                        raise ValueError('Missing input[type=%r][value=%r] in '
-                                         '%s' % (type_, value, url))
-                else:
-                    raise ValueError('Unrecognized element: input[type=%r]' %
-                                     type_)
-            elif tag == 'textarea':
-                element.clear()
-                element.send_keys(value)
-            elif tag == 'select':
-                for option in element.find_elements_by_tag_name('option'):
-                    v = option.get_attribute('value')
-                    if v is None:
-                        v = option.get_property('textContent')
-                    if v == value:
-                        option.click()
-                        element.click()  # to focus the select element
-                        break
-                else:
-                    url = self._write_source()
-                    raise ValueError('Missing option[value=%r] in %s' %
-                                     (value, url))
+                        raise ValueError('Missing option[value=%r] in %s' %
+                                         (value, url))
             else:
-                raise ValueError('Unrecognized element: %r' % tag)
+                url = self._write_source()
+                raise ValueError('Missing %r field in %r form in %s' %
+                                 (field, form, url))
 
         fv = formvalue
 
@@ -239,8 +266,8 @@ if selenium:
                 return node
             except NoSuchElementException as e:
                 url = self._write_source()
-                raise AssertionError('Unable to find element in %s' %
-                                     url) from e
+                raise AssertionError('Missing field (%r, %r) in %s' %
+                                     (field, form, url)) from e
 
         def _find_by(self, *args, **kwargs):
             driver = self.driver
@@ -257,8 +284,8 @@ if selenium:
                     return driver.switch_to.active_element
             except NoSuchElementException as e:
                 url = self._write_source()
-                raise AssertionError('Unable to find element in %s' %
-                                     url) from e
+                raise AssertionError('Missing element (%r, %r) in %s' %
+                                     (args, kwargs, url)) from e
             raise ValueError('Invalid arguments: %r %r' % (args, kwargs))
 
         _re_flag_bits = {'i': re.IGNORECASE, 'm': re.MULTILINE, 's': re.DOTALL}
