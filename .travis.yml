@@ -4,9 +4,11 @@ language: python
 python: 3.8
 addons:
   apt:
-    packages: [libapr1-dev, libaprutil1-dev, liblz4-dev, libutf8proc-dev, swig]
+    packages: [libapr1-dev, libaprutil1-dev, liblz4-dev, libutf8proc-dev, swig,
+               firefox-geckodriver]
   homebrew:
-    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig]
+    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig, geckodriver]
+  firefox: latest
 cache:
   directories:
   - "$HOME/.cache/pip"
@@ -43,7 +45,7 @@ install:
 - set -e
 - |
   if [ "$TRAVIS_BUILD_STAGE_NAME" = test ]; then
-    requires='Jinja2 lxml'
+    requires='Jinja2 selenium lxml'
     if [ "$build" != minimum ]; then requires="$requires Babel Pygments docutils textile pytz"; fi
     if [ "$tracdb" = postgresql ]; then requires="$requires psycopg2"; fi
     if [ "$tracdb" = mysql ]; then requires="$requires PyMySQL"; fi
