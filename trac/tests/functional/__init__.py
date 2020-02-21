@@ -167,7 +167,7 @@ else:
     # We're going to have to skip the functional tests
     class FunctionalTestSuite(TestSetup):
         def __init__(self):
-            raise ImportError("Twill not installed")
+            raise ImportError("Selenium not installed")
 
     class FunctionalTwillTestCaseSetup(object):
         pass
