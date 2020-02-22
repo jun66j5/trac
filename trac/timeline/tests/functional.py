@@ -12,6 +12,7 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
+import re
 import unittest
 
 from trac.tests.contentgen import random_page, random_sentence, \
@@ -66,8 +67,9 @@ class TestRssFormat(FunctionalTwillTestCaseSetup):
         self._tester.create_wiki_page(pagename)
         page = WikiPage(self._testenv.get_trac_environment(), pagename)
         self._tester.go_to_timeline()
-        tc.follow("RSS Feed")
-        tc.find(r"""<\?xml version="1.0"\?>[\n]+
+        code, content = tc.download_link("RSS Feed")
+        self.assertEqual(200, code)
+        pattern = r"""<\?xml version="1.0"\?>[\n]+
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Functional Tests</title>
@@ -90,7 +92,12 @@ class TestRssFormat(FunctionalTwillTestCaseSetup):
       <description>[^<]+</description>
       <category>wiki</category>
     </item>
-""" % {'pagename': pagename, 'http_date': http_date(page.time)}, 'ms')
+""" % {'pagename': pagename, 'http_date': http_date(page.time)}
+        if not re.match(pattern.encode('utf-8'), content,
+                    re.MULTILINE | re.DOTALL):
+            url = tc.write_source(content)
+            raise AssertionError("Regex didn't match: {!r} not found in {}"
+                                 .format(pattern, url))
 
 
 def functionalSuite(suite=None):

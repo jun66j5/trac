@@ -45,7 +45,7 @@ class FunctionalTester(object):
 
     def login(self, username):
         """Login as the given user"""
-        #tc.add_auth("", self.url, username, username)
+        tc.add_auth('', self.url + '/login', username, username)
         self.go_to_front()
         try:
             tc.find("Logout")

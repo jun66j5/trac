@@ -188,35 +188,33 @@ class TestTicketAltFormats(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Download ticket in alternative formats"""
         summary = random_sentence(5)
+        summary_bytes = summary.encode('utf-8')
         self._tester.create_ticket(summary)
-        for format in ['Comma-delimited Text', 'Tab-delimited Text',
-                       'RSS Feed']:
-            tc.follow(format)
-            content = b.get_html()
-            if content.find(summary) < 0:
-                raise AssertionError('Summary missing from %s format'
-                                     % format)
-            tc.back()
+        for fmt in ('Comma-delimited Text', 'Tab-delimited Text', 'RSS Feed'):
+            code, content = tc.download_link(fmt)
+            self.assertEqual(200, code)
+            if content.find(summary_bytes) < 0:
+                url = tc.write_source(content)
+                raise AssertionError('Summary missing from %s format in %s' %
+                                     (fmt, url))
 
 
 class TestTicketCSVFormat(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Download ticket in CSV format"""
         self._tester.create_ticket()
-        tc.follow('Comma-delimited Text')
-        csv = b.get_html()
-        if not csv.startswith('\xef\xbb\xbfid,summary,'): # BOM
-            raise AssertionError('Bad CSV format')
+        code, csv = tc.download_link('Comma-delimited Text')
+        if not csv.startswith(b'\xef\xbb\xbfid,summary,'): # BOM
+            raise AssertionError('Bad CSV format: %r' % csv)
 
 
 class TestTicketTabFormat(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Download ticket in Tab-delimited format"""
         self._tester.create_ticket()
-        tc.follow('Tab-delimited Text')
-        tab = b.get_html()
-        if not tab.startswith('\xef\xbb\xbfid\tsummary\t'): # BOM
-            raise AssertionError('Bad tab delimited format')
+        code, tab = tc.download_link('Tab-delimited Text')
+        if not tab.startswith(b'\xef\xbb\xbfid\tsummary\t'): # BOM
+            raise AssertionError('Bad tab delimited format: %r' % tab)
 
 
 class TestTicketRSSFormat(FunctionalTwillTestCaseSetup):
@@ -237,9 +235,8 @@ class TestTicketRSSFormat(FunctionalTwillTestCaseSetup):
         tc.submit('submit')
 
         tc.find('RSS Feed')
-        tc.follow('RSS Feed')
-        rss = b.get_html()
-        if not rss.startswith('<?xml version="1.0"?>'):
+        code, rss = tc.download_link('RSS Feed')
+        if not rss.startswith(b'<?xml version="1.0"?>'):
             raise AssertionError('RSS Feed not valid feed')
 
 
