@@ -24,10 +24,10 @@ import tempfile
 from os.path import abspath, dirname, join
 from pkg_resources import parse_version as pv
 from urllib.parse import urljoin
-from urllib.request import pathname2url
+from urllib.request import HTTPBasicAuthHandler, Request, build_opener, \
+                           pathname2url
 
 from trac.test import mkdtemp, rmtree
-from trac.util.text import to_unicode
 
 # On OSX lxml needs to be imported before twill to avoid Resolver issues
 # somehow caused by the mac specific 'ic' module
@@ -46,7 +46,6 @@ if selenium:
     from selenium.common.exceptions import (
         NoSuchElementException, WebDriverException as ConnectError)
     from selenium.webdriver.common.action_chains import ActionChains
-    from selenium.webdriver.remote import file_detector
 
     # setup short names to reduce typing
     # This selenium browser (and the tc commands that use it) are essentially
@@ -56,6 +55,7 @@ if selenium:
 
         driver = None
         tmpdir = None
+        auth_handler = None
 
         def __init__(self):
             self.tmpdir = mkdtemp()
@@ -82,8 +82,7 @@ if selenium:
                 self.driver.quit()
 
         def go(self, url):
-            if url.startswith('/'):
-                url = urljoin(self.get_url(), url)
+            url = self._urljoin(url)
             return self.driver.get(url)
 
         def back(self):
@@ -94,6 +93,18 @@ if selenium:
 
         def reload(self):
             self.driver.refresh()
+
+        def download(self, url):
+            cookie = '; '.join('%s=%s' % (c['name'], c['value'])
+                               for c in self.driver.get_cookies())
+            url = self._urljoin(url)
+            handlers = []
+            if self.auth_handler:
+                handlers.append(self.auth_handler)
+            opener = build_opener(*handlers)
+            req = Request(url, headers={'Cookie': cookie})
+            with opener.open(req) as resp:
+                return resp.getcode(), resp.read()
 
         _normurl_re = re.compile(r'[a-z]+://[^:/]+:?[0-9]*$')
 
@@ -114,7 +125,7 @@ if selenium:
             source = self.get_source()
             match = re.search(s, source, self._re_flags(flags))
             if match:
-                url = self._write_source(source)
+                url = self.write_source(source)
                 raise AssertionError('Regex matched: {!r} matches {!r} in {}'
                                      .format(source[match.start():match.end()],
                                              s, url))
@@ -122,23 +133,22 @@ if selenium:
         def find(self, s, flags=None):
             source = self.get_source()
             if not re.search(s, source, self._re_flags(flags)):
-                url = self._write_source(source)
+                url = self.write_source(source)
                 raise AssertionError("Regex didn't match: {!r} not found in {}"
                                      .format(s, url))
 
-        def add_auth(self, x, url, username, pw):
-            pass
+        def add_auth(self, x, url, username, password):
+            handler = HTTPBasicAuthHandler()
+            handler.add_password(x, url, username, password)
+            self.auth_handler = handler
 
         def follow(self, s):
-            search = re.compile(s).search
-            for element in self.driver.find_elements_by_tag_name('a'):
-                if search(element.get_property('textContent')) or \
-                        search(element.get_attribute('href')):
-                    element.click()
-                    break
-            else:
-                url = self._write_source(self.get_source())
-                raise AssertionError('Missing link %r in %s' % (s, url))
+            self._find_link(s).click()
+
+        def download_link(self, pattern):
+            element = self._find_link(pattern)
+            href = element.get_attribute('href')
+            return self.download(href)
 
         def formvalue(self, form, field, value):
             form_element = self._find_by(id=form)
@@ -176,7 +186,7 @@ if selenium:
                                 element.click()
                                 return
                         else:
-                            url = self._write_source()
+                            url = self.write_source()
                             raise ValueError('Missing input[type=%r][name=%r]'
                                              '[value=%r] in %s' %
                                              (type_, field, value, url))
@@ -192,11 +202,11 @@ if selenium:
                             element.click()  # to focus the select element
                             return
                     else:
-                        url = self._write_source()
+                        url = self.write_source()
                         raise ValueError('Missing option[value=%r] in %s' %
                                          (value, url))
             else:
-                url = self._write_source()
+                url = self.write_source()
                 raise ValueError('Missing %r field in %r form in %s' %
                                  (field, form, url))
 
@@ -215,13 +225,13 @@ if selenium:
             form = self._find_form(formname)
             enctype = form.get_attribute('enctype')
             if enctype != 'multipart/form-data':
-                url = self._write_source()
+                url = self.write_source()
                 raise ValueError('enctype should be multipart/form-data: %r '
                                  'in %s' % (enctype, url))
             field = self._find_field(fieldname, formname)
             type_ = field.get_attribute('type')
             if type_ != 'file':
-                url = self._write_source()
+                url = self.write_source()
                 raise ValueError('type should be file: %r in %s' %
                                  (type_, url))
             field.send_keys(phypath)
@@ -232,14 +242,14 @@ if selenium:
                 if element.tag_name != 'form':
                     element = element.get_property('form')
                     if element is None:
-                        url = self._write_source()
+                        url = self.write_source()
                         raise ValueError('No form property in %s' % url)
                 for element in element.find_elements_by_css_selector(
                         '[type="submit"]'):
                     if element.is_enabled():
                         break
                 else:
-                    url = self._write_source()
+                    url = self.write_source()
                     raise ValueError('No active submit elements in %s' % url)
             element.click()
 
@@ -265,7 +275,7 @@ if selenium:
                         '[type="submit"][value="{0}"]'.format(field))
                 return node
             except NoSuchElementException as e:
-                url = self._write_source()
+                url = self.write_source()
                 raise AssertionError('Missing field (%r, %r) in %s' %
                                      (field, form, url)) from e
 
@@ -283,10 +293,20 @@ if selenium:
                 if len(args) == 0:
                     return driver.switch_to.active_element
             except NoSuchElementException as e:
-                url = self._write_source()
+                url = self.write_source()
                 raise AssertionError('Missing element (%r, %r) in %s' %
                                      (args, kwargs, url)) from e
             raise ValueError('Invalid arguments: %r %r' % (args, kwargs))
+
+        def _find_link(self, pattern):
+            search = re.compile(pattern).search
+            for element in self.driver.find_elements_by_tag_name('a'):
+                if search(element.get_property('textContent')) or \
+                        search(element.get_attribute('href')):
+                    return element
+            else:
+                url = self.write_source(self.get_source())
+                raise AssertionError('Missing link %r in %s' % (pattern, url))
 
         _re_flag_bits = {'i': re.IGNORECASE, 'm': re.MULTILINE, 's': re.DOTALL}
 
@@ -302,10 +322,15 @@ if selenium:
                         bit |= value
             return bit
 
+        def _urljoin(self, url):
+            if '://' not in url:
+                url = urljoin(self.get_url(), url)
+            return url
+
         # When we can't find something we expected, or find something we didn't
         # expect, it helps the debugging effort to have a copy of the html to
         # analyze.
-        def _write_source(self, source=None):
+        def write_source(self, source=None):
             """Write the current html to a file. Name the file based on the
             current testcase.
             """
@@ -335,8 +360,14 @@ if selenium:
             if source is None:
                 source = self.get_source()
             filename = os.path.join(tracdir, 'log', '%s.html' % testname)
-            with open(filename, 'w', encoding='utf-8') as html_file:
+            try:
+                if isinstance(source, bytes):
+                    html_file = open(filename, 'wb')
+                else:
+                    html_file = open(filename, 'w', encoding='utf-8')
                 html_file.write(source)
+            finally:
+                html_file.close()
 
             return urljoin('file:', pathname2url(filename))
 
