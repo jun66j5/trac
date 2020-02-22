@@ -75,6 +75,7 @@ else:
 import trac
 from trac.test import TestSetup, TestCaseSetup
 from trac.tests.functional.better_twill import b, tc, selenium
+from trac.util import create_file, read_file
 
 
 internal_error = 'Trac detected an internal error:'
@@ -146,8 +147,13 @@ if selenium:
                 raise
             self.fixture = (self._testenv, self._tester)
             self._testenv.set_config('project', 'name', 'Functional Tests')
-            self._testenv.set_config('header_logo', 'src', '')
             self._testenv.set_config('trac', 'base_url', baseurl)
+            create_file(
+                os.path.join(env_path, 'trac', 'htdocs',
+                             'your_project_logo.png'),
+                read_file(os.path.join(trac_source_tree, 'trac', 'htdocs',
+                                       'trac_logo_mini.png'), 'rb'),
+                'wb')
 
         def tearDown(self):
             self._testenv.stop()
