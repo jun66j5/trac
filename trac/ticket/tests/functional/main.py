@@ -1061,8 +1061,7 @@ class TestMilestoneGroupedProgress(FunctionalTwillTestCaseSetup):
         self._tester.go_to_milestone(name)
 
         # Owner should not be obfuscated.
-        tc.formvalue('stats', 'by', 'owner')
-        tc.submit()
+        tc.click('#stats select[name="by"] option[value="owner"]')
         tc.find('<th scope="row">[ \t\n]+'
                 '<a href="[^"]+">'
                 '<span class="trac-author">user1@example.com</span>')
@@ -1073,8 +1072,7 @@ class TestMilestoneGroupedProgress(FunctionalTwillTestCaseSetup):
         # Owner should be obfuscated.
         self._tester.logout()
         self._tester.go_to_milestone(name)
-        tc.formvalue('stats', 'by', 'owner')
-        tc.submit()
+        tc.click('#stats select[name="by"] option[value="owner"]')
         tc.find('<th scope="row">[ \t\n]+'
                 '<span class="trac-author">user1@…</span>')
         tc.find('<form id="stats" class="trac-groupprogress" [^>]+>.*'
