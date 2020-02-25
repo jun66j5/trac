@@ -173,9 +173,9 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         go_to_repository_admin()
         name1 = random_word()
         add_repository(name1)
-        tc.find('The repository "%s" has been added.' % name1)
+        tc.find(r'The repository "%s" has been added\.' % name1)
         add_repository(name1)
-        tc.find("The repository '%s' already exists." % name1)
+        tc.find(r'The repository "%s" already exists\.' % name1)
         tc.notfind(internal_error)
 
         # TracError raised if repository already defined in trac.ini.
@@ -185,7 +185,7 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         env.config.save()
         go_to_repository_admin()
         add_repository(name2)
-        tc.find("The repository '%s' already exists." % name2)
+        tc.find(r'The repository "%s" already exists\.' % name2)
         tc.notfind(internal_error)
 
 
@@ -401,8 +401,8 @@ class RegressionTestTicket11777(FunctionalTwillTestCaseSetup):
                                     'ticket-11777')
         tc.go(self._tester.url +
               '/search?q=ticket-11777&noquickjump=1&changeset=on')
-        tc.notfind(r'\[%010d\]: ticket-11777' % rev)
-        tc.find(r'\[%d\]: ticket-11777' % rev)
+        tc.notfind(r'>\[%010d\]: ' % rev)
+        tc.find(r'>\[%d\]: ' % rev)
         tc.find(' href="/changeset/%d"' % rev)
 
 
