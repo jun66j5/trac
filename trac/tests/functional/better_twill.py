@@ -163,41 +163,33 @@ if selenium:
                         element.send_keys(value)
                         return
                     if type_ == 'checkbox':
-                        if value in (True, False):
-                            element.click()  # to focus
-                            if element.is_selected() != value:
-                                element.click()
-                        elif isinstance(value, str):
-                            v = [value[1:], value] \
-                                if value.startswith(('+', '-')) else [value]
-                            if element.get_attribute('value') in v:
+                        if isinstance(value, str):
+                            v = value[1:] \
+                                if value.startswith(('+', '-')) else value
+                            if element.get_attribute('value') != v:
                                 continue
                             checked = not value.startswith('-')
-                            element.click()  # to focus
-                            if not element.is_selected() != checked:
-                                element.click()
+                        elif value in (True, False):
+                            checked = value
                         else:
                             raise ValueError('Unrecognized value for '
-                                             'checkbox: {!r}'.format(value))
+                                             'checkbox: %s' % repr(value))
+                        element.click()  # to focus
+                        if element.is_selected() != checked:
+                            element.click()
                         return
                     if type_ == 'radio':
-                        for element in elements:
-                            if element.get_attribute('value') == value:
-                                element.click()
-                                return
-                        else:
-                            url = self.write_source()
-                            raise ValueError('Missing input[type=%r][name=%r]'
-                                             '[value=%r] in %s' %
-                                             (type_, field, value, url))
+                        if element.get_attribute('value') == value:
+                            element.click()
+                            return
                 if tag == 'textarea':
                     element.clear()
                     element.send_keys(value)
                     return
                 if tag == 'select':
                     for option in element.find_elements_by_tag_name('option'):
-                        if value in (option.get_attribute('value'),
-                                     option.get_property('textContent')):
+                        if value == option.get_attribute('value') or \
+                                value == option.get_property('textContent'):
                             option.click()
                             element.click()  # to focus the select element
                             return
@@ -207,8 +199,9 @@ if selenium:
                                          (value, url))
             else:
                 url = self.write_source()
-                raise ValueError('Missing %r field in %r form in %s' %
-                                 (field, form, url))
+                raise ValueError('Unable to find element matched with '
+                                 '`formvalue(%r, %r, %r)` in %s' %
+                                 (form, field, value, url))
 
         fv = formvalue
 
