@@ -231,7 +231,10 @@ if selenium:
 
         def submit(self, fieldname=None, formname=None):
             element = self._find_field(fieldname, formname)
-            if element.get_attribute('type') != 'submit':
+            if element.get_attribute('type') == 'submit':
+                if not element.is_enabled():
+                    raise ValueError('Unable to click disabled submit element')
+            else:
                 if element.tag_name != 'form':
                     element = element.get_property('form')
                     if element is None:
