@@ -66,6 +66,7 @@ if selenium:
             profile = webdriver.FirefoxProfile()
             profile.set_preference('intl.accept_languages', 'en-us')
             profile.set_preference('network.http.phishy-userpass-length', 255)
+            profile.set_preference('general.warnOnAboutConfig', False)
             options = webdriver.FirefoxOptions()
             options.profile = profile
             options.add_argument('--headless')
@@ -228,6 +229,72 @@ if selenium:
                 raise ValueError('type should be file: %r in %s' %
                                  (type_, url))
             field.send_keys(phypath)
+
+        def javascript_disabled(self, fn):
+            def wrapper(*args, **kwargs):
+                prev = self.set_prefs({'javascript.enabled': False})
+                try:
+                    return fn(*args, **kwargs)
+                finally:
+                    if prev is not None:
+                        self.set_prefs(prev)
+            return wrapper
+
+        def prefs(self, values):
+            def decorator(fn):
+                def wrapper(*args, **kwargs):
+                    prev = self.set_prefs(values)
+                    try:
+                        return fn(*args, **kwargs)
+                    finally:
+                        if prev is not None:
+                            self.set_prefs(prev)
+                return wrapper
+            return decorator
+
+        def set_prefs(self, values):
+            driver = self.driver
+            driver.get('about:config')
+            prev = driver.execute_script("""\
+                var prefs = Components.classes
+                            ["@mozilla.org/preferences-service;1"]
+                            .getService(Components.interfaces.nsIPrefBranch);
+                var values = arguments[0];
+                var prev = {};
+                var key, value;
+                for (key in values) {
+                    switch (prefs.getPrefType(key)) {
+                    case 32:
+                        value = prefs.getCharPref(key);
+                        break;
+                    case 64:
+                        value = prefs.getIntPref(key);
+                        break;
+                    case 128:
+                        value = prefs.getBoolPref(key);
+                        break;
+                    default:
+                        continue;
+                    }
+                    prev[key] = value;
+                }
+                for (key in values) {
+                    value = values[key];
+                    switch (typeof value) {
+                    case 'string':
+                        prefs.setCharPref(key, value);
+                        break;
+                    case 'number':
+                        prefs.setIntPref(key, value);
+                        break;
+                    case 'boolean':
+                        prefs.setBoolPref(key, value);
+                        break;
+                    }
+                }
+                return prev;
+            """, values)
+            return prev
 
         def submit(self, fieldname=None, formname=None):
             element = self._find_field(fieldname, formname)

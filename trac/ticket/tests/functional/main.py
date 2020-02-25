@@ -381,6 +381,7 @@ class TestTicketHistoryInvalidCommentVersion(FunctionalTwillTestCaseSetup):
 
 
 class TestTicketQueryLinks(FunctionalTwillTestCaseSetup):
+    @tc.javascript_disabled
     def runTest(self):
         """Test ticket query links"""
         count = 3
@@ -401,7 +402,7 @@ class TestTicketQueryLinks(FunctionalTwillTestCaseSetup):
             tc.find('TestTicketQueryLinks%s' % i)
 
         tc.follow('TestTicketQueryLinks0')
-        tc.find('class="missing">&larr; Previous Ticket')
+        tc.find('class="missing">← Previous Ticket')
         tc.find('title="Ticket #%s">Next Ticket' % ticket_ids[1])
         tc.follow('Back to Query')
         tc.url(query_url, regexp=False)
@@ -412,7 +413,7 @@ class TestTicketQueryLinks(FunctionalTwillTestCaseSetup):
         tc.follow('Next Ticket')
 
         tc.find('title="Ticket #%s">Previous Ticket' % ticket_ids[1])
-        tc.find('class="missing">Next Ticket &rarr;')
+        tc.find('class="missing">Next Ticket →')
 
 
 class TestTicketQueryLinksQueryModuleDisabled(FunctionalTwillTestCaseSetup):
@@ -465,6 +466,7 @@ class TestTicketQueryLinksQueryModuleDisabled(FunctionalTwillTestCaseSetup):
 
 
 class TestTicketQueryOrClause(FunctionalTwillTestCaseSetup):
+    @tc.javascript_disabled
     def runTest(self):
         """Test ticket query with an or clauses"""
         count = 3

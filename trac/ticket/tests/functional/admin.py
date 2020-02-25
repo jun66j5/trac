@@ -84,6 +84,7 @@ class TestAdminComponentRemoval(FunctionalTwillTestCaseSetup):
 
 
 class TestAdminComponentNonRemoval(FunctionalTwillTestCaseSetup):
+    @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected component"""
         component_url = self._tester.url + "/admin/ticket/components"
@@ -439,6 +440,7 @@ class TestAdminMilestoneRemoveMulti(FunctionalTwillTestCaseSetup):
 
 
 class TestAdminMilestoneNonRemoval(FunctionalTwillTestCaseSetup):
+    @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected milestone"""
         milestone_url = self._tester.url + "/admin/ticket/milestones"
@@ -614,6 +616,7 @@ class TestAdminPriorityRemoveMulti(FunctionalTwillTestCaseSetup):
 
 
 class TestAdminPriorityNonRemoval(FunctionalTwillTestCaseSetup):
+    @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected priority"""
         priority_url = self._tester.url + "/admin/ticket/priority"
@@ -904,6 +907,7 @@ class TestAdminVersionRemoveMulti(FunctionalTwillTestCaseSetup):
 
 
 class TestAdminVersionNonRemoval(FunctionalTwillTestCaseSetup):
+    @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected version"""
         version_url = self._tester.url + "/admin/ticket/versions"
@@ -1043,6 +1047,7 @@ def functionalSuite(suite=None):
     if not suite:
         import trac.tests.functional
         suite = trac.tests.functional.functionalSuite()
+    suite.addTest(TestAdminComponentNonRemoval())
     suite.addTest(TestAdminComponent())
     suite.addTest(TestAdminComponentAuthorization())
     suite.addTest(TestAdminComponentDuplicates())
