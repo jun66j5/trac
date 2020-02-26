@@ -41,6 +41,7 @@ try:
 except ImportError:
     selenium = None
 
+
 if selenium:
     from selenium import webdriver
     from selenium.common.exceptions import (
@@ -445,10 +446,26 @@ if selenium:
 
         get_html = get_source
 
-    b = tc = Proxy()
 else:
     class ConnectError(Exception): pass
-    b = tc = None
+
+    class Proxy(object):
+
+        def javascript_disabled(self, fn):
+            def wrapper(*args, **kwargs):
+                return fn(*args, **kwargs)
+            return wrapper
+
+        def prefs(self, values):
+            def decorator(fn):
+                def wrapper(*args, **kwargs):
+                    return fn(*args, **kwargs)
+                return wrapper
+            return decorator
+
+
+b = tc = Proxy()
+
 
 if b is not None and False: # TODO selenium
     # Setup XHTML validation for all retrieved pages
