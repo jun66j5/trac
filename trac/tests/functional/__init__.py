@@ -55,6 +55,7 @@ Requirements:
  - lxml for XHTML validation (optional)
 """
 
+import atexit
 import os
 import subprocess
 import unittest
@@ -136,14 +137,14 @@ if selenium:
             # functional-testing.log gets the twill output
             self.functional_test_log = \
                 os.path.join(env_path, 'functional-testing.log')
-            #twill.set_output(open(self.functional_test_log, 'w',
-            #                      encoding='utf-8'))
 
+            tc.init()
             self._testenv.start()
             try:
                 self._tester = self.tester_class(baseurl)
             except:
                 self._testenv.stop()
+                tc.close()
                 raise
             self.fixture = (self._testenv, self._tester)
             self._testenv.set_config('project', 'name', 'Functional Tests')
@@ -155,8 +156,12 @@ if selenium:
                                        'trac_logo_mini.png'), 'rb'),
                 'wb')
 
+            atexit.register(self.tearDown)
+
         def tearDown(self):
+            atexit.unregister(self.tearDown)
             self._testenv.stop()
+            tc.close()
 
 
     class FunctionalTestCaseSetup(TestCaseSetup):
