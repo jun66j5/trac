@@ -170,7 +170,7 @@ class WSGIRequestHandler(BaseHTTPRequestHandler):
             path_info, query_string = self.path.split('?', 1)
         else:
             path_info, query_string = self.path, ''
-        environ['PATH_INFO'] = urllib.parse.unquote(path_info)
+        environ['PATH_INFO'] = urllib.parse.unquote(path_info, 'iso-8859-1')
         environ['QUERY_STRING'] = query_string
 
         host = self.address_string()
