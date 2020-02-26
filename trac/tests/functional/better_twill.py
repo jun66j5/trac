@@ -57,7 +57,7 @@ if selenium:
         tmpdir = None
         auth_handler = None
 
-        def __init__(self):
+        def init(self):
             self.tmpdir = mkdtemp()
             self.driver = self._create_webdriver()
             self.driver.maximize_window()
@@ -79,8 +79,10 @@ if selenium:
         def close(self):
             if self.tmpdir:
                 rmtree(self.tmpdir)
+                self.tmpdir = None
             if self.driver:
                 self.driver.quit()
+                self.driver = None
 
         def go(self, url):
             url = self._urljoin(url)
@@ -443,10 +445,7 @@ if selenium:
 
         get_html = get_source
 
-    import atexit
-    tc = Proxy()
-    atexit.register(tc.close)
-    b = tc
+    b = tc = Proxy()
 else:
     class ConnectError(Exception): pass
     b = tc = None
