@@ -49,6 +49,7 @@ $pgHome     = 'C:\Program Files\PostgreSQL\9.3'
 $pgUser     = 'postgres'
 $pgPassword = 'Password12!'
 
+$firefoxHome = 'C:\Program Files\Mozilla Firefox'
 
 # External Python dependencies
 
@@ -60,7 +61,8 @@ $pipPackages = @(
     'pygments',
     'pytz',
     'textile',
-    'wheel'
+    'wheel',
+    'selenium'
 )
 
 $fcrypt    = "$deps\fcrypt-1.3.1.tar.gz"
@@ -98,6 +100,7 @@ $condaCommonPackages = @(
 $pyHome = $env:PYTHONHOME
 $usingMysql      = $env:TRAC_TEST_DB_URI -match '^mysql:'
 $usingPostgresql = $env:TRAC_TEST_DB_URI -match '^postgres:'
+$usingFirefox    = $pipPackages -contains 'selenium'
 $skipInstall = [bool]$env:SKIP_ENV
 $skipBuild   = $env:SKIP_BUILD -or $env:SKIP_ENV
 $skipTests   = $env:SKIP_TESTS -or $env:SKIP_ENV
@@ -170,6 +173,9 @@ if (-not $py64) {
     $env:PYTHONPATH = "$deps\$pyVersion\$svnBase\python;$($env:PYTHONPATH)"
 }
 
+if ($usingFirefox) {
+    $env:Path = "$($env:Path);$firefoxHome"
+}
 
 # ------------------------------------------------------------------
 # Steps
@@ -238,6 +244,10 @@ function Trac-Install {
 
         Add-AppveyorMessage -Message "1.1. psycopg2 package installed" `
           -Category Information
+    }
+
+    if ($usingFirefox) {
+        & choco.exe upgrade firefox
     }
 
     & pip.exe list --format=columns
