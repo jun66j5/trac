@@ -8,6 +8,7 @@ addons:
                firefox-geckodriver]
   homebrew:
     packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig, geckodriver]
+    update: true
   firefox: latest
 cache:
   directories:
