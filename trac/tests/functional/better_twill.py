@@ -64,10 +64,20 @@ if selenium:
             self.driver.maximize_window()
 
         def _create_webdriver(self):
+            if os.name == 'posix':
+                mime_types = os.path.join(tempfile.mkdtemp(dir=self.tmpdir),
+                                          'mime.types')
+                with open(mime_types, 'w', encoding='utf-8') as f:
+                    f.write('multipart/related mht\n')
+            else:
+                mime_types = None
             profile = webdriver.FirefoxProfile()
             profile.set_preference('intl.accept_languages', 'en-us')
             profile.set_preference('network.http.phishy-userpass-length', 255)
             profile.set_preference('general.warnOnAboutConfig', False)
+            if mime_types:
+                profile.set_preference('helpers.private_mime_types_file',
+                                       mime_types)
             options = webdriver.FirefoxOptions()
             options.profile = profile
             options.add_argument('--headless')
