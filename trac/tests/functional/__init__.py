@@ -160,7 +160,7 @@ if selenium:
 
         def tearDown(self):
             atexit.unregister(self.tearDown)
-            self._testenv.stop()
+            self._testenv.close()
             tc.close()
 
 

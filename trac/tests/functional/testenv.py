@@ -68,7 +68,8 @@ class FunctionalTestEnvironment(object):
         self.tracdir = os.path.join(self.dirname, "trac")
         self.htpasswd = os.path.join(self.dirname, "htpasswd")
         self.port = port
-        self.pid = None
+        self.server = None
+        self.logfile = None
         self.init()
         self.destroy()
         time.sleep(0.1) # Avoid race condition on Windows
@@ -156,6 +157,12 @@ class FunctionalTestEnvironment(object):
             env.config.set('components', component, 'enabled')
         env.config.save()
         self.post_create(env)
+
+    def close(self):
+        self.stop()
+        if self.logfile:
+            self.logfile.close()
+            self.logfile = None
 
     def adduser(self, user):
         """Add a user to the environment.  The password will be set to the
@@ -263,11 +270,10 @@ class FunctionalTestEnvironment(object):
             options += os.environ['TRAC_TEST_TRACD_OPTIONS'].split()
         args.append(os.path.join(self.trac_src, 'trac', 'web',
                                  'standalone.py'))
-        server = Popen(args + options + [self.tracdir],
-                       stdout=self.logfile, stderr=self.logfile,
-                       close_fds=close_fds,
-                       cwd=self.command_cwd)
-        self.pid = server.pid
+        self.server = Popen(args + options + [self.tracdir],
+                            stdout=self.logfile, stderr=self.logfile,
+                            close_fds=close_fds,
+                            cwd=self.command_cwd)
         # Verify that the url is ok
         timeout = 30
         while timeout:
@@ -286,8 +292,10 @@ class FunctionalTestEnvironment(object):
 
         FIXME: probably needs a nicer way to exit for coverage to work
         """
-        if self.pid:
-            terminate(self.pid)
+        if self.server:
+            terminate(self.server.pid)
+            self.server.wait()
+            self.server = None
 
     def restart(self):
         """Restarts the webserver"""
