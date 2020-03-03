@@ -47,12 +47,6 @@ class FunctionalTester(object):
         """Login as the given user"""
         tc.add_auth('', self.url + '/login', username, username)
         self.go_to_front()
-        try:
-            tc.find("Logout")
-        except:
-            pass
-        else:
-            self.logout()
         tc.find("Login")
         url = self.url.replace('://',
                                '://{0}:{0}@'.format(unicode_quote(username)))
