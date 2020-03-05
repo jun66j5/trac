@@ -277,7 +277,7 @@ class MaySetOwnerOperationRestrictOwnerFalse(FunctionalTwillTestCaseSetup):
             tc.notfind('<select name="action_reassign_reassign_owner"')
             tc.find('<input id="action_reassign_reassign_owner" '
                     'name="action_reassign_reassign_owner" '
-                    'type="hidden" value="lammy">')
+                    'type="hidden" value="lammy" />')
             tc.find('The owner will remain '
                     '<span class="trac-author">lammy</span>')
             tc.notfind('<option selected="selected" value="lammy">lammy</option>')

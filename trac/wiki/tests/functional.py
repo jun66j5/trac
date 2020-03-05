@@ -218,10 +218,10 @@ class TestWikiReadonlyAttribute(FunctionalTwillTestCaseSetup):
         page_name = self._tester.create_wiki_page()
         permission_policies = \
             self._testenv.get_config('trac', 'permission_policies')
-        readonly_checkbox = (
-            '<input type="checkbox" name="readonly" id="readonly">')
-        attach_button = (
-            '<input type="submit" id="attachfilebutton" value="Attach.+file">')
+        readonly_checkbox = ('<input type="checkbox" name="readonly" '
+                             'id="readonly"/>')
+        attach_button = ('<input type="submit" id="attachfilebutton" '
+                         'value="Attach.+file"/>')
         try:
             # User without WIKI_ADMIN can't set a page read-only
             tc.submit(formname='modifypage')
@@ -242,7 +242,7 @@ class TestWikiReadonlyAttribute(FunctionalTwillTestCaseSetup):
             # User without WIKI_ADMIN can't edit a read-only page
             self._testenv.revoke_perm('user', 'WIKI_ADMIN')
             self._tester.go_to_wiki(page_name)
-            tc.notfind('<input type="submit" value="Edit this page">')
+            tc.notfind('<input type="submit" value="Edit this page" />')
             tc.go(self._tester.url + '/attachment/wiki/' + page_name)
             tc.notfind(attach_button)
 
@@ -377,7 +377,7 @@ class ReStructuredTextCodeBlockTest(FunctionalTwillTestCaseSetup):
         self._tester.go_to_wiki(pagename)
         tc.notfind("code-block")
         tc.find('print')
-        tc.find('"123"')
+        tc.find('&quot;123&quot;')
 
 
 class RegressionTestTicket8976(FunctionalTwillTestCaseSetup):
@@ -489,9 +489,9 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             tc.notfind("Create this page")
             tc.go(self._tester.url + '/wiki/%s?action=edit' % page_name)
             tc.find("Error: Forbidden")
-            tc.find("WIKI_CREATE privileges are required to perform this "
-                    "operation on %s. You don't have the required permissions."
-                    % page_name)
+            tc.find(r"WIKI_CREATE privileges are required to perform this "
+                    r"operation on %s\. You don&#39;t have the required "
+                    r"permissions\." % page_name)
 
             # Check that page can be created when user has WIKI_CREATE
             self._testenv.grant_perm('anonymous', 'WIKI_CREATE')
@@ -504,9 +504,9 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             tc.notfind("Attach file")
             tc.go(self._tester.url + '/wiki/%s?action=edit' % page_name)
             tc.find("Error: Forbidden")
-            tc.find("WIKI_MODIFY privileges are required to perform this "
-                    "operation on %s. You don't have the required permissions."
-                    % page_name)
+            tc.find(r"WIKI_MODIFY privileges are required to perform this "
+                    r"operation on %s\. You don&#39;t have the required "
+                    r"permissions\." % page_name)
 
             # Check that page can be edited when user has WIKI_MODIFY
             self._testenv.grant_perm('anonymous', 'WIKI_MODIFY')
@@ -529,9 +529,9 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             tc.go(self._tester.url + '/wiki/%s?version=1' % page_name)
             tc.notfind("Revert to this version")
             tc.go(self._tester.url + '/wiki/%s?action=edit&version=1' % page_name)
-            tc.find("WIKI_MODIFY privileges are required to perform this "
-                    "operation on %s. You don't have the required permissions."
-                    % page_name)
+            tc.find(r"WIKI_MODIFY privileges are required to perform this "
+                    r"operation on %s\. You don&#39;t have the required "
+                    r"permissions\." % page_name)
 
         finally:
             # Restore pre-test state.

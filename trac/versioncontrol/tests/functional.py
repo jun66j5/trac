@@ -175,7 +175,7 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         add_repository(name1)
         tc.find(r'The repository "%s" has been added\.' % name1)
         add_repository(name1)
-        tc.find(r'The repository "%s" already exists\.' % name1)
+        tc.find(r'The repository &#34;%s&#34; already exists\.' % name1)
         tc.notfind(internal_error)
 
         # TracError raised if repository already defined in trac.ini.
@@ -185,7 +185,7 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         env.config.save()
         go_to_repository_admin()
         add_repository(name2)
-        tc.find(r'The repository "%s" already exists\.' % name2)
+        tc.find(r'The repository &#34;%s&#34; already exists\.' % name2)
         tc.notfind(internal_error)
 
 
@@ -224,7 +224,7 @@ class RegressionTestTicket11186Alias(FunctionalTwillTestCaseSetup):
         tc.formvalue('trac-addalias', 'name', name)
         tc.formvalue('trac-addalias', 'alias', target)
         tc.submit()
-        tc.find('The alias "%s" already exists.' % name)
+        tc.find('The alias &#34;%s&#34; already exists.' % name)
         tc.notfind(internal_error)
 
 
@@ -271,7 +271,7 @@ class RegressionTestTicket11194(FunctionalTwillTestCaseSetup):
                names[2], regexp=False)
         tc.formvalue('edit', 'name', names[0])
         tc.submit('save')
-        tc.find('The repository "%s" already exists.' % names[0])
+        tc.find('The repository &#34;%s&#34; already exists.' % names[0])
         tc.notfind(internal_error)
 
 
