@@ -360,6 +360,7 @@ class TestTicketHistoryInvalidCommentVersion(FunctionalTwillTestCaseSetup):
         """
         tkt = self._tester.create_ticket()
         self._tester.add_comment(tkt, "the comment")
+        tc.click('[href="#comment:1"]')
         tc.move_to('[id="comment:1"]')
         tc.submit(formname='edit-comment-1')
         tc.formvalue('trac-comment-editor', 'edited_comment',
@@ -1581,6 +1582,7 @@ class RegressionTestTicket9084(FunctionalTwillTestCaseSetup):
         ticketid = self._tester.create_ticket()
         self._tester.add_comment(ticketid)
         self._tester.go_to_ticket(ticketid)
+        tc.click('[href="#comment:1"]')
         tc.move_to('[id="comment:1"]')
         tc.submit(formname='reply-to-comment-1')
         tc.formvalue('propertyform', 'comment', random_sentence(3))
