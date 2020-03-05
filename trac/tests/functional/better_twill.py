@@ -73,7 +73,7 @@ if selenium:
         def _create_proxy_server(self, port, proxy_port):
             dir_ = os.path.join(self.tmpdir, 'response')
             os.mkdir(dir_)
-            server = ReverseProxyServer(('0.0.0.0', port),
+            server = ReverseProxyServer(('127.0.0.1', port),
                                         ReverseProxyRequestHandler,
                                         proxy_port=proxy_port,
                                         response_dir=dir_)
@@ -140,7 +140,7 @@ if selenium:
 
         def download(self, url):
             cookie = '; '.join('%s=%s' % (c['name'], c['value'])
-                               for c in self.driver.get_cookies())
+                               for c in self.get_cookies())
             url = self._urljoin(url)
             handlers = []
             if self.auth_handler:
@@ -487,6 +487,9 @@ if selenium:
                 html_file.close()
 
             return urljoin('file:', pathname2url(filename))
+
+        def get_cookies(self):
+            return iter(self.driver.get_cookies())
 
         def get_url(self):
             return self.driver.current_url

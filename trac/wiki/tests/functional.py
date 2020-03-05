@@ -12,8 +12,10 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
+import http.client
 import os
 import unittest
+import urllib.parse
 
 from trac.mimeview.rst import has_docutils
 from trac.tests.contentgen import random_sentence, random_unique_camel
@@ -430,15 +432,32 @@ class RegressionTestTicket8976(FunctionalTwillTestCaseSetup):
 class RegressionTestTicket10274(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10274"""
-        # TODO send directly HTTP request using http.client because Firefox
-        # webdriver automatically normalizes URL
+
+        def fetch(url):
+            # use directly HTTPConnection() to prevent normalization of URI
+            parsed = urllib.parse.urlparse(url)
+            cookie = '; '.join('%s=%s' % (c['name'], c['value'])
+                               for c in tc.get_cookies())
+            conn = http.client.HTTPConnection(parsed.netloc)
+            try:
+                conn.putrequest('GET', parsed.path)
+                conn.putheader('Cookie', cookie)
+                conn.endheaders(b'')
+                resp = conn.getresponse()
+                return resp.status, resp.read()
+            finally:
+                conn.close()
+
         url = self._tester.url
-        tc.go(url + '/WikiStart/..')
-        tc.find("Invalid Wiki page name 'WikiStart/..'")
-        tc.go(url + '../WikiStart')
-        tc.find("Invalid Wiki page name '../WikiStart'")
-        tc.go(url + 'WikiStart/./SubPage')
-        tc.find("Invalid Wiki page name 'WikiStart/./SubPage'")
+        status, content = fetch(url + '/wiki/WikiStart/..')
+        self.assertIn(b'Invalid Wiki page name &#39;WikiStart/..&#39;',
+                      content)
+        status, content = fetch(url + '/wiki/../WikiStart')
+        self.assertIn(b'Invalid Wiki page name &#39;../WikiStart&#39;',
+                      content)
+        status, content = fetch(url + '/wiki/WikiStart/./SubPage')
+        self.assertIn(b'Invalid Wiki page name &#39;WikiStart/./SubPage&#39;',
+                      content)
 
 
 class RegressionTestTicket10850(FunctionalTwillTestCaseSetup):
