@@ -32,7 +32,7 @@ class TestAttachmentNonexistentParent(FunctionalTwillTestCaseSetup):
 
         tc.go(self._tester.url + '/attachment/wiki/NonexistentPage')
         tc.find(r'<h1>Trac Error</h1>\s+<p class="message">'
-                r"Parent resource NonexistentPage doesn't exist</p>")
+                r"Parent resource NonexistentPage doesn&#39;t exist</p>")
 
 
 class TestAboutPage(FunctionalTwillTestCaseSetup):
@@ -100,7 +100,7 @@ class RaiseExceptionPlugin(Component):
             tc.find('<form class="newticket" method="get" '
                     'action="http://trac-hacks.org/newticket">')
             tc.find('<input type="hidden" name="component" '
-                    'value="HelloWorldMacro">')
+                    'value="HelloWorldMacro" />')
 
             tc.go(self._tester.url + '/raise-exception?type=tracerror&div=true')
             tc.notfind(internal_error)
@@ -324,7 +324,7 @@ class RaiseExceptionPlugin(Component):
             tc.find('<form class="newticket" method="get" '
                     'action="http://trac-hacks.org/newticket">')
             tc.find('<input type="hidden" name="component" '
-                    'value="HelloWorldMacro">')
+                    'value="HelloWorldMacro" />')
         finally:
             env.config.set('components', 'RaiseExceptionPlugin.*', 'disabled')
 

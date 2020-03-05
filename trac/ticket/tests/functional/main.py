@@ -402,7 +402,7 @@ class TestTicketQueryLinks(FunctionalTwillTestCaseSetup):
             tc.find('TestTicketQueryLinks%s' % i)
 
         tc.follow('TestTicketQueryLinks0')
-        tc.find('class="missing">← Previous Ticket')
+        tc.find('class="missing">&larr; Previous Ticket')
         tc.find('title="Ticket #%s">Next Ticket' % ticket_ids[1])
         tc.follow('Back to Query')
         tc.url(query_url, regexp=False)
@@ -413,7 +413,7 @@ class TestTicketQueryLinks(FunctionalTwillTestCaseSetup):
         tc.follow('Next Ticket')
 
         tc.find('title="Ticket #%s">Previous Ticket' % ticket_ids[1])
-        tc.find('class="missing">Next Ticket →')
+        tc.find('class="missing">Next Ticket &rarr;')
 
 
 class TestTicketQueryLinksQueryModuleDisabled(FunctionalTwillTestCaseSetup):
@@ -559,7 +559,7 @@ class TestTicketCustomFieldTextAreaWikiFormat(FunctionalTwillTestCaseSetup):
         word2 = random_word()
         val = "%s %s" % (word1, word2)
         self._tester.create_ticket(info={'newfield': val})
-        wiki = '<p>\s*<a [^>]*>%s\??</a> %s<br>\s*</p>' % (word1, word2)
+        wiki = '<p>\s*<a [^>]*>%s\??</a> %s<br />\s*</p>' % (word1, word2)
         tc.find('<td colspan="3" headers="h_newfield">\s*%s\s*</td>' % wiki)
 
 
@@ -790,13 +790,13 @@ class TestReportDynamicVariables(FunctionalTwillTestCaseSetup):
            "Tickets assigned to $USER for component $COMPONENT"
         )
         self._tester.go_to_report(reportnum, fields)
-        tc.find("admin's tickets for component component1")
+        tc.find("admin&#39;s tickets for component component1")
         tc.find("Tickets assigned to admin for component component1")
         tc.find('<a title="View ticket"[ \n]+href="/ticket/%s">%s</a>' %
                 (ticket_id, summary))
         # Testing default parameter
         self._tester.go_to_report(reportnum)
-        tc.find("admin's tickets for component component2")
+        tc.find("admin&#39;s tickets for component component2")
         tc.find("Tickets assigned to admin for component component2")
         tc.find('<a title="View ticket"[ \n]+href="/ticket/%s">%s</a>' %
                 (ticket_id2, summary))
@@ -1474,24 +1474,24 @@ class RegressionTestTicket7821group(FunctionalTwillTestCaseSetup):
             self._tester.go_to_query()
             # $USER
             tc.find('<input type="text" name="0_cc"[ \n]+value="admin"'
-                    ' size="[0-9]+">')
+                    ' size="[0-9]+"/>')
             # col
             tc.find('<input type="checkbox" name="col" checked="checked"'
-                    ' value="summary">')
-            tc.find('<input type="checkbox" name="col" value="owner">')
+                    ' value="summary"/>')
+            tc.find('<input type="checkbox" name="col" value="owner"/>')
             tc.find('<input type="checkbox" name="col" checked="checked"'
-                    ' value="status">')
+                    ' value="status"/>')
             tc.find('<input type="checkbox" name="col" checked="checked"'
-                    ' value="cc">')
+                    ' value="cc"/>')
             # group
             tc.find('<option selected="selected" value="status">Status'
                     '</option>')
             # groupdesc
             tc.find('<input type="checkbox" name="groupdesc" id="groupdesc"'
-                    ' checked="checked">')
+                    ' checked="checked"/>')
             # max
             tc.find('<input type="text" name="max" id="max" size="[0-9]*?"'
-                    '[ \n]+value="42">')
+                    '[ \n]+value="42"/>')
             # col in results
             tc.find('<a title="Sort by Ticket [(]ascending[)]"[ \n]+href')
             tc.find('<a title="Sort by Summary [(]ascending[)]"[ \n]+href')
@@ -1518,16 +1518,16 @@ class RegressionTestTicket7821var(FunctionalTwillTestCaseSetup):
             self._tester.go_to_query()
             # $USER in default_query
             tc.find('<input type="text" name="0_owner"[ \n]+value="admin"'
-                    ' size="[0-9]+">')
+                    ' size="[0-9]+"/>')
             tc.find('<input type="text" name="0_cc"[ \n]+value="admin"'
-                    ' size="[0-9]+">')
+                    ' size="[0-9]+"/>')
             # query:owner=$USER&or&cc~=$USER
             tc.go(self._tester.url +
                   '/intertrac/query:owner=$USER&or&cc~=$USER')
             tc.find('<input type="text" name="0_owner"[ \n]+value="admin"'
-                    ' size="[0-9]+">')
+                    ' size="[0-9]+"/>')
             tc.find('<input type="text" name="1_cc"[ \n]+value="admin"'
-                    ' size="[0-9]+">')
+                    ' size="[0-9]+"/>')
         finally:
             env.config.set('query', 'default_query', saved_default_query)
             env.config.set('ticket', 'restrict_owner', saved_restrict_owner)
@@ -1811,7 +1811,7 @@ class RegressionTestTicket12801(FunctionalTwillTestCaseSetup):
             tc.find(r'<em><strong>description field</strong></em>')
             tc.find(r'<td colspan="3" headers="h_t12801_plain">\n'
                     r'\s*- //plain 1//\n'
-                    r'\s*<br>\n'
+                    r'\s*<br />\n'
                     r'\s*- ~~plain 2~~\n'
                     r'\s*</td>')
             tc.find(r'<li><del>wiki 1</del>\s*</li>'
@@ -1822,7 +1822,7 @@ class RegressionTestTicket12801(FunctionalTwillTestCaseSetup):
             tc.find(r'<em><strong>description field</strong></em>')
             tc.find(r'<td class="trac-colspan" colspan="[0-9]+">\n'
                     r'\s*- //plain 1//\n'
-                    r'\s*<br>\n'
+                    r'\s*<br />\n'
                     r'\s*- ~~plain 2~~\n'
                     r'\s*</td>')
             tc.find(r'<li><del>wiki 1</del>\s*</li>'
@@ -1839,7 +1839,7 @@ class RegressionTestTicket12919(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Test for regression https://trac.edgewall.org/ticket/12919"""
         self._tester.create_report('#12919.', "SELECT 'blah' as keywords", '')
-        tc.find(r'<td class="fullrow keywords" colspan="100">blah\s*<hr>')
+        tc.find(r'<td class="fullrow keywords" colspan="100">blah\s*<hr />')
 
 
 def functionalSuite(suite=None):

@@ -40,7 +40,7 @@ class AdminEnumDefaultTestCaseSetup(FunctionalTwillTestCaseSetup):
         tc.submit('clear', formname='enumtable')
         tc.url(url, regexp=False)
         tc.notfind(internal_error)
-        tc.find('<input type="radio" name="default" value="%s">' % name)
+        tc.find('<input type="radio" name="default" value="%s"/>' % name)
         tc.notfind('type="radio" name="default" checked="checked" value=".+"')
 
 
@@ -213,10 +213,10 @@ class TestAdminMilestoneListing(FunctionalTwillTestCaseSetup):
                    r'0</a>' % {'name': name2})
 
         apply_submit = '<input type="submit" name="apply" ' \
-                       'value="Apply changes">'
+                       'value="Apply changes" />'
         clear_submit = '<input type="submit"[ \t\n]+title="Clear default ' \
                        'ticket milestone and default retargeting milestone"' \
-                       '[ \t\n]+name="clear" value="Clear defaults">'
+                       '[ \t\n]+name="clear" value="Clear defaults" />'
         tc.find(apply_submit)
         tc.find(clear_submit)
         tc.find('<input type="radio" name="ticket_default" value="%(name)s"/>'
@@ -718,7 +718,7 @@ class TestAdminPriorityDetail(FunctionalTwillTestCaseSetup):
 class TestAdminPriorityRenumber(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Admin renumber priorities"""
-        valuesRE = re.compile('<select name="value_([0-9]+)">', re.M)
+        valuesRE = re.compile(b'<select name="value_([0-9]+)">', re.M)
         html = b.get_html()
         max_priority = max([int(x) for x in valuesRE.findall(html)])
 
@@ -772,7 +772,8 @@ class TestAdminResolutionDuplicates(FunctionalTwillTestCaseSetup):
         name = "DuplicateResolution"
         self._tester.create_resolution(name)
         self._tester.create_resolution(name)
-        tc.find(re.escape('Resolution value "%s" already exists' % name))
+        tc.find(re.escape('Resolution value &#34;%s&#34; already exists' %
+                          name))
 
 
 class TestAdminResolutionDefault(AdminEnumDefaultTestCaseSetup):
@@ -802,7 +803,7 @@ class TestAdminSeverityDuplicates(FunctionalTwillTestCaseSetup):
         name = "DuplicateSeverity"
         self._tester.create_severity(name)
         self._tester.create_severity(name)
-        tc.find(re.escape('Severity value "%s" already exists' % name))
+        tc.find(re.escape('Severity value &#34;%s&#34; already exists' % name))
 
 
 class TestAdminSeverityDefault(AdminEnumDefaultTestCaseSetup):
@@ -832,7 +833,7 @@ class TestAdminTypeDuplicates(FunctionalTwillTestCaseSetup):
         name = "DuplicateType"
         self._tester.create_type(name)
         self._tester.create_type(name)
-        tc.find(re.escape('Type value "%s" already exists' % name))
+        tc.find(re.escape('Type value &#34;%s&#34; already exists' % name))
 
 
 class TestAdminTypeDefault(AdminEnumDefaultTestCaseSetup):
@@ -865,7 +866,7 @@ class TestAdminVersionDuplicates(FunctionalTwillTestCaseSetup):
         tc.formvalue('addversion', 'name', name)
         tc.submit()
         tc.notfind(internal_error)
-        tc.find(re.escape('Version "%s" already exists.' % name))
+        tc.find(re.escape('Version &#34;%s&#34; already exists.' % name))
 
 
 class TestAdminVersionDetail(FunctionalTwillTestCaseSetup):
@@ -1007,20 +1008,28 @@ class RegressionTestTicket10772(FunctionalTwillTestCaseSetup):
         """Test for regression of https://trac.edgewall.org/ticket/10772"""
         def find_prop(field, value=None):
             if value and field == 'type':
-                tc.find(r'<span class="trac-%(field)s">\s*'
+                tc.find(r'<span class="trac-type">\s*'
                         r'<a href="/query\?status=!closed&amp;'
-                        r'%(field)s=%(value)s">\s*%(value)s\s*</a>\s*</span>'
-                        % {'field': field, 'value': value})
+                        r'type=%(value)s">\s*%(value)s\s*</a>\s*</span>'
+                        % {'value': value})
             elif value and field == 'milestone':
-                tc.find(r'<td headers="h_%(field)s">\s*'
-                        r'<a class="%(field)s" href="/%(field)s/%(value)s" '
+                tc.find(r'<td headers="h_milestone">\s*'
+                        r'<a class="milestone" href="/milestone/%(value)s" '
                         r'title=".+">\s*%(value)s\s*</a>\s*</td>'
-                        % {'field': field, 'value': value})
+                        % {'value': value})
             elif value:
-                tc.find(r'<td headers="h_%(field)s">\s*'
-                        r'<a href="/query\?status=!closed&amp;'
-                        r'%(field)s=%(value)s">\s*%(value)s\s*</a>\s*</td>'
-                        % {'field': field, 'value': value})
+                if field in ('component', 'priority'):
+                    tc.find(r'<td headers="h_%(field)s">\s*'
+                            r'<a href="/query\?%(field)s=%(value)s&amp;'
+                            r'status=!closed">\s*%(value)s\s*</a>\s*</td>'
+                            % {'field': field, 'value': value})
+                elif field == 'version':
+                    tc.find(r'<td headers="h_%(field)s">\s*'
+                            r'<a href="/query\?status=!closed&amp;'
+                            r'%(field)s=%(value)s">\s*%(value)s\s*</a>\s*</td>'
+                            % {'field': field, 'value': value})
+                else:
+                    raise AssertionError('Invalid field: %r' % field)
             else:
                 tc.find(r'<td headers="h_%(field)s">\s*</td>'
                         % {'field': field})

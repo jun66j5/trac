@@ -16,11 +16,16 @@ monkey-patch some better versions of some of twill's methods.
 It also handles twill's absense.
 """
 
+import hashlib
+import http.client
+import http.server
 import io
 import re
 import os
+import socketserver
 import sys
 import tempfile
+import threading
 from os.path import abspath, dirname, join
 from pkg_resources import parse_version as pv
 from urllib.parse import urljoin
@@ -54,14 +59,34 @@ if selenium:
 
     class Proxy(object):
 
-        driver = None
         tmpdir = None
+        proxy_server = None
+        proxy_thread = None
+        driver = None
         auth_handler = None
 
-        def init(self):
+        def init(self, port, proxy_port):
             self.tmpdir = mkdtemp()
+            self.proxy_server = self._create_proxy_server(port, proxy_port)
+            self.proxy_thread = self._create_proxy_thread(self.proxy_server)
             self.driver = self._create_webdriver()
             self.driver.maximize_window()
+
+        def _create_proxy_server(self, port, proxy_port):
+            dir_ = os.path.join(self.tmpdir, 'response')
+            os.mkdir(dir_)
+            server = ReverseProxyServer(('0.0.0.0', port),
+                                        ReverseProxyRequestHandler,
+                                        proxy_port=proxy_port,
+                                        response_dir=dir_)
+            return server
+
+        def _create_proxy_thread(self, server):
+            def target():
+                server.serve_forever()
+            t = threading.Thread(target=target, daemon=True)
+            t.start()
+            return t
 
         def _create_webdriver(self):
             if os.name == 'posix':
@@ -94,6 +119,13 @@ if selenium:
             if self.driver:
                 self.driver.quit()
                 self.driver = None
+            if self.proxy_server:
+                self.proxy_server.shutdown()
+                self.proxy_server.server_close()
+                self.proxy_server = None
+            if self.proxy_thread:
+                self.proxy_thread.join()
+                self.proxy_thread = None
 
         def go(self, url):
             url = self._urljoin(url)
@@ -137,7 +169,7 @@ if selenium:
 
         def notfind(self, s, flags=None):
             source = self.get_source()
-            match = re.search(s, source, self._re_flags(flags))
+            match = re.search(self._to_bytes(s), source, self._re_flags(flags))
             if match:
                 url = self.write_source(source)
                 raise AssertionError('Regex matched: {!r} matches {!r} in {}'
@@ -146,7 +178,7 @@ if selenium:
 
         def find(self, s, flags=None):
             source = self.get_source()
-            if not re.search(s, source, self._re_flags(flags)):
+            if not re.search(self._to_bytes(s), source, self._re_flags(flags)):
                 url = self.write_source(source)
                 raise AssertionError("Regex didn't match: {!r} not found in {}"
                                      .format(s, url))
@@ -399,6 +431,11 @@ if selenium:
                         bit |= value
             return bit
 
+        def _to_bytes(self, value):
+            if isinstance(value, str):
+                value = value.encode('utf-8')
+            return value
+
         def _urljoin(self, url):
             if '://' not in url:
                 url = urljoin(self.get_url(), url)
@@ -451,8 +488,11 @@ if selenium:
         def get_url(self):
             return self.driver.current_url
 
+        _request_re = re.compile(r'http://[^/]+(/[^#]*)(?:#.*)?\Z')
+
         def get_source(self):
-            return self.driver.page_source
+            path = self._request_re.match(self.get_url()).group(1)
+            return self.proxy_server.get_response(path)
 
         get_html = get_source
 
@@ -475,6 +515,79 @@ else:
 
 
 b = tc = Proxy()
+
+
+# The server saves raw response body. It unable to use `Firefox.page_source`
+# attribute in `find()` and `notfind()` because the attribute returns html
+# generated from DOM structure in Firefox. E.g. "<input ... />".
+class ReverseProxyServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+
+    proxy_port = None
+    response_dir = None
+
+    def __init__(self, *args, **kwargs):
+        self.proxy_port = kwargs.pop('proxy_port')
+        self.response_dir = kwargs.pop('response_dir')
+        super(ReverseProxyServer, self).__init__(*args, **kwargs)
+
+    def get_response(self, path):
+        filename = self._response_path(path)
+        with open(filename, 'rb') as f:
+            return f.read()
+
+    def save_response(self, path, body):
+        filename = self._response_path(path)
+        with open(filename, 'wb') as f:
+            f.write(body)
+
+    def _response_path(self, path):
+        key = hashlib.sha1(path.encode('utf-8')).hexdigest()
+        return os.path.join(self.response_dir, key)
+
+
+class ReverseProxyRequestHandler(http.server.BaseHTTPRequestHandler):
+
+    def _do(self):
+        conn = http.client.HTTPConnection('127.0.0.1', self.server.proxy_port)
+        try:
+            conn.connect()
+            conn.putrequest(self.command, self.path, skip_host=True,
+                            skip_accept_encoding=True)
+            for name, value in self.headers.raw_items():
+                conn.putheader(name, value)
+            length = int(self.headers.get('content-length') or 0)
+            conn.endheaders(self.rfile.read(length) if length > 0 else b'')
+            resp = conn.getresponse()
+            resp_body = io.BytesIO()
+            try:
+                self.send_response(resp.status, resp.reason)
+                for name, value in resp.getheaders():
+                    self.send_header(name, value)
+                self.end_headers()
+                use_chunked = resp.chunked
+                while True:
+                    chunk = resp.read(65536)
+                    if use_chunked:
+                        self.wfile.write(b'%x\r\n' % len(chunk))
+                    if chunk:
+                        self.wfile.write(chunk)
+                        resp_body.write(chunk)
+                    if use_chunked:
+                        self.wfile.write(b'\r\n')
+                    if not chunk:
+                        break
+            finally:
+                resp_body = resp_body.getvalue()
+                self.server.save_response(self.path, resp_body)
+        except OSError as e:
+            pass
+        finally:
+            conn.close()
+
+    do_HEAD = do_GET = do_POST = _do
+
+    def log_message(self, format, *args):
+        pass
 
 
 if b is not None and False: # TODO selenium

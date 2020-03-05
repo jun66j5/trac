@@ -129,24 +129,11 @@ if selenium:
                 env_path += str(port or '')
 
             if port is None:
-                port = 8000 + os.getpid() % 1000
+                port = get_ephemeral_port()
+            server_port = get_ephemeral_port()
 
             baseurl = "http://127.0.0.1:%s" % port
-            self._testenv = self.env_class(env_path, port, baseurl)
-
-            # functional-testing.log gets the twill output
-            self.functional_test_log = \
-                os.path.join(env_path, 'functional-testing.log')
-
-            tc.init()
-            self._testenv.start()
-            try:
-                self._tester = self.tester_class(baseurl)
-            except:
-                self._testenv.stop()
-                tc.close()
-                raise
-            self.fixture = (self._testenv, self._tester)
+            self._testenv = self.env_class(env_path, server_port, baseurl)
             self._testenv.set_config('project', 'name', 'Functional Tests')
             self._testenv.set_config('trac', 'base_url', baseurl)
             create_file(
@@ -155,6 +142,20 @@ if selenium:
                 read_file(os.path.join(trac_source_tree, 'trac', 'htdocs',
                                        'trac_logo_mini.png'), 'rb'),
                 'wb')
+
+            # functional-testing.log gets the twill output
+            self.functional_test_log = \
+                os.path.join(env_path, 'functional-testing.log')
+
+            tc.init(port, server_port)
+            self._testenv.start()
+            try:
+                self._tester = self.tester_class(baseurl)
+            except:
+                self._testenv.stop()
+                tc.close()
+                raise
+            self.fixture = (self._testenv, self._tester)
 
             atexit.register(self.tearDown)
 
@@ -185,6 +186,15 @@ else:
 
     class FunctionalTestCaseSetup(object):
         pass
+
+
+def get_ephemeral_port():
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(('127.0.0.1', 0))
+        s.listen(1)
+        return s.getsockname()[1]
 
 
 # Twill's find command accepts regexes; some convenient but complex regexes
