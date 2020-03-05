@@ -232,6 +232,8 @@ See also http://bugs.python.org/issue15564.
 
 
 class RegressionTestTicket3663(FunctionalTwillTestCaseSetup):
+    @unittest.skip('http.client library disallows non-ascii characters in '
+                   'request uri')
     def runTest(self):
         """Regression test for non-UTF-8 PATH_INFO (#3663)
 
