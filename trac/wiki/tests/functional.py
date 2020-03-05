@@ -196,8 +196,8 @@ class TestWikiEditComment(FunctionalTwillTestCaseSetup):
         # Comment edit from diff page
         tc.formvalue('history', 'version', '1')
         tc.submit()
-        diff_url = url + r'/wiki/%s?action=diff&version=1' % pagename
-        tc.url(diff_url + '#', regexp=False)
+        tc.url('%s/wiki/%s?action=diff&version=1#' % (url, pagename),
+               regexp=False)
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % first_comment_edit)
         tc.follow(r"\bEdit\b")
         tc.url('%s/wiki/%s?action=edit_comment&redirect_to=diff&version=1' %
@@ -205,7 +205,8 @@ class TestWikiEditComment(FunctionalTwillTestCaseSetup):
         second_comment_edit = "Second comment edit"
         tc.formvalue('edit-comment-form', 'new_comment', second_comment_edit)
         tc.submit()
-        tc.url(diff_url, regexp=False)
+        tc.url('%s/wiki/%s?action=diff&old_version=0&version=1' %
+               (url, pagename), regexp=False)
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % second_comment_edit)
 
 
