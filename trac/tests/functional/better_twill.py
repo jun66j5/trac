@@ -21,13 +21,11 @@ import http.client
 import http.server
 import io
 import re
-import os
+import os.path
 import socketserver
 import sys
 import tempfile
 import threading
-from os.path import abspath, dirname, join
-from pkg_resources import parse_version as pv
 from urllib.parse import urljoin
 from urllib.request import HTTPBasicAuthHandler, Request, build_opener, \
                            pathname2url
@@ -579,7 +577,7 @@ class ReverseProxyRequestHandler(http.server.BaseHTTPRequestHandler):
             finally:
                 resp_body = resp_body.getvalue()
                 self.server.save_response(self.path, resp_body)
-        except OSError as e:
+        except OSError:
             pass
         finally:
             conn.close()
@@ -588,61 +586,3 @@ class ReverseProxyRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         pass
-
-
-if b is not None and False: # TODO selenium
-    # Setup XHTML validation for all retrieved pages
-    try:
-        from lxml import etree
-    except ImportError:
-        print("SKIP: validation of XHTML output in functional tests"
-              " (no lxml installed)")
-        etree = None
-
-    if etree and pv(etree.__version__) < pv('2.0.0'):
-        # 2.0.7 and 2.1.x are known to work.
-        print("SKIP: validation of XHTML output in functional tests"
-              " (lxml < 2.0, api incompatibility)")
-        etree = None
-
-    if etree:
-        class _Resolver(etree.Resolver):
-            base_dir = dirname(abspath(__file__))
-
-            def resolve(self, system_url, public_id, context):
-                return self.resolve_filename(join(self.base_dir,
-                                                  system_url.split("/")[-1]),
-                                             context)
-
-        _parser = etree.XMLParser(dtd_validation=True)
-        _parser.resolvers.add(_Resolver())
-        etree.set_default_parser(_parser)
-
-        def _format_error_log(data, log):
-            msg = []
-            for entry in log:
-                context = data.splitlines()[max(0, entry.line - 5):
-                                            entry.line + 6]
-                msg.append("\n# %s\n# URL: %s\n# Line %d, column %d\n\n%s\n"
-                           % (entry.message, entry.filename, entry.line,
-                              entry.column, "\n".join(each.decode('utf-8')
-                                                      for each in context)))
-            return "\n".join(msg).encode('ascii', 'xmlcharrefreplace')
-
-        def _validate_xhtml(func_name, *args, **kwargs):
-            page = b.get_html()
-            if "xhtml1-strict.dtd" not in page:
-                return
-            etree.clear_error_log()
-            try:
-                # lxml will try to convert the URL to unicode by itself,
-                # this won't work for non-ascii URLs, so help him
-                url = b.get_url()
-                if isinstance(url, bytes):
-                    url = str(url, 'latin1')
-                etree.parse(io.BytesIO(page), base_url=url)
-            except etree.XMLSyntaxError as e:
-                raise twill.errors.TwillAssertionError(
-                    _format_error_log(page, e.error_log))
-
-        b._post_load_hooks.append(_validate_xhtml)
