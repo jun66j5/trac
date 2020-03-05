@@ -395,10 +395,10 @@ class WikiModule(Component):
         new_date = None
         old_date = None
         for v, t, author, comment in page.get_history():
-            if (v <= version or what == 'page') and new_date is None:
+            if (what == 'page' or v <= version) and new_date is None:
                 new_date = t
-            if (v <= old_version and what == 'multiple' or
-                num_versions > 1 and what == 'single'):
+            if (what == 'multiple' and v <= old_version or
+                what == 'single' and num_versions > 1):
                 break
             num_versions += 1
             old_date = t
