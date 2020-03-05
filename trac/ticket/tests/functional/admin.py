@@ -740,6 +740,7 @@ class TestAdminPriorityRenumber(FunctionalTwillTestCaseSetup):
 
 
 class TestAdminPriorityRenumberDup(FunctionalTwillTestCaseSetup):
+    @tc.javascript_disabled
     def runTest(self):
         """Admin badly renumber priorities"""
         # Make the first priority the 2nd priority, and leave the 2nd priority
@@ -748,7 +749,7 @@ class TestAdminPriorityRenumberDup(FunctionalTwillTestCaseSetup):
         self._tester.go_to_url(priority_url)
         tc.formvalue('enumtable', 'value_1', '2')
         tc.submit('apply')
-        tc.url(priority_url, regexp=False)
+        tc.url(priority_url + '#', regexp=False)
         tc.find('Order numbers must be unique')
 
 
