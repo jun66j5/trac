@@ -45,31 +45,29 @@ class TestWikiDelete(FunctionalTwillTestCaseSetup):
         # Delete page with single version.
         name = self._tester.create_wiki_page()
         self._tester.go_to_wiki(name)
-        tc.submit('Delete page')
+        tc.submit('delete_page')
         tc.find("Are you sure you want to completely delete this page?")
         tc.notfind("The following attachments will also be deleted:")
         tc.submit('delete', 'delete-confirm')
         tc.find("The page %s has been deleted." % name)
-        tc.url(self._tester.url, regexp=False)
+        tc.url(self._tester.url + '/wiki', regexp=False)
 
         # Delete page with attachment.
         name = self._tester.create_wiki_page()
         filename = self._tester.attach_file_to_wiki(name)
         self._tester.go_to_wiki(name)
-        tc.formvalue('delete', 'action', 'delete')
         tc.submit('delete_page')
         tc.find("Are you sure you want to completely delete this page?")
         tc.find("The following attachments will also be deleted:")
         tc.find(filename)
         tc.submit('delete', 'delete-confirm')
         tc.find("The page %s has been deleted." % name)
-        tc.url(self._tester.url, regexp=False)
+        tc.url(self._tester.url + '/wiki', regexp=False)
 
         # Delete page with multiple versions.
         name = self._tester.create_wiki_page(content="Initial content.")
         self._tester.edit_wiki_page(name, content="Revised content.")
         self._tester.go_to_wiki(name)
-        tc.formvalue('delete', 'action', 'delete')
         tc.submit('delete_page')
         tc.find("Are you sure you want to completely delete this page?")
         tc.find(r'Removing all\s+<a href="/wiki/%s\?action=history&amp;'
@@ -77,7 +75,7 @@ class TestWikiDelete(FunctionalTwillTestCaseSetup):
         tc.notfind("The following attachments will also be deleted:")
         tc.submit('delete', 'delete-confirm')
         tc.find("The page %s has been deleted." % name)
-        tc.url(self._tester.url, regexp=False)
+        tc.url(self._tester.url + '/wiki', regexp=False)
 
 
 class TestWikiAddAttachment(FunctionalTwillTestCaseSetup):
