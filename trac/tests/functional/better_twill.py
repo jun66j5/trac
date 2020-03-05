@@ -405,11 +405,16 @@ if selenium:
             raise ValueError('Invalid arguments: %r %r' % (args, kwargs))
 
         def _find_link(self, pattern):
+            def get_href(element):
+                # Retrieve raw href attribute via javascript because
+                # WebElement.get_attribute('href') returns absolute URL
+                script = "return arguments[0].getAttribute('href');"
+                return element.parent.execute_script(script, element)
             re_pattern = re.compile(pattern)
             search = lambda text: text and re_pattern.search(text)
             for element in self.driver.find_elements_by_tag_name('a'):
                 if search(element.get_property('textContent')) or \
-                        search(element.get_attribute('href')):
+                        search(get_href(element)):
                     return element
             else:
                 url = self.write_source(self.get_source())
