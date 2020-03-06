@@ -6,6 +6,7 @@ addons:
     packages: [libapr1-dev, libaprutil1-dev, liblz4-dev, libutf8proc-dev, swig]
   homebrew:
     packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig, ccache]
+    update: true
 cache:
   ccache: true
   directories:
