@@ -5,12 +5,14 @@ addons:
   apt:
     packages: [libapr1-dev, libaprutil1-dev, liblz4-dev, libutf8proc-dev, swig]
   homebrew:
-    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig]
+    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig, ccache]
 cache:
+  ccache: true
   directories:
   - "$HOME/.cache/pip"
   - "$HOME/.pyenv"
   - "$HOME/src"
+  - "$HOME/Library/Caches/Homebrew"
 before_install:
 - set -e
 - test -n "$pyver" || pyver="$(python -c "$print_version")"
@@ -53,6 +55,7 @@ before_install:
   } >"$HOME/.pip/pip.conf"
 - |
   if [ "$TRAVIS_OS_NAME" = osx ]; then
+    export PATH="/usr/local/opt/ccache/libexec:$PATH"
     eval "$(pyenv init -)"
     pyver_latest="$(pyenv install -l | grep -E "^[ ]*${pyver/./\\.}\.[0-9]+$" | tail -1 | tr -d '[:blank:]')"
     venv="$HOME/venv-$pyver_latest"
