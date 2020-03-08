@@ -91,7 +91,7 @@ class TestRepoCreation(FunctionalTwillTestCaseSetup):
         tc.formvalue('prefs', 'ticket', False)
         tc.formvalue('prefs', 'milestone', False)
         tc.formvalue('prefs', 'wiki', False)
-        tc.submit()
+        tc.submit(formname='prefs')
         tc.find('by.*admin')
         # (Note that our commit log message is short enough to avoid
         # truncation.)

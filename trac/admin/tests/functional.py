@@ -230,7 +230,7 @@ class TestRemovePermissionGroup(FunctionalTwillTestCaseSetup):
         REPORT_CREATE = unicode_to_base64('REPORT_CREATE')
         tc.find('%s:%s' % (somegroup, REPORT_CREATE))
         tc.formvalue('revokeform', 'sel', '%s:%s' % (somegroup, REPORT_CREATE))
-        tc.submit()
+        tc.submit(formname='revokeform')
         tc.notfind('%s:%s' % (somegroup, REPORT_CREATE))
         tc.notfind(somegroup)
 
@@ -268,7 +268,7 @@ class TestAddUserToGroup(FunctionalTwillTestCaseSetup):
             self._tester.login('admin')
             self._tester.go_to_admin("Permissions")
             tc.formvalue('revokeform', 'sel', revoke_checkbox)
-            tc.submit()
+            tc.submit(formname='revokeform')
             tc.notfind(revoke_checkbox)
 
 
@@ -281,7 +281,7 @@ class TestRemoveUserFromGroup(FunctionalTwillTestCaseSetup):
         somegroup = unicode_to_base64('somegroup')
         tc.find('%s:%s' % (authenticated, somegroup))
         tc.formvalue('revokeform', 'sel', '%s:%s' % (authenticated, somegroup))
-        tc.submit()
+        tc.submit(formname='revokeform')
         tc.notfind('%s:%s' % (authenticated, somegroup))
 
 
