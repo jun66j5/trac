@@ -163,7 +163,7 @@ class TestWikiHistory(FunctionalTwillTestCaseSetup):
         tc.find(r'<th class="comment">Comment</th>')
         tc.formvalue('history', 'old_version', '1')
         tc.formvalue('history', 'version', '2')
-        tc.submit()
+        tc.submit(formname='history')
         tc.url(r'%s/wiki/%s\?action=diff&version=2&old_version=1'
                % (url, pagename))
         tc.find(r'<a href="/wiki/%s\?version=1">Version 1</a>' % pagename)
@@ -195,7 +195,7 @@ class TestWikiEditComment(FunctionalTwillTestCaseSetup):
 
         # Comment edit from diff page
         tc.formvalue('history', 'version', '1')
-        tc.submit()
+        tc.submit(formname='history')
         tc.url('%s/wiki/%s?action=diff&version=1#' % (url, pagename),
                regexp=False)
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % first_comment_edit)

@@ -114,10 +114,10 @@ class RegressionTestTicket5765(FunctionalTwillTestCaseSetup):
         """
         self._tester.go_to_preferences("User Interface")
         tc.formvalue('userprefs', 'accesskeys', True)
-        tc.submit()
+        tc.submit(formname='userprefs')
         tc.find('name="accesskeys".*checked="checked"')
         tc.formvalue('userprefs', 'accesskeys', False)
-        tc.submit()
+        tc.submit(formname='userprefs')
         tc.notfind('name="accesskeys".*checked="checked"')
 
 

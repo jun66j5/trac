@@ -267,7 +267,7 @@ class FunctionalTester(object):
         # verify the event shows up in the timeline
         self.go_to_timeline()
         tc.formvalue('prefs', 'wiki', True)
-        tc.submit()
+        tc.submit(formname='prefs')
         tc.find(name + ".*created")
 
         self.go_to_wiki(name)
@@ -465,7 +465,7 @@ class FunctionalTester(object):
         tc.formvalue('attachment', 'description', description)
         if replace:
             tc.formvalue('attachment', 'replace', True)
-        tc.submit()
+        tc.submit(formname='attachment')
         tc.url('%s/attachment/%s/%s/' % (self.url, realm, name), regexp=False)
 
         return filename

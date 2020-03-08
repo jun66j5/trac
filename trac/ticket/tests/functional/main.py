@@ -427,7 +427,7 @@ class TestTicketQueryLinksQueryModuleDisabled(FunctionalTwillTestCaseSetup):
             tc.formvalue('edit-plugin-trac', 'enable',
                          '%strac.ticket.query.QueryModule'
                          % ('+' if enable else '-'))
-            tc.submit()
+            tc.submit(formname='edit-plugin-trac')
             tc.find("The following component has been %s:"
                     ".*QueryModule.*\(trac\.ticket\.query\.\*\)"
                     % ("enabled" if enable else "disabled"))
@@ -676,10 +676,10 @@ class TestTicketTimeline(FunctionalTwillTestCaseSetup):
 
         self._tester.go_to_timeline()
         tc.formvalue('prefs', 'ticket', True)
-        tc.submit()
+        tc.submit(formname='prefs')
         tc.find('Ticket.*#%s.*created' % ticketid)
         tc.formvalue('prefs', 'ticket_details', True)
-        tc.submit()
+        tc.submit(formname='prefs')
         htmltags = '(<[^>]*>)*'
         tc.find('Ticket ' + htmltags + '#' + str(ticketid) + htmltags +
                 ' \\(' + summary.split()[0] +
