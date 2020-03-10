@@ -461,6 +461,8 @@ class RegressionTestTicket10274(FunctionalTwillTestCaseSetup):
 
 
 class RegressionTestTicket10850(FunctionalTwillTestCaseSetup):
+    @unittest.skipIf(os.name == 'nt', 'Unable to create file named with colon '
+                                      'and backslash characters on Windows')
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10850"""
         pagename = self._tester.create_wiki_page()
