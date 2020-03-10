@@ -168,7 +168,6 @@ class FunctionalTestEnvironment(object):
     def adduser(self, user):
         """Add a user to the environment.  The password will be set to the
         same as username."""
-        user = to_utf8(user)
         self._tracadmin('session', 'add', user)
         if call([sys.executable, os.path.join(self.trac_src, 'contrib',
                  'htpasswd.py'), '-b', self.htpasswd,
@@ -177,7 +176,6 @@ class FunctionalTestEnvironment(object):
 
     def deluser(self, user):
         """Delete a user from the environment."""
-        user = to_utf8(user)
         self._tracadmin('session', 'delete', user)
         if call([sys.executable, os.path.join(self.trac_src, 'contrib',
                  'htpasswd.py'), '-D', self.htpasswd, user],
