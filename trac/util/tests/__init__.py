@@ -51,28 +51,30 @@ class AtomicFileTestCase(unittest.TestCase):
         self.assertTrue(f.closed)
         self.assertEqual('Some new content', util.read_file(self.path))
 
-    if os.name != 'nt':
-        def test_symbolic_link(self):
-            link_path = os.path.join(self.dir, 'trac-tempfile-link')
-            os.symlink(self.path, link_path)
+    @unittest.skipIf(os.name == 'nt',
+                     'Symbolic links are not supported on Windows')
+    def test_symbolic_link(self):
+        link_path = os.path.join(self.dir, 'trac-tempfile-link')
+        os.symlink(self.path, link_path)
 
-            with util.AtomicFile(link_path) as f:
-                f.write('test content')
+        with util.AtomicFile(link_path) as f:
+            f.write('test content')
 
-            self.assertTrue(os.path.islink(link_path))
-            self.assertEqual('test content', util.read_file(link_path))
-            self.assertEqual('test content', util.read_file(self.path))
+        self.assertTrue(os.path.islink(link_path))
+        self.assertEqual('test content', util.read_file(link_path))
+        self.assertEqual('test content', util.read_file(self.path))
 
-    if util.can_rename_open_file:
-        def test_existing_open_for_reading(self):
-            util.create_file(self.path, 'Initial file content')
-            self.assertEqual('Initial file content', util.read_file(self.path))
-            with open(self.path, 'rb') as rf:
-                with util.AtomicFile(self.path) as f:
-                    f.write('Replaced content')
-            self.assertTrue(rf.closed)
-            self.assertTrue(f.closed)
-            self.assertEqual('Replaced content', util.read_file(self.path))
+    @unittest.skipIf(not util.can_rename_open_file,
+                     'Open files cannot be renamed on Windows')
+    def test_existing_open_for_reading(self):
+        util.create_file(self.path, 'Initial file content')
+        self.assertEqual('Initial file content', util.read_file(self.path))
+        with open(self.path, 'rb') as rf:
+            with util.AtomicFile(self.path) as f:
+                f.write('Replaced content')
+        self.assertTrue(rf.closed)
+        self.assertTrue(f.closed)
+        self.assertEqual('Replaced content', util.read_file(self.path))
 
     # FIXME: It is currently not possible to make this test pass on all
     # platforms and with all locales. Typically, it will fail on Linux with
