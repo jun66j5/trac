@@ -191,6 +191,8 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
         os.remove(os.path.join(self.repos_path, '.git', 'HEAD'))
         self.assertRaises(GitError, self._storage, self.repos_path)
 
+    @unittest.skipIf(os.name == 'nt', 'Control characters cannot be used in '
+                                      'filesystem on Windows')
     def test_get_branches_with_cr_in_commitlog(self):
         # regression test for #11598
         message = 'message with carriage return'.replace(' ', '\r')
@@ -283,6 +285,8 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
         rev = self._factory(True).getInstance().youngest_rev()
         self.assertNotEqual(rev, parent_rev)
 
+    @unittest.skipIf(os.name == 'nt', 'Control characters cannot be used in '
+                                      'filesystem on Windows')
     def test_ls_tree_with_control_chars(self):
         paths = ['normal-path.txt',
                  '\a\b\t\n\v\f\r\x1b"\\.tx\\t']
@@ -299,6 +303,8 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
                           'normal-path.txt'],
                          [entry[4] for entry in entries])
 
+    @unittest.skipIf(os.name == 'nt', 'Control characters cannot be used in '
+                                      'filesystem on Windows')
     def test_get_historian_with_control_chars(self):
         paths = ['normal-path.txt', '\a\b\t\n\v\f\r\x1b"\\.tx\\t']
 
@@ -319,11 +325,6 @@ class NormalTestCase(unittest.TestCase, GitCommandMixin):
         validate(paths[0], 'false')
         validate(paths[1], 'true')
         validate(paths[1], 'false')
-
-    if os.name == 'nt':
-        del test_get_branches_with_cr_in_commitlog
-        del test_ls_tree_with_control_chars
-        del test_get_historian_with_control_chars
 
 
 class UnicodeNameTestCase(unittest.TestCase, GitCommandMixin):

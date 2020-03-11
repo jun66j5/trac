@@ -579,6 +579,7 @@ Overlapped keywords:
         self.assertEqual([23, 23, 23, 25, 24, 23, 23, 23, 23, 23, 24, 23, 20],
                          node.get_annotations())
 
+    @unittest.skipIf(os.name != 'nt', 'Drive letter is available on Windows')
     def test_get_annotations_lower_drive_letter(self):
         # If the drive letter in the uri is lower case on Windows, a
         # SubversionException raises (#10514).
@@ -590,9 +591,6 @@ Overlapped keywords:
         node = repos.get_node('/tête/R\xe9sum\xe9.txt', 25)
         self.assertEqual([23, 23, 23, 25, 24, 23, 23, 23, 23, 23, 24, 23, 20],
                          node.get_annotations())
-
-    if os.name != 'nt':
-        del test_get_annotations_lower_drive_letter
 
     def test_get_annotations_with_urlencoded_percent_sign(self):
         node = self.repos.get_node('/branches/t10386/READ%25ME.txt')
@@ -922,6 +920,7 @@ Overlapped keywords:
         self.assertEqual('Chez moi ça marche\n', chgset.message)
         self.assertEqual('Jonas Borgström', chgset.author)
 
+    @unittest.skipIf(os.name != 'posix', 'posix')
     def test_canonical_repos_path(self):
         # Assertion `svn_dirent_is_canonical` with leading double slashes
         # in repository path if os.name == 'posix' (#10390)
@@ -929,9 +928,6 @@ Overlapped keywords:
             'canonical-path', '//' + REPOS_PATH.lstrip('/'), 'direct-svnfs')
         repos = RepositoryManager(self.env).get_repository('canonical-path')
         self.assertEqual(REPOS_PATH, repos.path)
-
-    if os.name != 'posix':
-        del test_canonical_repos_path
 
     def test_merge_prop_renderer_without_deleted_branches(self):
         context = _create_context(self.env)

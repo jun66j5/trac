@@ -918,6 +918,8 @@ class DateFormatTestCase(unittest.TestCase):
         self.assertEqual(datefmt.to_datetime(2345678912), expected)
         self.assertEqual(datefmt.to_datetime(2345678912.0), expected)
 
+    @unittest.skipIf(os.name == 'nt',
+                     'Negative timestamps not supported on Windows')
     def test_to_datetime_microsecond_negative_timestamps(self):
         # Work around issue1646728 in Python 2.4
         expected = datetime.datetime.fromtimestamp(-2345, datefmt.localtz) \
@@ -927,10 +929,6 @@ class DateFormatTestCase(unittest.TestCase):
                          321088) # 1000000 - 678912
         self.assertEqual(datefmt.to_datetime(-2345678912), expected)
         self.assertEqual(datefmt.to_datetime(-2345678912.0), expected)
-    if os.name == 'nt':
-        del test_to_datetime_microsecond_negative_timestamps
-        # negative timestamps not supported on Windows:
-        # ValueError: timestamp out of range for platform localtime()/gmtime()
 
     def test_to_datetime_can_convert_dates(self):
         expected = datetime.datetime(2009, 5, 2, tzinfo=datefmt.localtz)
