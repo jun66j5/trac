@@ -50,6 +50,7 @@ class ToUnicodeTestCase(unittest.TestCase):
         except ValueError as e:
             self.assertEqual('\uB144 is not a number.', to_unicode(e))
 
+    @unittest.skipIf(os.name != 'nt', 'For OSError on Windows')
     def test_from_windows_error(self):
         try:
             os.stat(r'non\existent\file.txt')
@@ -59,6 +60,7 @@ class ToUnicodeTestCase(unittest.TestCase):
             self.assertIsInstance(e.strerror, str)
             self.assertIn(r": 'non\existent\file.txt'", uc)
 
+    @unittest.skipIf(os.name != 'nt', 'For OSError on Windows')
     def test_from_windows_error_with_unicode_path(self):
         try:
             os.stat(r'nön\existént\file.txt')
@@ -68,6 +70,7 @@ class ToUnicodeTestCase(unittest.TestCase):
             self.assertIsInstance(e.strerror, str)
             self.assertIn(r": 'nön\existént\file.txt'", uc)
 
+    @unittest.skipIf(os.name != 'nt', 'For OSError on Windows')
     def test_from_socket_error(self):
         for res in socket.getaddrinfo('127.0.0.1', 65536, 0,
                                       socket.SOCK_STREAM):
@@ -79,11 +82,6 @@ class ToUnicodeTestCase(unittest.TestCase):
                     uc = to_unicode(e)
                     self.assertIsInstance(uc, str, uc)
                     self.assertIsInstance(e.strerror, str)
-
-    if os.name != 'nt':
-        del test_from_windows_error
-        del test_from_windows_error_with_unicode_path
-        del test_from_socket_error
 
 
 class ExpandtabsTestCase(unittest.TestCase):
@@ -463,6 +461,7 @@ class ShortenLineTestCase(unittest.TestCase):
         self.assertEqual('abcde ...', shorten_line(text, 9))
 
 
+@unittest.skipIf(os.name == 'nt', 'POSIX locale is not available')
 class DefaultAmbiwidthTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -570,8 +569,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(LevenshteinDistanceTestCase))
     suite.addTest(unittest.makeSuite(SubVarsTestCase))
     suite.addTest(unittest.makeSuite(ShortenLineTestCase))
-    if os.name != 'nt':
-        suite.addTest(unittest.makeSuite(DefaultAmbiwidthTestCase))
+    suite.addTest(unittest.makeSuite(DefaultAmbiwidthTestCase))
     suite.addTest(unittest.makeSuite(ExceptionToUnicodeTestCase))
     return suite
 

@@ -72,6 +72,8 @@ class DatabaseFileTestCase(unittest.TestCase):
             self.assertIn('Database "', str(e))
             self.assertIn('" not found.', str(e))
 
+    @unittest.skipIf(os.name == 'posix' and os.getuid() == 0,
+                     'For root, os.access() always returns True')
     def test_no_permissions(self):
         self._create_env()
         os.chmod(self.db_path, 0o444)
@@ -81,9 +83,6 @@ class DatabaseFileTestCase(unittest.TestCase):
             self.fail('ConfigurationError not raised')
         except ConfigurationError as e:
             self.assertIn('requires read _and_ write permissions', str(e))
-
-    if os.name == 'posix' and os.getuid() == 0:
-        del test_no_permissions  # For root, os.access() always returns True
 
     def test_error_with_lazy_translation(self):
         self._create_env()
