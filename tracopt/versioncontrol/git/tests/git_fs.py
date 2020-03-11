@@ -287,13 +287,10 @@ class GitNormalTestCase(BaseTestCase):
         self.assertRaises(NoSuchChangeset,
                           repos.get_node, '/non-existent', 'invalid-revision')
 
-        # git_fs doesn't support non-ANSI strings on Windows
-        if os.name != 'nt':
-            self._git('branch', 'tïckét10605', 'master')
-            repos.sync()
-            self.assertEqual(rev, repos.get_node('/', 'tïckét10605').rev)
-            self.assertEqual(rev, repos.get_node('/.gitignore',
-                                                 'tïckét10605').rev)
+        self._git('branch', 'tïckét10605', 'master')
+        repos.sync()
+        self.assertEqual(rev, repos.get_node('/', 'tïckét10605').rev)
+        self.assertEqual(rev, repos.get_node('/.gitignore', 'tïckét10605').rev)
 
     def _test_on_empty_repos(self, cached_repository):
         self.env.config.set('git', 'persistent_cache', 'false')
