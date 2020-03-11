@@ -14,7 +14,9 @@
 
 import os
 import re
+import socket
 import unittest
+import urllib.parse
 
 from trac.tests.functional import FunctionalTwillTestCaseSetup, \
                                   internal_error, tc
@@ -232,33 +234,48 @@ See also http://bugs.python.org/issue15564.
 
 
 class RegressionTestTicket3663(FunctionalTwillTestCaseSetup):
-    @unittest.skip('http.client library disallows non-ascii characters in '
-                   'request uri')
     def runTest(self):
         """Regression test for non-UTF-8 PATH_INFO (#3663)
 
         Verify that URLs not encoded with UTF-8 are reported as invalid.
         """
-        import httplib
-        # Work around for InvalidURL since Python 2.7.17 (#13233)
-        saved_re = httplib._contains_disallowed_url_pchar_re \
-                   if hasattr(httplib, '_contains_disallowed_url_pchar_re') \
-                   else None
-        try:
-            if saved_re:
-                httplib._contains_disallowed_url_pchar_re = \
-                    re.compile(r'[\x00-\x20]')
-            # invalid PATH_INFO
-            self._tester.go_to_wiki('été'.encode('latin1'))
-            tc.code(404)
-            tc.find('Invalid URL encoding')
-            # invalid SCRIPT_NAME
-            tc.go('été'.encode('latin1'))
-            tc.code(404)
-            tc.find('Invalid URL encoding')
-        finally:
-            if saved_re:
-                httplib._contains_disallowed_url_pchar_re = saved_re
+        def fetch(uri):
+            # http.client module disallows non-ascii characters in request
+            # line. Instead, use directly socket module.
+            req = (b'GET %s HTTP/1.0\r\n'
+                   b'Host: %s:%d\r\n'
+                   b'Connection: close\r\n'
+                   b'\r\n' % (uri, b'127.0.0.1', self._testenv.port))
+            resp = []
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(('127.0.0.1', self._testenv.port))
+                s.send(req)
+                while True:
+                    chunk = s.recv(4096)
+                    if not chunk:
+                        break
+                    resp.append(chunk)
+            resp = b''.join(resp)
+            if not resp:
+                raise RuntimeError('No response')
+            match = re.match(b'HTTP\/[0-9]\.[0-9] +([0-9]{3}) +.*\r\n', resp)
+            if not match:
+                raise RuntimeError('No status line: %r' % resp)
+            status = int(match.group(1))
+            pos = resp.find(b'\r\n\r\n', len(match.group(0)))
+            if pos == -1:
+                raise RuntimeError('Missing CRLFCRLF in response: %r' % resp)
+            body = resp[pos:]
+            return status, body
+
+        # invalid PATH_INFO
+        status, body = fetch('/wiki/été'.encode('latin1'))
+        self.assertEqual(404, status)
+        self.assertIn(b'Invalid URL encoding', body)
+        # invalid SCRIPT_NAME
+        status, body = fetch('/été'.encode('latin1'))
+        self.assertEqual(404, status)
+        self.assertIn(b'Invalid URL encoding', body)
 
 
 class RegressionTestTicket6318(FunctionalTwillTestCaseSetup):
