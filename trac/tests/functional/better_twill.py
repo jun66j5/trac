@@ -19,7 +19,6 @@ It also handles twill's absense.
 import hashlib
 import http.client
 import http.server
-import io
 import re
 import os.path
 import socketserver
@@ -543,8 +542,11 @@ class ReverseProxyServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
     def save_response(self, path, body):
         filename = self._response_path(path)
+        if isinstance(body, bytes):
+            body = [body]
         with open(filename, 'wb') as f:
-            f.write(body)
+            for chunk in body:
+                f.write(chunk)
 
     def _response_path(self, path):
         key = hashlib.sha1(path.encode('utf-8')).hexdigest()
@@ -564,29 +566,26 @@ class ReverseProxyRequestHandler(http.server.BaseHTTPRequestHandler):
             length = int(self.headers.get('content-length') or 0)
             conn.endheaders(self.rfile.read(length) if length > 0 else b'')
             resp = conn.getresponse()
-            resp_body = io.BytesIO()
-            try:
-                self.send_response(resp.status, resp.reason)
-                for name, value in resp.getheaders():
-                    self.send_header(name, value)
-                self.end_headers()
-                use_chunked = resp.chunked
-                while True:
-                    chunk = resp.read(65536)
-                    if use_chunked:
-                        self.wfile.write(b'%x\r\n' % len(chunk))
-                    if chunk:
-                        self.wfile.write(chunk)
-                        resp_body.write(chunk)
-                    if use_chunked:
-                        self.wfile.write(b'\r\n')
-                    if not chunk:
-                        break
-            finally:
-                resp_body = resp_body.getvalue()
-                self.server.save_response(self.path, resp_body)
+            resp_body = []
+            while True:
+                chunk = resp.read(65536)
+                if not chunk:
+                    break
+                resp_body.append(chunk)
+            self.server.save_response(self.path, resp_body)
+            self.send_response(resp.status, resp.reason)
+            for name, value in resp.getheaders():
+                self.send_header(name, value)
+            self.end_headers()
+            if resp.chunked:
+                for chunk in resp_body:
+                    self.wfile.write(b'%x\r\n%s\r\n' % (len(chunk), chunk))
+                self.wfile.write(b'0\r\n\r\n')
+            else:
+                for chunk in resp_body:
+                    self.wfile.write(chunk)
         except OSError:
-            pass
+            self.server.save_response(self.path, b'')
         finally:
             conn.close()
 
