@@ -16,7 +16,6 @@ import os
 import re
 import socket
 import unittest
-import urllib.parse
 
 from trac.tests.functional import FunctionalTwillTestCaseSetup, \
                                   internal_error, tc
@@ -242,10 +241,13 @@ class RegressionTestTicket3663(FunctionalTwillTestCaseSetup):
         def fetch(uri):
             # http.client module disallows non-ascii characters in request
             # line. Instead, use directly socket module.
+            cookie = '; '.join('%s=%s' % (c['name'], c['value'])
+                               for c in tc.get_cookies()).encode('utf-8')
             req = (b'GET %s HTTP/1.0\r\n'
                    b'Host: %s:%d\r\n'
+                   b'Cookie: %s\r\n'
                    b'Connection: close\r\n'
-                   b'\r\n' % (uri, b'127.0.0.1', self._testenv.port))
+                   b'\r\n' % (uri, b'127.0.0.1', self._testenv.port, cookie))
             resp = []
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect(('127.0.0.1', self._testenv.port))
