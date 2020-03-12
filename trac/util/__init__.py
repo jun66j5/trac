@@ -327,15 +327,13 @@ if os.name == 'nt':
     def touch_file(filename):
         """Update modified time of the given file. The file is created if
         missing."""
-        # Use f.truncate() to avoid low resolution of GetSystemTime()
+        from ctypes import windll
+        from msvcrt import get_osfhandle
+        # Use SetEndOfFile() to avoid low resolution of GetSystemTime()
         # on Windows
         with open(filename, 'ab') as f:
-            stat = os.fstat(f.fileno())
-            size = stat.st_size
-            # update forcibly the modified time because f.truncate()
-            # with the same size doesn't update
-            f.truncate(size + 1)
-            f.truncate(size)
+            h = get_osfhandle(f.fileno())
+            windll.kernel32.SetEndOfFile(h)
 else:
     def touch_file(filename):
         """Update modified time of the given file. The file is created if
