@@ -31,17 +31,22 @@ from urllib.request import HTTPBasicAuthHandler, Request, build_opener, \
 
 from trac.test import mkdtemp, rmtree
 
-# On OSX lxml needs to be imported before twill to avoid Resolver issues
-# somehow caused by the mac specific 'ic' module
-try:
-    from lxml import etree
-except ImportError:
-    etree = None
-
 try:
     import selenium
 except ImportError:
     selenium = None
+
+try:
+    from tidylib import tidy_document
+    tidy_document('<!DOCTYPE html><html><body></body></html>')
+except ImportError:
+    print("SKIP: validation of HTML output in functional tests"
+          " (no tidylib installed)")
+    tidy_document = None
+except OSError as e:
+    print("SKIP: validation of HTML output in functional tests"
+          " (no tidy dynamic library installed: %s)" % e)
+    tidy_document = None
 
 
 if selenium:
@@ -126,7 +131,8 @@ if selenium:
 
         def go(self, url):
             url = self._urljoin(url)
-            return self.driver.get(url)
+            self.driver.get(url)
+            self._validate_html(self.get_source())
 
         def back(self):
             self.driver.back()
@@ -136,6 +142,7 @@ if selenium:
 
         def reload(self):
             self.driver.refresh()
+            self._validate_html(self.get_source())
 
         def download(self, url):
             cookie = '; '.join('%s=%s' % (c['name'], c['value'])
@@ -187,6 +194,7 @@ if selenium:
 
         def follow(self, s):
             self._find_link(s).click()
+            self._validate_html(self.get_source())
 
         def download_link(self, pattern):
             element = self._find_link(pattern)
@@ -357,6 +365,7 @@ if selenium:
                     url = self.write_source()
                     raise ValueError('No active submit elements in %s' % url)
             element.click()
+            self._validate_html(self.get_source())
 
         def move_to(self, *args, **kwargs):
             element = self._find_by(*args, **kwargs)
@@ -442,6 +451,25 @@ if selenium:
             if '://' not in url:
                 url = urljoin(self.get_url(), url)
             return url
+
+        _tidy_options = {
+            'escape-scripts': 0,
+            'drop-empty-elements': 0,
+        }
+
+        _doctype_re = re.compile(r'\s*<!DOCTYPE\b'.encode('ascii'))
+
+        def _validate_html(self, source):
+            if not tidy_document:
+                return
+            if not self._doctype_re.match(source):
+                return
+            corrected, errors = tidy_document(source, self._tidy_options)
+            if errors:
+                errors = errors.splitlines()
+                url = self.write_source(source)
+                raise AssertionError('tidylib found %d error(s) in %s\n\n%s' %
+                                     (len(errors), url, '\n'.join(errors)))
 
         # When we can't find something we expected, or find something we didn't
         # expect, it helps the debugging effort to have a copy of the html to
