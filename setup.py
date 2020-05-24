@@ -95,14 +95,14 @@ setup(
         'jinja2>=2.9.3',
     ],
     extras_require = {
-        'babel': ['Babel>=0.9.5'],
+        'babel': ['Babel>=2.2'],
         'mysql': ['PyMySQL'],
-        'postgresql': ['psycopg2 >= 2.0'],
-        'psycopg2': ['psycopg2 >= 2.0'],
+        'postgresql': ['psycopg2 >= 2.5'],
+        'psycopg2': ['psycopg2 >= 2.5'],
         'psycopg2-binary': ['psycopg2-binary'],
         'pygments': ['Pygments>=1.0'],
-        'rest': ['docutils>=0.6'],
-        'textile': ['textile>=2.0'],
+        'rest': ['docutils>=0.14'],
+        'textile': ['textile>=2.3'],
     },
 
     entry_points = """
