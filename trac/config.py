@@ -100,18 +100,6 @@ class UnicodeConfigParser(ConfigParser):
             option = option.lower()
         return option
 
-    def sections(self):
-        return ConfigParser.sections(self)
-
-    def add_section(self, section):
-        ConfigParser.add_section(self, section)
-
-    def has_section(self, section):
-        return ConfigParser.has_section(self, section)
-
-    def options(self, section):
-        return ConfigParser.options(self, section)
-
     def get(self, section, option, raw=False, vars=None,
             fallback=_use_default):
         try:
@@ -129,18 +117,9 @@ class UnicodeConfigParser(ConfigParser):
                 raise
             return fallback
 
-    def has_option(self, section, option):
-        return ConfigParser.has_option(self, section, option)
-
     def set(self, section, option, value=None):
         value_str = to_unicode(value if value is not None else '')
         ConfigParser.set(self, section, option, value_str)
-
-    def remove_option(self, section, option):
-        ConfigParser.remove_option(self, section, option)
-
-    def remove_section(self, section):
-        ConfigParser.remove_section(self, section)
 
     def read(self, filename, encoding='utf-8'):
         return ConfigParser.read(self, filename, encoding)
