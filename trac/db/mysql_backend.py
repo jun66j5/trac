@@ -18,6 +18,7 @@ import os
 import re
 import sys
 from contextlib import closing
+from subprocess import Popen, PIPE
 
 from trac.api import IEnvironmentSetupParticipant
 from trac.core import *
@@ -236,7 +237,6 @@ class MySQLConnector(Component):
                           for each in alterations))
 
     def backup(self, dest_file):
-        from subprocess import Popen, PIPE
         db_url = self.env.config.get('trac', 'database')
         scheme, db_prop = parse_connection_uri(db_url)
         db_params = db_prop.setdefault('params', {})

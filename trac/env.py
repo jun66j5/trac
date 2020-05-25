@@ -24,7 +24,7 @@ import shutil
 import sys
 import time
 from configparser import RawConfigParser
-from subprocess import PIPE
+from subprocess import PIPE, Popen
 from tempfile import mkdtemp
 from urllib.parse import urlsplit
 
@@ -43,7 +43,7 @@ from trac.db.convert import copy_tables
 from trac.loader import load_components
 from trac.util import as_bool, backup_config_file, copytree, create_file, \
                       get_pkginfo, is_path_below, lazy, makedirs
-from trac.util.compat import Popen, close_fds
+from trac.util.compat import close_fds
 from trac.util.concurrency import threading
 from trac.util.datefmt import pytz
 from trac.util.text import exception_to_unicode, path_to_unicode, printerr, \

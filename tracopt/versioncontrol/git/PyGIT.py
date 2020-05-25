@@ -17,6 +17,7 @@ import contextlib
 import io
 import os
 import re
+import subprocess
 import weakref
 from collections import deque
 from functools import partial
@@ -25,7 +26,7 @@ from threading import Lock
 
 from trac.core import TracBaseError
 from trac.util import terminate
-from trac.util.compat import Popen, close_fds
+from trac.util.compat import close_fds
 from trac.util.datefmt import time_now
 from trac.util.text import to_unicode
 
@@ -145,8 +146,8 @@ class GitCore(object):
         kw.setdefault('stdin', PIPE)
         kw.setdefault('stdout', PIPE)
         kw.setdefault('stderr', PIPE)
-        return Popen(self.__build_git_cmd(git_cmd, *cmd_args),
-                     close_fds=close_fds, **kw)
+        return subprocess.Popen(self.__build_git_cmd(git_cmd, *cmd_args),
+                                close_fds=close_fds, **kw)
 
     def __execute(self, *args):
         """execute git command and return file-like object of stdout"""

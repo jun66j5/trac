@@ -16,12 +16,12 @@ import os
 import sys
 import unittest
 from datetime import datetime, timedelta
-from subprocess import DEVNULL, PIPE
+from subprocess import DEVNULL, PIPE, Popen
 
 from trac.core import TracError
 from trac.test import EnvironmentStub, MockRequest, locate, mkdtemp, rmtree
 from trac.util import create_file
-from trac.util.compat import Popen, close_fds
+from trac.util.compat import close_fds
 from trac.util.datefmt import to_timestamp, utc
 from trac.util.text import to_utf8
 from trac.versioncontrol.api import Changeset, DbRepositoryProvider, \

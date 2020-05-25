@@ -19,6 +19,7 @@ import ctypes
 import os
 import re
 from pkg_resources import DistributionNotFound
+from subprocess import Popen, PIPE
 
 from trac.core import *
 from trac.config import Option
@@ -246,7 +247,6 @@ class PostgreSQLConnector(Component):
                              for name, type_ in alterations))
 
     def backup(self, dest_file):
-        from subprocess import Popen, PIPE
         db_url = self.env.config.get('trac', 'database')
         scheme, db_prop = parse_connection_uri(db_url)
         db_params = db_prop.setdefault('params', {})
@@ -305,7 +305,6 @@ class PostgreSQLConnector(Component):
         return _version_tuple(version)
 
     def _pgdump_version(self):
-        from subprocess import Popen, PIPE
         try:
             p = Popen([self.pg_dump_path, '--version'], stdout=PIPE,
                       close_fds=close_fds)

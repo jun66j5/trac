@@ -22,13 +22,10 @@ import errno
 import functools
 import hashlib
 import importlib
-import inspect
 import io
-from itertools import tee
-import locale
 import os
+import pkg_resources
 import posixpath
-from pkg_resources import find_distributions
 import random
 import re
 import shutil
@@ -36,13 +33,13 @@ import sys
 import string
 import struct
 import tempfile
+import urllib.parse
 import unicodedata
 import zipfile
-from urllib.parse import quote, unquote, urlencode
 
 from trac.util.datefmt import time_now, to_datetime, to_timestamp, utc
 from trac.util.text import exception_to_unicode, getpreferredencoding, \
-                           stripws, to_unicode
+    stripws, to_unicode, to_utf8
 
 
 def get_reporter_id(req, arg_name=None):
@@ -77,7 +74,7 @@ def content_disposition(type=None, filename=None):
             filename = filename.encode('utf-8')
         if type:
             type += '; '
-        type += 'filename=' + quote(filename, safe='')
+        type += 'filename=' + urllib.parse.quote(filename, safe='')
     return type
 
 
@@ -796,7 +793,7 @@ def get_sources(path):
     distributions that contain them.
     """
     sources = {}
-    for dist in find_distributions(path, only=True):
+    for dist in pkg_resources.find_distributions(path, only=True):
         if not dist.has_metadata('top_level.txt'):
             continue
         toplevels = dist.get_metadata_lines('top_level.txt')
@@ -873,7 +870,7 @@ def get_pkginfo(dist):
             resource_name += '/__init__.py'
         else:
             resource_name += '.py'
-        for dist in find_distributions(module_path, only=True):
+        for dist in pkg_resources.find_distributions(module_path, only=True):
             if os.path.isfile(module_path) or \
                     has_resource(dist, module, resource_name):
                 break
@@ -1444,16 +1441,5 @@ def sub_val(the_list, item_to_remove, item_to_add):
     else:
         the_list[index] = item_to_add
 
-
-# Imports for backward compatibility (at bottom to avoid circular dependencies)
-from trac.core import TracError
-from trac.util.compat import reversed
-from trac.util.html import escape, unescape, Markup, Deuglifier
-from trac.util.text import CRLF, to_utf8, shorten_line, wrap, pretty_size
-from trac.util.datefmt import pretty_timedelta, format_datetime, \
-                              format_date, format_time, \
-                              get_date_format_hint, \
-                              get_datetime_format_hint, http_date, \
-                              parse_date
 
 __no_apidoc__ = 'compat presentation translation'
