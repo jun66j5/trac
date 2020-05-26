@@ -5,9 +5,10 @@ python: 3.8
 addons:
   apt:
     packages: [libapr1-dev, libaprutil1-dev, liblz4-dev, libutf8proc-dev, swig,
-               firefox-geckodriver]
+               firefox-geckodriver, python3-tidylib]
   homebrew:
-    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig, ccache, geckodriver]
+    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig, ccache, geckodriver,
+               tidy-html5]
     update: true
   firefox: latest
 cache:
@@ -49,7 +50,7 @@ install:
 - set -e
 - |
   if [ "$TRAVIS_BUILD_STAGE_NAME" = test ]; then
-    requires='Jinja2 selenium lxml'
+    requires='Jinja2 selenium pytidylib'
     if [ "$build" != minimum ]; then requires="$requires Babel Pygments docutils textile pytz"; fi
     if [ "$tracdb" = postgresql ]; then requires="$requires psycopg2"; fi
     if [ "$tracdb" = mysql ]; then requires="$requires PyMySQL"; fi
