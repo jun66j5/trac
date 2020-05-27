@@ -418,6 +418,7 @@ class FunctionalTester(object):
         tc.url(re.escape(version_admin) + '#?$')
         tc.find(name)
         tc.notfind(internal_error)
+        return name
         # TODO: verify releasetime
 
     def create_report(self, title, query, description):
