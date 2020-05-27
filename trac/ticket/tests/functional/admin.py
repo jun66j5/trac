@@ -875,7 +875,8 @@ class TestAdminVersionDetailTime(FunctionalTwillTestCaseSetup):
         tc.follow(name)
 
         # Clear value and send ENTER to close the datepicker.
-        tc.formvalue('edit', 'time', tc.keys.ENTER)
+        tc.formvalue('edit', 'time', '')
+        tc.send_keys(tc.keys.ESCAPE)  # close datepicker
         tc.wait_for('invisibility_of_element', id='ui-datepicker-div')
         tc.submit('save')
         version_admin = self._tester.url + "/admin/ticket/versions"

@@ -375,6 +375,12 @@ if selenium:
             element = self._find_by(*args, **kwargs)
             ActionChains(self.driver).move_to_element(element).perform()
 
+        def send_keys(self, *args):
+            chains = ActionChains(self.driver)
+            for arg in args:
+                chains.send_keys(arg)
+            chains.perform()
+
         def wait_for(self, condition, *args, **kwargs):
             element = self._find_by(*args, **kwargs)
             method = getattr(expected_conditions, condition)
