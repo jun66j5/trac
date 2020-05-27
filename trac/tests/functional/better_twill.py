@@ -54,6 +54,9 @@ if selenium:
     from selenium.common.exceptions import (
         NoSuchElementException, WebDriverException as ConnectError)
     from selenium.webdriver.common.action_chains import ActionChains
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.support import expected_conditions
+    from selenium.webdriver.support.ui import WebDriverWait
 
     # setup short names to reduce typing
     # This selenium browser (and the tc commands that use it) are essentially
@@ -66,6 +69,7 @@ if selenium:
         proxy_thread = None
         driver = None
         auth_handler = None
+        keys = Keys
 
         def init(self, port, proxy_port):
             self.tmpdir = mkdtemp()
@@ -370,6 +374,11 @@ if selenium:
         def move_to(self, *args, **kwargs):
             element = self._find_by(*args, **kwargs)
             ActionChains(self.driver).move_to_element(element).perform()
+
+        def wait_for(self, condition, *args, **kwargs):
+            element = self._find_by(*args, **kwargs)
+            method = getattr(expected_conditions, condition)
+            WebDriverWait(tc.driver, 2).until(method(element))
 
         def _find_form(self, id_):
             selector = 'form[id="%(name)s"]' % {'name': id_}
