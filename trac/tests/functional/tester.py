@@ -114,6 +114,8 @@ class FunctionalTester(object):
         tc.notfind(internal_error)
 
     def go_to_url(self, url):
+        if url.startswith('/'):
+            url = self.url + url
         tc.go(url)
         tc.url(url, regexp=False)
         tc.notfind(internal_error)

@@ -33,10 +33,10 @@ class AdminEnumDefaultTestCaseSetup(FunctionalTwillTestCaseSetup):
         tc.find(name)
         tc.formvalue('enumtable', 'default', name)
         tc.submit('apply')
-        tc.url(url, regexp=False)
+        tc.url(url)
         tc.find('radio.*checked="checked" value="%s"' % name)
         # Test the "Clear default" button
-        tc.go(url)
+        self._tester.go_to_url(url)
         tc.submit('clear', formname='enumtable')
         tc.url(url, regexp=False)
         tc.notfind(internal_error)
@@ -63,8 +63,6 @@ class TestAdminComponentDuplicates(FunctionalTwillTestCaseSetup):
         """Admin create duplicate component"""
         name = "DuplicateComponent"
         self._tester.create_component(name)
-        component_url = self._tester.url + "/admin/ticket/components"
-        tc.go(component_url)
         tc.formvalue('addcomponent', 'name', name)
         tc.submit()
         tc.notfind(internal_error)
@@ -76,8 +74,6 @@ class TestAdminComponentRemoval(FunctionalTwillTestCaseSetup):
         """Admin remove component"""
         name = "RemovalComponent"
         self._tester.create_component(name)
-        component_url = self._tester.url + "/admin/ticket/components"
-        tc.go(component_url)
         tc.formvalue('component_table', 'sel', name)
         tc.submit('remove')
         tc.notfind(name)
@@ -87,8 +83,7 @@ class TestAdminComponentNonRemoval(FunctionalTwillTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected component"""
-        component_url = self._tester.url + "/admin/ticket/components"
-        tc.go(component_url)
+        self._tester.go_to_url('/admin/ticket/components')
         tc.submit('remove', formname='component_table')
         tc.find('No component selected')
 
@@ -98,18 +93,16 @@ class TestAdminComponentDefault(FunctionalTwillTestCaseSetup):
         """Admin set default component"""
         name = "DefaultComponent"
         self._tester.create_component(name)
-        component_url = self._tester.url + "/admin/ticket/components"
-        tc.go(component_url)
         tc.formvalue('component_table', 'default', name)
         tc.submit('apply')
         tc.find('type="radio" name="default" checked="checked" value="%s"' %
                 name)
-        tc.go(self._tester.url + '/newticket')
+        self._tester.go_to_url('/newticket')
         tc.find('<option selected="selected" value="%s">%s</option>'
                 % (name, name))
         # Test the "Clear default" button
         self._testenv.set_config('ticket', 'allowed_empty_fields', 'component')
-        tc.go(component_url)
+        self._tester.go_to_url('/admin/ticket/components')
         tc.submit('clear', formname='component_table')
         tc.notfind('type="radio" name="default" checked="checked" value=".+"')
         self._tester.create_ticket()
@@ -123,13 +116,11 @@ class TestAdminComponentDetail(FunctionalTwillTestCaseSetup):
         """Admin component detail"""
         name = "DetailComponent"
         self._tester.create_component(name)
-        component_url = self._tester.url + "/admin/ticket/components"
-        tc.go(component_url)
         tc.follow(name)
         desc = 'Some component description'
         tc.formvalue('edit', 'description', desc)
         tc.submit('cancel')
-        tc.url(component_url, regexp=False)
+        tc.url(self._tester.url + '/admin/ticket/components', regexp=False)
         tc.follow(name)
         tc.notfind(desc)
 
@@ -171,6 +162,24 @@ class TestAdminMilestoneAuthorization(AuthorizationTestCaseSetup):
         self.test_authorization('/admin/ticket/milestones', 'TICKET_ADMIN',
                                 "Manage Milestones")
 
+        # Test for regression of https://trac.edgewall.org/ticket/11618
+        name = "11618Milestone"
+        self._tester.create_milestone(name)
+        try:
+            self._testenv.grant_perm('user', 'TICKET_ADMIN')
+            self._tester.go_to_front()
+            self._tester.logout()
+            self._tester.login('user')
+            self._tester.go_to_url('/admin/ticket/milestones/' + name)
+            tc.notfind('No administration panels available')
+            tc.find(' readonly="readonly"')
+            tc.notfind(' readonly="True"')
+        finally:
+            self._testenv.revoke_perm('user', 'TICKET_ADMIN')
+            self._tester.go_to_front()
+            self._tester.logout()
+            self._tester.login('admin')
+
 
 class TestAdminMilestoneSpace(FunctionalTwillTestCaseSetup):
     def runTest(self):
@@ -183,8 +192,7 @@ class TestAdminMilestoneDuplicates(FunctionalTwillTestCaseSetup):
         """Admin create duplicate milestone"""
         name = "DuplicateMilestone"
         self._tester.create_milestone(name)
-        milestone_url = self._tester.url + "/admin/ticket/milestones"
-        self._tester.go_to_url(milestone_url)
+        self._tester.go_to_url(self._tester.url + "/admin/ticket/milestones")
         tc.formvalue('addmilestone', 'name', name)
         tc.submit()
         tc.notfind(internal_error)
@@ -233,7 +241,7 @@ class TestAdminMilestoneListing(FunctionalTwillTestCaseSetup):
             self._tester.go_to_front()
             self._tester.logout()
             self._tester.login('user')
-            tc.go(milestone_url)
+            self._tester.go_to_url(milestone_url)
             tc.notfind(apply_submit)
             tc.notfind(clear_submit)
             tc.find('<input type="radio" name="ticket_default" '
@@ -458,7 +466,7 @@ class TestAdminMilestoneRemove(FunctionalTwillTestCaseSetup):
         tid = self._tester.create_ticket(info={'milestone': name})
         milestone_url = self._tester.url + '/admin/ticket/milestones'
 
-        tc.go(milestone_url)
+        self._tester.go_to_url(milestone_url)
         tc.formvalue('milestone_table', 'sel', name)
         tc.submit('remove')
 
@@ -497,8 +505,7 @@ class TestAdminMilestoneNonRemoval(FunctionalTwillTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected milestone"""
-        milestone_url = self._tester.url + "/admin/ticket/milestones"
-        tc.go(milestone_url)
+        self._tester.go_to_url('/admin/ticket/milestones')
         tc.submit('remove', formname='milestone_table')
         tc.find('No milestone selected')
 
@@ -509,7 +516,7 @@ class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
         and clear defaults."""
         def clear_defaults():
             # Test the "Clear default" button
-            tc.go(milestone_url)
+            self._tester.go_to_url(milestone_url)
             tc.submit('clear', formname='milestone_table')
             tc.notfind('type="radio" name="ticket_default" '
                        'checked="checked" value=".+"')
@@ -531,7 +538,7 @@ class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
         self._tester.create_ticket(info={'milestone': mid2})
 
         # Set default ticket milestone
-        tc.go(milestone_url)
+        self._tester.go_to_url(milestone_url)
         tc.formvalue('milestone_table', 'ticket_default', mid1)
         tc.submit('apply')
         tc.find('type="radio" name="ticket_default"'
@@ -539,13 +546,13 @@ class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
         tc.notfind('type="radio" name="retarget_default"'
                    ' checked="checked" value=".+"')
         # verify it is the default on the newticket page.
-        tc.go(self._tester.url + '/newticket')
+        self._tester.go_to_url('/newticket')
         tc.find('<option selected="selected" value="%s">%s</option>'
                 % (mid1, mid1))
         clear_defaults()
 
         # Set default retarget to milestone
-        tc.go(milestone_url)
+        self._tester.go_to_url(milestone_url)
         tc.formvalue('milestone_table', 'retarget_default', mid1)
         tc.submit('apply')
         tc.find('type="radio" name="retarget_default"'
@@ -560,7 +567,7 @@ class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
         clear_defaults()
 
         # Set both
-        tc.go(milestone_url)
+        self._tester.go_to_url(milestone_url)
         tc.formvalue('milestone_table', 'ticket_default', mid1)
         tc.formvalue('milestone_table', 'retarget_default', mid1)
         tc.submit('apply')
@@ -569,7 +576,7 @@ class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
         tc.find('type="radio" name="retarget_default"'
                 ' checked="checked" value="%s"' % mid1)
         # verify it is the default on the newticket page.
-        tc.go(self._tester.url + '/newticket')
+        self._tester.go_to_url('/newticket')
         tc.find('<option selected="selected" value="%s">%s</option>'
                 % (mid1, mid1))
         # verify it is the default on the confirm delete page.
@@ -580,14 +587,14 @@ class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
         clear_defaults()
 
         #Set neither
-        tc.go(milestone_url)
+        self._tester.go_to_url(milestone_url)
         tc.submit('apply', formname='milestone_table')
         tc.notfind('type="radio" name="retarget_default"'
                    ' checked="checked" value=".+"')
         tc.notfind('type="radio" name="ticket_default"'
                    ' checked="checked" value=".+"')
         # verify no default on the newticket page.
-        tc.go(self._tester.url + '/newticket')
+        self._tester.go_to_url('/newticket')
         tc.find('<th class="missing" id="h_milestone">[ \t\n]+'
                 'Milestone:[ \t\n]+</th>[ \t\n]+'
                 '(?!<td headers="h_milestone">)')
@@ -626,12 +633,11 @@ class TestAdminPriorityModify(FunctionalTwillTestCaseSetup):
         """Admin modify priority"""
         name = "ModifyPriority"
         self._tester.create_priority(name)
-        priority_url = self._tester.url + '/admin/ticket/priority'
-        self._tester.go_to_url(priority_url)
         tc.find(name)
         tc.follow(name)
         tc.formvalue('edit', 'name', name * 2)
         tc.submit('save')
+        priority_url = self._tester.url + '/admin/ticket/priority'
         tc.url(priority_url, regexp=False)
         tc.find(name * 2)
 
@@ -641,11 +647,10 @@ class TestAdminPriorityRemove(FunctionalTwillTestCaseSetup):
         """Admin remove priority"""
         name = "RemovePriority"
         self._tester.create_priority(name)
-        priority_url = self._tester.url + '/admin/ticket/priority'
-        self._tester.go_to_url(priority_url)
         tc.find(name)
         tc.formvalue('enumtable', 'sel', name)
         tc.submit('remove')
+        priority_url = self._tester.url + '/admin/ticket/priority'
         tc.url(priority_url, regexp=False)
         tc.notfind(name)
 
@@ -657,13 +662,12 @@ class TestAdminPriorityRemoveMulti(FunctionalTwillTestCaseSetup):
         count = 3
         for i in range(count):
             self._tester.create_priority("%s%s" % (name, i))
-        priority_url = self._tester.url + '/admin/ticket/priority'
-        self._tester.go_to_url(priority_url)
         for i in range(count):
             tc.find("%s%s" % (name, i))
         for i in range(count):
             tc.formvalue('enumtable', 'sel', "%s%s" % (name, i))
         tc.submit('remove')
+        priority_url = self._tester.url + '/admin/ticket/priority'
         tc.url(priority_url, regexp=False)
         for i in range(count):
             tc.notfind("%s%s" % (name, i))
@@ -673,8 +677,7 @@ class TestAdminPriorityNonRemoval(FunctionalTwillTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected priority"""
-        priority_url = self._tester.url + "/admin/ticket/priority"
-        tc.go(priority_url)
+        self._tester.go_to_url('/admin/ticket/priority')
         tc.submit('remove', formname='enumtable')
         tc.find('No priority selected')
 
@@ -694,16 +697,15 @@ class TestAdminPriorityDetail(FunctionalTwillTestCaseSetup):
         self._tester.create_priority(name + '1')
 
         # Modify the details of the priority
-        priority_url = self._tester.url + "/admin/ticket/priority"
-        self._tester.go_to_url(priority_url)
         tc.follow(name + '1')
+        priority_url = self._tester.url + "/admin/ticket/priority"
         tc.url(priority_url + '/' + name + '1', regexp=False)
         tc.formvalue('edit', 'name', name + '2')
         tc.submit('save')
         tc.url(priority_url, regexp=False)
 
         # Cancel more modifications
-        tc.go(priority_url)
+        self._tester.go_to_url(priority_url)
         tc.follow(name)
         tc.formvalue('edit', 'name', name + '3')
         tc.submit('cancel')
@@ -725,8 +727,6 @@ class TestAdminPriorityRenumber(FunctionalTwillTestCaseSetup):
         name = "RenumberPriority"
         self._tester.create_priority(name + '1')
         self._tester.create_priority(name + '2')
-        priority_url = self._tester.url + '/admin/ticket/priority'
-        self._tester.go_to_url(priority_url)
         tc.find(name + '1')
         tc.find(name + '2')
         tc.formvalue('enumtable',
@@ -734,6 +734,7 @@ class TestAdminPriorityRenumber(FunctionalTwillTestCaseSetup):
         tc.formvalue('enumtable',
                      'value_%s' % (max_priority + 2), str(max_priority + 1))
         tc.submit('apply')
+        priority_url = self._tester.url + '/admin/ticket/priority'
         tc.url(priority_url, regexp=False)
         # Verify that their order has changed.
         tc.find(name + '2.*' + name + '1', 's')
@@ -848,6 +849,7 @@ class TestAdminVersion(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Admin create version"""
         self._tester.create_version()
+        self._tester.create_version(releasetime='')
 
 
 class TestAdminVersionAuthorization(AuthorizationTestCaseSetup):
@@ -862,8 +864,6 @@ class TestAdminVersionDuplicates(FunctionalTwillTestCaseSetup):
         """Admin create duplicate version"""
         name = "DuplicateVersion"
         self._tester.create_version(name)
-        version_admin = self._tester.url + "/admin/ticket/versions"
-        self._tester.go_to_url(version_admin)
         tc.formvalue('addversion', 'name', name)
         tc.submit()
         tc.notfind(internal_error)
@@ -877,14 +877,12 @@ class TestAdminVersionDetail(FunctionalTwillTestCaseSetup):
         """Admin version details"""
         name = "DetailVersion"
         self._tester.create_version(name)
-        version_admin = self._tester.url + "/admin/ticket/versions"
-        self._tester.go_to_url(version_admin)
         tc.follow(name)
 
         desc = 'Some version description.'
         tc.formvalue('edit', 'description', desc)
         tc.submit('save')
-        tc.url(version_admin, regexp=False)
+        tc.url(self._tester.url + "/admin/ticket/versions", regexp=False)
         tc.follow(name)
         tc.find(desc)
 
@@ -894,12 +892,12 @@ class TestAdminVersionDetailTime(FunctionalTwillTestCaseSetup):
         """Admin version detail set time"""
         name = "DetailTimeVersion"
         self._tester.create_version(name)
-        version_admin = self._tester.url + "/admin/ticket/versions"
-        self._tester.go_to_url(version_admin)
         tc.follow(name)
 
         tc.formvalue('edit', 'time', '')
+        tc.click('#edit')  # Close datepicker
         tc.submit('save')
+        version_admin = self._tester.url + "/admin/ticket/versions"
         tc.url(version_admin, regexp=False)
         tc.find(name + '(<[^>]*>|\\s)*<[^>]* name="default" value="%s"'
                 % name, 's')
@@ -916,16 +914,14 @@ class TestAdminVersionDetailTime(FunctionalTwillTestCaseSetup):
 class TestAdminVersionDetailCancel(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Admin version details"""
-        name = "DetailVersion"
+        name = "DetailVersionCancel"
         self._tester.create_version(name)
-        version_admin = self._tester.url + "/admin/ticket/versions"
-        self._tester.go_to_url(version_admin)
         tc.follow(name)
 
         desc = 'Some other version description.'
         tc.formvalue('edit', 'description', desc)
         tc.submit('cancel')
-        tc.url(version_admin, regexp=False)
+        tc.url(self._tester.url + "/admin/ticket/versions", regexp=False)
         tc.follow(name)
         tc.notfind(desc)
 
@@ -935,12 +931,10 @@ class TestAdminVersionRemove(FunctionalTwillTestCaseSetup):
         """Admin remove version"""
         name = "VersionRemove"
         self._tester.create_version(name)
-        version_url = self._tester.url + "/admin/ticket/versions"
-        tc.go(version_url)
         tc.find(name)
         tc.formvalue('version_table', 'sel', name)
         tc.submit('remove')
-        tc.url(version_url, regexp=False)
+        tc.url(self._tester.url + "/admin/ticket/versions", regexp=False)
         tc.notfind(name)
 
 
@@ -951,14 +945,12 @@ class TestAdminVersionRemoveMulti(FunctionalTwillTestCaseSetup):
         count = 3
         for i in range(count):
             self._tester.create_version("%s%s" % (name, i))
-        version_url = self._tester.url + '/admin/ticket/versions'
-        self._tester.go_to_url(version_url)
         for i in range(count):
             tc.find("%s%s" % (name, i))
         for i in range(count):
             tc.formvalue('version_table', 'sel', "%s%s" % (name, i))
         tc.submit('remove')
-        tc.url(version_url, regexp=False)
+        tc.url(self._tester.url + '/admin/ticket/versions', regexp=False)
         for i in range(count):
             tc.notfind("%s%s" % (name, i))
 
@@ -967,8 +959,7 @@ class TestAdminVersionNonRemoval(FunctionalTwillTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected version"""
-        version_url = self._tester.url + "/admin/ticket/versions"
-        tc.go(version_url)
+        self._tester.go_to_url('/admin/ticket/versions')
         tc.submit('remove', formname='version_table')
         tc.find('No version selected')
 
@@ -978,18 +969,16 @@ class TestAdminVersionDefault(FunctionalTwillTestCaseSetup):
         """Admin set default version"""
         name = "DefaultVersion"
         self._tester.create_version(name)
-        version_url = self._tester.url + "/admin/ticket/versions"
-        tc.go(version_url)
         tc.formvalue('version_table', 'default', name)
         tc.submit('apply')
         tc.find('type="radio" name="default" checked="checked" value="%s"' %
                 name)
         # verify it is the default on the newticket page.
-        tc.go(self._tester.url + '/newticket')
+        self._tester.go_to_url('/newticket')
         tc.find('<option selected="selected" value="%s">%s</option>'
                 % (name, name))
         # Test the "Clear default" button
-        tc.go(version_url)
+        self._tester.go_to_url('/admin/ticket/versions')
         tc.submit('clear', formname='version_table')
         tc.notfind('type="radio" name="default" checked="checked" value=".+"')
         self._tester.create_ticket()
@@ -998,13 +987,7 @@ class TestAdminVersionDefault(FunctionalTwillTestCaseSetup):
                 '(?!<td headers="h_version">)')
 
 
-class RegressionTestRev5665(FunctionalTwillTestCaseSetup):
-    def runTest(self):
-        """Admin create version without release time (r5665)"""
-        self._tester.create_version(releasetime='')
-
-
-class RegressionTestTicket10772(FunctionalTwillTestCaseSetup):
+class TestTicketDefaultValues(FunctionalTwillTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10772"""
         def find_prop(field, value=None):
@@ -1039,7 +1022,6 @@ class RegressionTestTicket10772(FunctionalTwillTestCaseSetup):
                                  'component, milestone, priority, version')
 
         try:
-            # TODO: use the //Clear default// buttons to clear these values
             self._tester.go_to_admin("Components")
             tc.submit('clear', formname='component_table')
             self._tester.go_to_admin("Milestones")
@@ -1083,29 +1065,6 @@ class RegressionTestTicket10772(FunctionalTwillTestCaseSetup):
             find_prop('type', 'task')
         finally:
             self._testenv.remove_config('ticket', 'allowed_empty_fields')
-
-
-class RegressionTestTicket11618(FunctionalTwillTestCaseSetup):
-    def runTest(self):
-        """Test for regression of https://trac.edgewall.org/ticket/11618
-        fix for malformed `readonly="True"` attribute in milestone admin page
-        """
-        name = "11618Milestone"
-        self._tester.create_milestone(name)
-        try:
-            self._testenv.grant_perm('user', 'TICKET_ADMIN')
-            self._tester.go_to_front()
-            self._tester.logout()
-            self._tester.login('user')
-            tc.go(self._tester.url + "/admin/ticket/milestones/" + name)
-            tc.notfind('No administration panels available')
-            tc.find(' readonly="readonly"')
-            tc.notfind(' readonly="True"')
-        finally:
-            self._testenv.revoke_perm('user', 'TICKET_ADMIN')
-            self._tester.go_to_front()
-            self._tester.logout()
-            self._tester.login('admin')
 
 
 def functionalSuite(suite=None):
@@ -1169,9 +1128,7 @@ def functionalSuite(suite=None):
     suite.addTest(TestAdminVersionRemoveMulti())
     suite.addTest(TestAdminVersionNonRemoval())
     suite.addTest(TestAdminVersionDefault())
-    suite.addTest(RegressionTestRev5665())
-    suite.addTest(RegressionTestTicket10772())
-    suite.addTest(RegressionTestTicket11618())
+    suite.addTest(TestTicketDefaultValues())
 
     return suite
 
