@@ -54,6 +54,7 @@ $firefoxHome = 'C:\Program Files\Mozilla Firefox'
 # External Python dependencies
 
 $pipPackages = @(
+    'setuptools',
     'jinja2',
     'babel',
     'docutils',
@@ -209,8 +210,9 @@ function Trac-Install {
 
     # Install packages via pip
 
+    & python.exe -m pip install -U pip
     & pip.exe --version
-    & pip.exe install $pipPackages
+    & pip.exe install -U $pipPackages
 
     if ($pyIsConda) {
         & conda.exe install -qy $condaPackages
