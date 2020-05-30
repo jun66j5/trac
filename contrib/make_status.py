@@ -10,6 +10,7 @@
 
 import importlib
 import io
+import pkg_resources
 import warnings
 
 from trac.util.text import print_table, printout
@@ -19,6 +20,12 @@ def _svn_version():
     version = (core.SVN_VER_MAJOR, core.SVN_VER_MINOR,
                core.SVN_VER_MICRO)
     return '%d.%d.%d' % version + str(core.SVN_VER_TAG, 'utf-8')
+
+
+def _pytidylib_version():
+    import pkg_resources
+    return pkg_resources.get_distribution('pytidylib').version
+
 
 PACKAGES = [
     ("Python",            'sys.version'),
@@ -40,6 +47,7 @@ PACKAGES = [
     ("Pytz",              'pytz.__version__'),
     ("Docutils",          'docutils.__version__'),
     ("Selenium",          'selenium.__version__'),
+    ("PyTidyLib",         '__main__._pytidylib_version()'),
     ("LXML",              'lxml.etree.__version__'),
     ("coverage",          'coverage.__version__'),
 ]
