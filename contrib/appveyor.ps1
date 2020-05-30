@@ -243,7 +243,7 @@ function Trac-Install {
     }
 
     if ($usingFirefox) {
-        & choco.exe upgrade firefox
+        & cinst.exe --no-progress firefox
     }
 
     & pip.exe list --format=columns
