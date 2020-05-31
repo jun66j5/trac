@@ -6,9 +6,11 @@ only_commits:
     - contrib/appveyor.ps1
     - setup.py
     - trac/**/*.py
+    - trac/**/*.js
     - trac/**/*.html
     - trac/**/*.txt
     - tracopt/**/*.py
+    - tracopt/**/*.js
     - tracopt/**/*.html
 init:
 - ps: >-
