@@ -19,13 +19,13 @@ import unittest
 from trac.admin.tests.functional import AuthorizationTestCaseSetup
 from trac.test import locale_en
 from trac.tests.contentgen import random_unique_camel
-from trac.tests.functional import FunctionalTwillTestCaseSetup, b, \
+from trac.tests.functional import FunctionalTestCaseSetup, b, \
                                   internal_error, tc
 from trac.util.datefmt import datetime_now, format_date, format_datetime, \
                               localtz, utc
 
 
-class AdminEnumDefaultTestCaseSetup(FunctionalTwillTestCaseSetup):
+class AdminEnumDefaultTestCaseSetup(FunctionalTestCaseSetup):
     def test_default(self, enum, name):
         url = self._tester.url + '/admin/ticket/%s' % enum
         self._tester.go_to_url(url)
@@ -43,7 +43,7 @@ class AdminEnumDefaultTestCaseSetup(FunctionalTwillTestCaseSetup):
         tc.notfind('type="radio" name="default" checked="checked" value=".+"')
 
 
-class TestAdminComponent(FunctionalTwillTestCaseSetup):
+class TestAdminComponent(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create component"""
         self._tester.create_component()
@@ -57,7 +57,7 @@ class TestAdminComponentAuthorization(AuthorizationTestCaseSetup):
                                 "Manage Components")
 
 
-class TestAdminComponentDuplicates(FunctionalTwillTestCaseSetup):
+class TestAdminComponentDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate component"""
         name = self._tester.create_component()
@@ -67,7 +67,7 @@ class TestAdminComponentDuplicates(FunctionalTwillTestCaseSetup):
         tc.find('Component .* already exists')
 
 
-class TestAdminComponentRemoval(FunctionalTwillTestCaseSetup):
+class TestAdminComponentRemoval(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove component"""
         name = self._tester.create_component()
@@ -76,7 +76,7 @@ class TestAdminComponentRemoval(FunctionalTwillTestCaseSetup):
         tc.notfind(name)
 
 
-class TestAdminComponentNonRemoval(FunctionalTwillTestCaseSetup):
+class TestAdminComponentNonRemoval(FunctionalTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected component"""
@@ -85,7 +85,7 @@ class TestAdminComponentNonRemoval(FunctionalTwillTestCaseSetup):
         tc.find('No component selected')
 
 
-class TestAdminComponentDefault(FunctionalTwillTestCaseSetup):
+class TestAdminComponentDefault(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin set default component"""
         name = self._tester.create_component()
@@ -107,7 +107,7 @@ class TestAdminComponentDefault(FunctionalTwillTestCaseSetup):
         self._testenv.remove_config('ticket', 'allowed_empty_fields')
 
 
-class TestAdminComponentDetail(FunctionalTwillTestCaseSetup):
+class TestAdminComponentDetail(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin component detail"""
         name = self._tester.create_component()
@@ -120,7 +120,7 @@ class TestAdminComponentDetail(FunctionalTwillTestCaseSetup):
         tc.notfind(desc)
 
 
-class TestAdminComponentNoneDefined(FunctionalTwillTestCaseSetup):
+class TestAdminComponentNoneDefined(FunctionalTestCaseSetup):
     def runTest(self):
         """The table should be hidden and help text shown when there are no
         components defined (#11103)."""
@@ -144,7 +144,7 @@ class TestAdminComponentNoneDefined(FunctionalTwillTestCaseSetup):
                                               comp.description)
 
 
-class TestAdminMilestone(FunctionalTwillTestCaseSetup):
+class TestAdminMilestone(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create milestone"""
         self._tester.create_milestone()
@@ -175,13 +175,13 @@ class TestAdminMilestoneAuthorization(AuthorizationTestCaseSetup):
             self._tester.login('admin')
 
 
-class TestAdminMilestoneSpace(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneSpace(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create milestone with a space"""
         self._tester.create_milestone('Milestone 1')
 
 
-class TestAdminMilestoneDuplicates(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate milestone"""
         name = self._tester.create_milestone()
@@ -194,7 +194,7 @@ class TestAdminMilestoneDuplicates(FunctionalTwillTestCaseSetup):
         tc.notfind('%s')
 
 
-class TestAdminMilestoneListing(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneListing(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin milestone listing."""
         name1 = self._tester.create_milestone()
@@ -249,7 +249,7 @@ class TestAdminMilestoneListing(FunctionalTwillTestCaseSetup):
             self._tester.login('admin')
 
 
-class TestAdminMilestoneDetail(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneDetail(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify milestone details"""
         name = self._tester.create_milestone()
@@ -302,7 +302,7 @@ class TestAdminMilestoneDetail(FunctionalTwillTestCaseSetup):
             self._tester.login('admin')
 
 
-class TestAdminMilestoneDue(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneDue(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin milestone duedate"""
         duedate = datetime_now(tz=utc)
@@ -312,7 +312,7 @@ class TestAdminMilestoneDue(FunctionalTwillTestCaseSetup):
         tc.find(duedate_string)
 
 
-class TestAdminMilestoneDetailDue(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneDetailDue(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify milestone duedate on detail page"""
         name = self._tester.create_milestone()
@@ -332,7 +332,7 @@ class TestAdminMilestoneDetailDue(FunctionalTwillTestCaseSetup):
         tc.find(name + '(<[^>]*>|\\s)*'+ duedate_string, 's')
 
 
-class TestAdminMilestoneDetailRename(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneDetailRename(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin rename milestone"""
         name1 = self._tester.create_milestone()
@@ -360,7 +360,7 @@ class TestAdminMilestoneDetailRename(FunctionalTwillTestCaseSetup):
         tc.find("Milestone renamed")
 
 
-class TestAdminMilestoneCompleted(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneCompleted(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin milestone completed"""
         name = self._tester.create_milestone()
@@ -373,7 +373,7 @@ class TestAdminMilestoneCompleted(FunctionalTwillTestCaseSetup):
         tc.url(milestone_url, regexp=False)
 
 
-class TestAdminMilestoneCompletedFuture(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneCompletedFuture(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin milestone completed in the future"""
         name = self._tester.create_milestone()
@@ -392,7 +392,7 @@ class TestAdminMilestoneCompletedFuture(FunctionalTwillTestCaseSetup):
         tc.find(name)
 
 
-class TestAdminMilestoneCompletedRetarget(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneCompletedRetarget(FunctionalTestCaseSetup):
     """Admin milestone completed and verify that tickets are retargeted
     to the selected milestone"""
     def runTest(self):
@@ -447,7 +447,7 @@ class TestAdminMilestoneCompletedRetarget(FunctionalTwillTestCaseSetup):
         tc.find("Ticket retargeted after milestone closed")
 
 
-class TestAdminMilestoneRemove(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneRemove(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove milestone"""
         name = "MilestoneRemove"
@@ -471,7 +471,7 @@ class TestAdminMilestoneRemove(FunctionalTwillTestCaseSetup):
         tc.find("Milestone deleted")
 
 
-class TestAdminMilestoneRemoveMulti(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneRemoveMulti(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove multiple milestones"""
         name = []
@@ -490,7 +490,7 @@ class TestAdminMilestoneRemoveMulti(FunctionalTwillTestCaseSetup):
             tc.notfind(name[i])
 
 
-class TestAdminMilestoneNonRemoval(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneNonRemoval(FunctionalTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected milestone"""
@@ -499,7 +499,7 @@ class TestAdminMilestoneNonRemoval(FunctionalTwillTestCaseSetup):
         tc.find('No milestone selected')
 
 
-class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
+class TestAdminMilestoneDefaults(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin set default ticket milestone, default retarget milestone
         and clear defaults."""
@@ -594,7 +594,7 @@ class TestAdminMilestoneDefaults(FunctionalTwillTestCaseSetup):
                    % (mid1, mid1))
 
 
-class TestAdminPriority(FunctionalTwillTestCaseSetup):
+class TestAdminPriority(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create priority"""
         self._tester.create_priority()
@@ -608,7 +608,7 @@ class TestAdminPriorityAuthorization(AuthorizationTestCaseSetup):
                                 "Manage Priorities")
 
 
-class TestAdminPriorityDuplicates(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate priority"""
         name = self._tester.create_priority()
@@ -616,7 +616,7 @@ class TestAdminPriorityDuplicates(FunctionalTwillTestCaseSetup):
         tc.find('Priority %s already exists' % name)
 
 
-class TestAdminPriorityModify(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityModify(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify priority"""
         name = self._tester.create_priority()
@@ -629,7 +629,7 @@ class TestAdminPriorityModify(FunctionalTwillTestCaseSetup):
         tc.find(name * 2)
 
 
-class TestAdminPriorityRemove(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityRemove(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove priority"""
         name = self._tester.create_priority()
@@ -641,7 +641,7 @@ class TestAdminPriorityRemove(FunctionalTwillTestCaseSetup):
         tc.notfind(name)
 
 
-class TestAdminPriorityRemoveMulti(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityRemoveMulti(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove multiple priorities"""
         name = []
@@ -659,7 +659,7 @@ class TestAdminPriorityRemoveMulti(FunctionalTwillTestCaseSetup):
             tc.notfind(name[i])
 
 
-class TestAdminPriorityNonRemoval(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityNonRemoval(FunctionalTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected priority"""
@@ -675,7 +675,7 @@ class TestAdminPriorityDefault(AdminEnumDefaultTestCaseSetup):
         self.test_default('priority', name)
 
 
-class TestAdminPriorityDetail(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityDetail(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify priority details"""
         name1 = self._tester.create_priority()
@@ -703,7 +703,7 @@ class TestAdminPriorityDetail(FunctionalTwillTestCaseSetup):
         tc.notfind(name3)
 
 
-class TestAdminPriorityRenumber(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityRenumber(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin renumber priorities"""
         valuesRE = re.compile(b'<select name="value_([0-9]+)">', re.M)
@@ -726,7 +726,7 @@ class TestAdminPriorityRenumber(FunctionalTwillTestCaseSetup):
         tc.find(name + '2.*' + name + '1', 's')
 
 
-class TestAdminPriorityRenumberDup(FunctionalTwillTestCaseSetup):
+class TestAdminPriorityRenumberDup(FunctionalTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin badly renumber priorities"""
@@ -740,7 +740,7 @@ class TestAdminPriorityRenumberDup(FunctionalTwillTestCaseSetup):
         tc.find('Order numbers must be unique')
 
 
-class TestAdminResolution(FunctionalTwillTestCaseSetup):
+class TestAdminResolution(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create resolution"""
         self._tester.create_resolution()
@@ -754,7 +754,7 @@ class TestAdminResolutionAuthorization(AuthorizationTestCaseSetup):
                                 "Manage Resolutions")
 
 
-class TestAdminResolutionDuplicates(FunctionalTwillTestCaseSetup):
+class TestAdminResolutionDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate resolution"""
         name = self._tester.create_resolution()
@@ -770,7 +770,7 @@ class TestAdminResolutionDefault(AdminEnumDefaultTestCaseSetup):
         self.test_default('resolution', name)
 
 
-class TestAdminSeverity(FunctionalTwillTestCaseSetup):
+class TestAdminSeverity(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create severity"""
         self._tester.create_severity()
@@ -784,7 +784,7 @@ class TestAdminSeverityAuthorization(AuthorizationTestCaseSetup):
                                 "Manage Severities")
 
 
-class TestAdminSeverityDuplicates(FunctionalTwillTestCaseSetup):
+class TestAdminSeverityDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate severity"""
         name = self._tester.create_severity()
@@ -799,7 +799,7 @@ class TestAdminSeverityDefault(AdminEnumDefaultTestCaseSetup):
         self.test_default('severity', name)
 
 
-class TestAdminType(FunctionalTwillTestCaseSetup):
+class TestAdminType(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create type"""
         self._tester.create_type()
@@ -813,7 +813,7 @@ class TestAdminTypeAuthorization(AuthorizationTestCaseSetup):
                                 "Manage Ticket Types")
 
 
-class TestAdminTypeDuplicates(FunctionalTwillTestCaseSetup):
+class TestAdminTypeDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate type"""
         name = self._tester.create_type()
@@ -828,7 +828,7 @@ class TestAdminTypeDefault(AdminEnumDefaultTestCaseSetup):
         self.test_default('type', name)
 
 
-class TestAdminVersion(FunctionalTwillTestCaseSetup):
+class TestAdminVersion(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create version"""
         self._tester.create_version()
@@ -842,7 +842,7 @@ class TestAdminVersionAuthorization(AuthorizationTestCaseSetup):
                                 "Manage Versions")
 
 
-class TestAdminVersionDuplicates(FunctionalTwillTestCaseSetup):
+class TestAdminVersionDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate version"""
         name = self._tester.create_version()
@@ -852,7 +852,7 @@ class TestAdminVersionDuplicates(FunctionalTwillTestCaseSetup):
         tc.find(re.escape('Version &#34;%s&#34; already exists.' % name))
 
 
-class TestAdminVersionDetail(FunctionalTwillTestCaseSetup):
+class TestAdminVersionDetail(FunctionalTestCaseSetup):
     # This is somewhat pointless... the only place to find the version
     # description is on the version details page.
     def runTest(self):
@@ -868,7 +868,7 @@ class TestAdminVersionDetail(FunctionalTwillTestCaseSetup):
         tc.find(desc)
 
 
-class TestAdminVersionDetailTime(FunctionalTwillTestCaseSetup):
+class TestAdminVersionDetailTime(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin version detail set time"""
         name = self._tester.create_version()
@@ -893,7 +893,7 @@ class TestAdminVersionDetailTime(FunctionalTwillTestCaseSetup):
                 % name, 's')
 
 
-class TestAdminVersionDetailCancel(FunctionalTwillTestCaseSetup):
+class TestAdminVersionDetailCancel(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin version details"""
         name = self._tester.create_version()
@@ -907,7 +907,7 @@ class TestAdminVersionDetailCancel(FunctionalTwillTestCaseSetup):
         tc.notfind(desc)
 
 
-class TestAdminVersionRemove(FunctionalTwillTestCaseSetup):
+class TestAdminVersionRemove(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove version"""
         name = self._tester.create_version()
@@ -918,7 +918,7 @@ class TestAdminVersionRemove(FunctionalTwillTestCaseSetup):
         tc.notfind(name)
 
 
-class TestAdminVersionRemoveMulti(FunctionalTwillTestCaseSetup):
+class TestAdminVersionRemoveMulti(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove multiple versions"""
         name = []
@@ -935,7 +935,7 @@ class TestAdminVersionRemoveMulti(FunctionalTwillTestCaseSetup):
             tc.notfind(name[i])
 
 
-class TestAdminVersionNonRemoval(FunctionalTwillTestCaseSetup):
+class TestAdminVersionNonRemoval(FunctionalTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected version"""
@@ -944,7 +944,7 @@ class TestAdminVersionNonRemoval(FunctionalTwillTestCaseSetup):
         tc.find('No version selected')
 
 
-class TestAdminVersionDefault(FunctionalTwillTestCaseSetup):
+class TestAdminVersionDefault(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin set default version"""
         name = self._tester.create_version()
@@ -966,7 +966,7 @@ class TestAdminVersionDefault(FunctionalTwillTestCaseSetup):
                 '(?!<td headers="h_version">)')
 
 
-class TestTicketDefaultValues(FunctionalTwillTestCaseSetup):
+class TestTicketDefaultValues(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10772"""
         def find_prop(field, value=None):

@@ -19,7 +19,7 @@ import unittest
 from trac.admin.tests.functional import AuthorizationTestCaseSetup
 from trac.tests.contentgen import random_page, random_word, \
                                   random_unique_camel
-from trac.tests.functional import FunctionalTwillTestCaseSetup, has_svn, \
+from trac.tests.functional import FunctionalTestCaseSetup, has_svn, \
                                   internal_error, tc
 
 
@@ -31,7 +31,7 @@ class TestAdminRepositoryAuthorization(AuthorizationTestCaseSetup):
                                 'VERSIONCONTROL_ADMIN', "Manage Repositories")
 
 
-class TestAdminInvalidRepository(FunctionalTwillTestCaseSetup):
+class TestAdminInvalidRepository(FunctionalTestCaseSetup):
     def runTest(self):
         """Repository with an invalid path is rendered with an error
         message on the repository admin page.
@@ -44,7 +44,7 @@ class TestAdminInvalidRepository(FunctionalTwillTestCaseSetup):
                  '/the/\u200binvalid/\u200bpath</span>'))
 
 
-class TestEmptySvnRepo(FunctionalTwillTestCaseSetup):
+class TestEmptySvnRepo(FunctionalTestCaseSetup):
     def runTest(self):
         """Check empty repository"""
         browser_url = self._tester.url + '/browser'
@@ -58,7 +58,7 @@ class TestEmptySvnRepo(FunctionalTwillTestCaseSetup):
         tc.notfind('Error: Nonexistent path')
 
 
-class TestRepoCreation(FunctionalTwillTestCaseSetup):
+class TestRepoCreation(FunctionalTestCaseSetup):
     def runTest(self):
         """Create a directory tree in the repository"""
         # This should probably use the svn bindings...
@@ -98,7 +98,7 @@ class TestRepoCreation(FunctionalTwillTestCaseSetup):
         tc.find(commit_message)
 
 
-class TestRepoBrowse(FunctionalTwillTestCaseSetup):
+class TestRepoBrowse(FunctionalTestCaseSetup):
     # TODO: move this out to a subversion-specific testing module
     def runTest(self):
         """Add a file to the repository and verify it is in the browser"""
@@ -123,7 +123,7 @@ class TestRepoBrowse(FunctionalTwillTestCaseSetup):
         tc.find('Add %s' % fulltempfilename)
 
 
-class TestNewFileLog(FunctionalTwillTestCaseSetup):
+class TestNewFileLog(FunctionalTestCaseSetup):
     # TODO: move this out to a subversion-specific testing module
     def runTest(self):
         """Verify browser log for a new file"""
@@ -135,7 +135,7 @@ class TestNewFileLog(FunctionalTwillTestCaseSetup):
         tc.find('Add %s' % fulltempfilename)
 
 
-class RegressionTestTicket5819(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket5819(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/5819
         Events with identical dates are reversed in timeline
@@ -153,7 +153,7 @@ class RegressionTestTicket5819(FunctionalTwillTestCaseSetup):
         tc.find(components, 's')
 
 
-class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11186(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11186
         TracError should be raised when repository with name already exists
@@ -189,7 +189,7 @@ class RegressionTestTicket11186(FunctionalTwillTestCaseSetup):
         tc.notfind(internal_error)
 
 
-class RegressionTestTicket11186Alias(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11186Alias(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11186 alias
         TracError should be raised when repository alias with name already
@@ -228,14 +228,14 @@ class RegressionTestTicket11186Alias(FunctionalTwillTestCaseSetup):
         tc.notfind(internal_error)
 
 
-class RegressionTestRev5877(FunctionalTwillTestCaseSetup):
+class RegressionTestRev5877(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of the source browser fix in r5877"""
         tc.go(self._tester.url + '/browser?range_min_secs=1')
         tc.notfind(internal_error)
 
 
-class RegressionTestTicket11194(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11194(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11194
         TracError should be raised when repository with name already exists
@@ -275,7 +275,7 @@ class RegressionTestTicket11194(FunctionalTwillTestCaseSetup):
         tc.notfind(internal_error)
 
 
-class RegressionTestTicket11346(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11346(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11346
         fix for log: link with revision ranges included oldest wrongly
@@ -292,7 +292,7 @@ class RegressionTestTicket11346(FunctionalTwillTestCaseSetup):
         tc.notfind('@%d' % rev)
 
 
-class RegressionTestTicket11355(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11355(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11355
         Save with no changes should redirect back to the repository listing.
@@ -327,7 +327,7 @@ class RegressionTestTicket11355(FunctionalTwillTestCaseSetup):
         tc.find('The repository directory must be an absolute path.')
 
 
-class RegressionTestTicket11438(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11438(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11438
         fix for log: link with revision ranges included "head" keyword
@@ -344,7 +344,7 @@ class RegressionTestTicket11438(FunctionalTwillTestCaseSetup):
         tc.notfind('@%d' % (rev - 2))
 
 
-class RegressionTestTicket11584(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11584(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11584
         don't raise NoSuchChangeset for empty repository if no "rev" parameter
@@ -367,7 +367,7 @@ class RegressionTestTicket11584(FunctionalTwillTestCaseSetup):
         tc.notfind('Error: No such changeset')
 
 
-class RegressionTestTicket11618(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11618(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11618
         fix for malformed `readonly="True"` attribute in repository admin.
@@ -391,7 +391,7 @@ class RegressionTestTicket11618(FunctionalTwillTestCaseSetup):
             env.config.save()
 
 
-class RegressionTestTicket11777(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11777(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11777
         fix for raw revisions in search results.

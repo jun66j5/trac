@@ -17,12 +17,12 @@ import re
 import socket
 import unittest
 
-from trac.tests.functional import FunctionalTwillTestCaseSetup, \
+from trac.tests.functional import FunctionalTestCaseSetup, \
                                   internal_error, tc
 from trac.util import create_file
 
 
-class TestAttachmentNonexistentParent(FunctionalTwillTestCaseSetup):
+class TestAttachmentNonexistentParent(FunctionalTestCaseSetup):
     def runTest(self):
         """TracError should be raised when navigating to the attachment
         page for a nonexistent resource."""
@@ -36,7 +36,7 @@ class TestAttachmentNonexistentParent(FunctionalTwillTestCaseSetup):
                 r"Parent resource NonexistentPage doesn&#39;t exist</p>")
 
 
-class TestAboutPage(FunctionalTwillTestCaseSetup):
+class TestAboutPage(FunctionalTestCaseSetup):
     def runTest(self):
         """Validate the About page."""
         tc.follow(r"\bAbout Trac\b")
@@ -45,7 +45,7 @@ class TestAboutPage(FunctionalTwillTestCaseSetup):
         tc.find(r"<h2>Configuration</h2>")
 
 
-class TestErrorPage(FunctionalTwillTestCaseSetup):
+class TestErrorPage(FunctionalTestCaseSetup):
     """Validate the error page.
     Defects reported to trac-hacks should use the Component defined in the
     plugin's URL (#11434).
@@ -126,7 +126,7 @@ class RaiseExceptionPlugin(Component):
             env.config.set('components', 'RaiseExceptionPlugin.*', 'disabled')
 
 
-class RegressionTestTicket3833(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket3833(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/3833"""
         env = self._testenv.get_trac_environment()
@@ -174,7 +174,7 @@ class RegressionTestTicket3833(FunctionalTwillTestCaseSetup):
         self.assertIn(warn3, log_content)
 
 
-class RegressionTestTicket5572(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket5572(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/5572"""
         # TODO: this ticket (implemented in r6011) adds a new feature to
@@ -182,7 +182,7 @@ class RegressionTestTicket5572(FunctionalTwillTestCaseSetup):
         # new configurability.
 
 
-class RegressionTestTicket7209(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket7209(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/7209"""
         ticketid = self._tester.create_ticket()
@@ -214,7 +214,7 @@ class RegressionTestTicket7209(FunctionalTwillTestCaseSetup):
         tc.notfind('Second Attachment')
 
 
-class RegressionTestTicket9880(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket9880(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/9880
 
@@ -232,7 +232,7 @@ See also http://bugs.python.org/issue15564.
 """)
 
 
-class RegressionTestTicket3663(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket3663(FunctionalTestCaseSetup):
     def runTest(self):
         """Regression test for non-UTF-8 PATH_INFO (#3663)
 
@@ -280,7 +280,7 @@ class RegressionTestTicket3663(FunctionalTwillTestCaseSetup):
         self.assertIn(b'Invalid URL encoding', body)
 
 
-class RegressionTestTicket6318(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket6318(FunctionalTestCaseSetup):
     def runTest(self):
         """Regression test for non-ascii usernames (#6318)
         """
@@ -311,7 +311,7 @@ class RegressionTestTicket6318(FunctionalTwillTestCaseSetup):
             self._testenv.deluser('joé')
 
 
-class RegressionTestTicket11434(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11434(FunctionalTestCaseSetup):
     """Test for regression of https://trac.edgewall.org/ticket/11434
     Defects reported to trac-hacks should use the Component defined in the
     plugin's URL.
@@ -350,7 +350,7 @@ class RaiseExceptionPlugin(Component):
             env.config.set('components', 'RaiseExceptionPlugin.*', 'disabled')
 
 
-class RegressionTestTicket11503a(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11503a(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11503 a"""
         base = self._tester.url
@@ -368,7 +368,7 @@ class RegressionTestTicket11503a(FunctionalTwillTestCaseSetup):
         tc.url(base + '/notf%C5%91und/%252F?type=%252F', regexp=False)
 
 
-class RegressionTestTicket11503b(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11503b(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11503 b"""
         env = self._testenv.get_trac_environment()

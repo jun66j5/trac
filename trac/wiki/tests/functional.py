@@ -19,19 +19,19 @@ import urllib.parse
 
 from trac.mimeview.rst import has_docutils
 from trac.tests.contentgen import random_sentence, random_unique_camel
-from trac.tests.functional import FunctionalTwillTestCaseSetup, \
+from trac.tests.functional import FunctionalTestCaseSetup, \
                                   internal_error, tc
 from trac.util import create_file, get_pkginfo
 from trac.util.html import tag
 
 
-class TestWiki(FunctionalTwillTestCaseSetup):
+class TestWiki(FunctionalTestCaseSetup):
     def runTest(self):
         """Create a wiki page."""
         self._tester.create_wiki_page()
 
 
-class TestWikiEdit(FunctionalTwillTestCaseSetup):
+class TestWikiEdit(FunctionalTestCaseSetup):
     def runTest(self):
         """Edit a wiki page."""
         pagename = self._tester.create_wiki_page()
@@ -41,7 +41,7 @@ class TestWikiEdit(FunctionalTwillTestCaseSetup):
                 % pagename)
 
 
-class TestWikiDelete(FunctionalTwillTestCaseSetup):
+class TestWikiDelete(FunctionalTestCaseSetup):
     def runTest(self):
         """Delete a wiki page."""
         # Delete page with single version.
@@ -80,7 +80,7 @@ class TestWikiDelete(FunctionalTwillTestCaseSetup):
         tc.url(self._tester.url + '/wiki', regexp=False)
 
 
-class TestWikiAddAttachment(FunctionalTwillTestCaseSetup):
+class TestWikiAddAttachment(FunctionalTestCaseSetup):
     def runTest(self):
         """Add attachment to a wiki page. Test that the attachment
         button reads 'Attach file' when no files have been attached, and
@@ -121,7 +121,7 @@ class WikiPageManipulator(Component):
 """
 
 
-class TestWikiPageManipulator(FunctionalTwillTestCaseSetup):
+class TestWikiPageManipulator(FunctionalTestCaseSetup):
     def runTest(self):
         plugin_name = self.__class__.__name__
         env = self._testenv.get_trac_environment()
@@ -146,7 +146,7 @@ class TestWikiPageManipulator(FunctionalTwillTestCaseSetup):
             env.config.save()
 
 
-class TestWikiHistory(FunctionalTwillTestCaseSetup):
+class TestWikiHistory(FunctionalTestCaseSetup):
     """Create wiki page and navigate to page history."""
     def runTest(self):
         pagename = self._tester.create_wiki_page()
@@ -171,7 +171,7 @@ class TestWikiHistory(FunctionalTwillTestCaseSetup):
         tc.find(r'<a href="/wiki/%(name)s">%(name)s</a>' % {'name': pagename})
 
 
-class TestWikiEditComment(FunctionalTwillTestCaseSetup):
+class TestWikiEditComment(FunctionalTestCaseSetup):
     """Edit wiki page comment from diff and history."""
     def runTest(self):
         initial_comment = "Initial comment"
@@ -210,7 +210,7 @@ class TestWikiEditComment(FunctionalTwillTestCaseSetup):
         tc.find(r'<p>[ \t\n]+%s[ \t\n]+</p>' % second_comment_edit)
 
 
-class TestWikiReadonlyAttribute(FunctionalTwillTestCaseSetup):
+class TestWikiReadonlyAttribute(FunctionalTestCaseSetup):
     """Test the wiki readonly attribute, which is enforce when
     DefaultWikiPolicy is in the list of active permission policies."""
     def runTest(self):
@@ -265,7 +265,7 @@ class TestWikiReadonlyAttribute(FunctionalTwillTestCaseSetup):
             self._tester.login('admin')
 
 
-class TestWikiRename(FunctionalTwillTestCaseSetup):
+class TestWikiRename(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for simple wiki rename"""
         pagename = self._tester.create_wiki_page()
@@ -335,7 +335,7 @@ class TestWikiRename(FunctionalTwillTestCaseSetup):
         tc.find("The page[ \n]+%s[ \n]+does not exist" % tag.strong(pagename))
 
 
-class RegressionTestTicket4812(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket4812(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/4812"""
         pagename = random_unique_camel() + '/' + random_unique_camel()
@@ -344,7 +344,7 @@ class RegressionTestTicket4812(FunctionalTwillTestCaseSetup):
         tc.notfind('does not exist')
 
 
-class ReStructuredTextWikiTest(FunctionalTwillTestCaseSetup):
+class ReStructuredTextWikiTest(FunctionalTestCaseSetup):
     def runTest(self):
         """Render reStructured text using a wikiprocessor"""
         pagename = self._tester.create_wiki_page(content="""
@@ -364,7 +364,7 @@ Hello
         tc.url(self._tester.url + "/wiki/WikiStart", regexp=False)
 
 
-class ReStructuredTextCodeBlockTest(FunctionalTwillTestCaseSetup):
+class ReStructuredTextCodeBlockTest(FunctionalTestCaseSetup):
     def runTest(self):
         """Render reStructured code block"""
         pagename = self._tester.create_wiki_page(content="""
@@ -381,7 +381,7 @@ class ReStructuredTextCodeBlockTest(FunctionalTwillTestCaseSetup):
         tc.find('&quot;123&quot;')
 
 
-class RegressionTestTicket8976(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket8976(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/8976
         Test fine grained permissions policy on wiki for specific page
@@ -429,7 +429,7 @@ class RegressionTestTicket8976(FunctionalTwillTestCaseSetup):
             self._testenv.disable_authz_permpolicy()
 
 
-class RegressionTestTicket10274(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket10274(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10274"""
 
@@ -460,7 +460,7 @@ class RegressionTestTicket10274(FunctionalTwillTestCaseSetup):
                       content)
 
 
-class RegressionTestTicket10850(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket10850(FunctionalTestCaseSetup):
     @unittest.skipIf(os.name == 'nt', 'Unable to create file named with colon '
                                       'and backslash characters on Windows')
     def runTest(self):
@@ -493,7 +493,7 @@ class RegressionTestTicket10850(FunctionalTwillTestCaseSetup):
         tc.notfind('Error: Invalid Attachment')
 
 
-class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket10957(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/10957"""
 
@@ -559,7 +559,7 @@ class RegressionTestTicket10957(FunctionalTwillTestCaseSetup):
             self._testenv.revoke_perm('anonymous', 'WIKI_CREATE')
 
 
-class RegressionTestTicket11302(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket11302(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of https://trac.edgewall.org/ticket/11302"""
         pagename = self._tester.create_wiki_page()

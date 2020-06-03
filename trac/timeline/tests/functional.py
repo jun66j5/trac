@@ -17,12 +17,12 @@ import unittest
 
 from trac.tests.contentgen import random_page, random_sentence, \
                                   random_unique_camel
-from trac.tests.functional import FunctionalTwillTestCaseSetup, tc
+from trac.tests.functional import FunctionalTestCaseSetup, tc
 from trac.util.datefmt import http_date
 from trac.wiki import WikiPage
 
 
-class RegressionTestRev5883(FunctionalTwillTestCaseSetup):
+class RegressionTestRev5883(FunctionalTestCaseSetup):
     def runTest(self):
         """Test for regression of the timeline fix in r5883
         From Tim:
@@ -46,7 +46,7 @@ class RegressionTestRev5883(FunctionalTwillTestCaseSetup):
         tc.find(pagename + '.*diff</a>\\)')
 
 
-class RegressionTestTicket12946(FunctionalTwillTestCaseSetup):
+class RegressionTestTicket12946(FunctionalTestCaseSetup):
     def runTest(self):
         """Empty <dd> element should not be created when there is
         no comment associated with an event.
@@ -60,7 +60,7 @@ class RegressionTestTicket12946(FunctionalTwillTestCaseSetup):
                    '<dd class="attachment">[ \t\n]*</dd>', 's')
 
 
-class TestRssFormat(FunctionalTwillTestCaseSetup):
+class TestRssFormat(FunctionalTestCaseSetup):
     def runTest(self):
         """Test timeline in RSS format."""
         pagename = random_unique_camel()

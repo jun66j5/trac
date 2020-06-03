@@ -172,7 +172,7 @@ if selenium:
             self._testenv, self._tester = self.fixture
 
 
-    class FunctionalTwillTestCaseSetup(FunctionalTestCaseSetup):
+    class FunctionalTestCaseSetup(FunctionalTestCaseSetup):
         failureException = WebDriverException
 
 else:
@@ -181,11 +181,14 @@ else:
         def __init__(self):
             raise ImportError("Selenium not installed")
 
-    class FunctionalTwillTestCaseSetup(object):
+    class FunctionalTestCaseSetup(object):
         pass
 
     class FunctionalTestCaseSetup(object):
         pass
+
+# Compatibility code: Remove in 1.7.1
+FunctionalTwillTestCaseSetup = FunctionalTestCaseSetup
 
 
 def get_ephemeral_port():

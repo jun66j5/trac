@@ -19,10 +19,10 @@ try:
 except ImportError:
     have_pygments = False
 
-from trac.tests.functional import FunctionalTwillTestCaseSetup, tc
+from trac.tests.functional import FunctionalTestCaseSetup, tc
 
 
-class TestSyntaxHighlightingPreferences(FunctionalTwillTestCaseSetup):
+class TestSyntaxHighlightingPreferences(FunctionalTestCaseSetup):
     def runTest(self):
         """Set preferences for syntax highlighting."""
         self._tester.go_to_preferences("Syntax Highlighting")
