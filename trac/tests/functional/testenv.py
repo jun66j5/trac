@@ -23,7 +23,7 @@ import os
 import re
 import sys
 import time
-from subprocess import call, Popen, DEVNULL, PIPE, STDOUT
+from subprocess import call, run, Popen, DEVNULL, PIPE, STDOUT
 
 from trac.admin.api import AdminCommandManager
 from trac.config import Configuration, ConfigurationAdmin, UnicodeConfigParser
@@ -151,11 +151,10 @@ class FunctionalTestEnvironment(object):
         config.save()
         self._tracadmin('initenv', self.tracdir, self.dburi,
                         '--config=%s' % config_file)
-        if call([sys.executable,
-                 os.path.join(self.trac_src, 'contrib', 'htpasswd.py'), "-c",
-                 "-b", self.htpasswd, "admin", "admin"], close_fds=close_fds,
-                cwd=self.command_cwd):
-            raise Exception('Unable to setup admin password')
+        htpasswd_py = os.path.join(self.trac_src, 'contrib', 'htpasswd.py')
+        if call([sys.executable, htpasswd_py, '-c', '-b', self.htpasswd,
+                 'admin', 'admin'], close_fds=close_fds, cwd=self.command_cwd):
+            raise Exception("Unable to setup admin password")
         self.adduser('user')
         self.adduser('joe')
         self.grant_perm('admin', 'TRAC_ADMIN')
@@ -233,19 +232,18 @@ class FunctionalTestEnvironment(object):
 
     def _tracadmin(self, *args):
         """Internal utility method for calling trac-admin"""
-        proc = Popen([sys.executable, os.path.join(self.trac_src, 'trac',
-                      'admin', 'console.py'), self.tracdir] + list(args),
-                     stdin=DEVNULL, stdout=PIPE, stderr=STDOUT,
-                     close_fds=close_fds, cwd=self.command_cwd)
-        out, err = proc.communicate()
-        if proc.returncode or err:
-            self.logfile.write(err)
-        out = str(out, 'utf-8')
+        console_py = os.path.join(self.trac_src, 'trac', 'admin', 'console.py')
+        proc = run([sys.executable, console_py, self.tracdir] + list(args),
+                   stdin=DEVNULL, stdout=PIPE, stderr=STDOUT,
+                   close_fds=close_fds, cwd=self.command_cwd)
+        if proc.returncode or proc.stderr:
+            self.logfile.write(proc.stderr)
+        out = str(proc.stdout, 'utf-8')
         if proc.returncode:
             print(out)
-            raise Exception("Failed while running trac-admin with arguments %r.\n"
-                            "Exitcode: %s \n%s"
-                            % (args, proc.returncode, err))
+            raise Exception("Failed while running trac-admin with arguments "
+                            "%r.\nExitcode: %s \n%s"
+                            % (args, proc.returncode, proc.stderr))
         else:
             return out
 
