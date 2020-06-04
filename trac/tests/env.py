@@ -570,7 +570,7 @@ class ConvertDatabaseTestCase(unittest.TestCase):
         att.insert('filename.txt', io.BytesIO(b'test'), 4)
         env.shutdown()
 
-    if 'destroying' in inspect.getargspec(EnvironmentStub.__init__)[0]:
+    if 'destroying' in inspect.signature(EnvironmentStub.__init__).parameters:
         def _destroy_db(self):
             EnvironmentStub(path=self.path, destroying=True).destroy_db()
     else:
