@@ -15,7 +15,9 @@
 Provides some Trac environment-wide utility functions, and a way to call
 :command:`trac-admin` without it being on the path."""
 
+import contextlib
 import hashlib
+import io
 import locale
 import os
 import re
@@ -23,9 +25,11 @@ import sys
 import time
 from subprocess import call, Popen, DEVNULL, PIPE, STDOUT
 
-from trac.config import Configuration, UnicodeConfigParser
+from trac.admin.api import AdminCommandManager
+from trac.config import Configuration, ConfigurationAdmin, UnicodeConfigParser
 from trac.db.api import DatabaseManager
 from trac.env import open_environment
+from trac.perm import PermissionAdmin
 from trac.test import EnvironmentStub, get_dburi, rmtree
 from trac.tests.functional import trac_source_tree
 from trac.tests.functional.better_twill import tc, ConnectError
@@ -185,42 +189,47 @@ class FunctionalTestEnvironment(object):
         """Grant permission(s) to specified user. A single permission may
         be specified as a string, or multiple permissions may be
         specified as a list or tuple of strings."""
+        env = self.get_trac_environment()
         if isinstance(perm, (list, tuple)):
-            self._tracadmin('permission', 'add', user, *perm)
+            PermissionAdmin(env)._do_add(user, *perm)
         else:
-            self._tracadmin('permission', 'add', user, perm)
+            PermissionAdmin(env)._do_add(user, perm)
         # We need to force an environment reset, as this is necessary
         # for the permission change to take effect: grant only
         # invalidates the `DefaultPermissionStore._all_permissions`
         # cache, but the `DefaultPermissionPolicy.permission_cache` is
         # unaffected.
-        self.get_trac_environment().config.touch()
+        env.config.touch()
 
     def revoke_perm(self, user, perm):
         """Revoke permission(s) from specified user. A single permission
         may be specified as a string, or multiple permissions may be
         specified as a list or tuple of strings."""
+        env = self.get_trac_environment()
         if isinstance(perm, (list, tuple)):
-            self._tracadmin('permission', 'remove', user, *perm)
+            PermissionAdmin(env)._do_remove(user, *perm)
         else:
-            self._tracadmin('permission', 'remove', user, perm)
+            PermissionAdmin(env)._do_remove(user, perm)
         # Force an environment reset (see grant_perm above)
-        self.get_trac_environment().config.touch()
+        env.config.touch()
 
     def set_config(self, *args):
         """Calls trac-admin to set the value for the given option
         in `trac.ini`."""
-        self._tracadmin('config', 'set', *args)
+        self._execute_command('config', 'set', *args)
 
     def get_config(self, *args):
         """Calls trac-admin to get the value for the given option
         in `trac.ini`."""
-        return self._tracadmin('config', 'get', *args)
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            self._execute_command('config', 'get', *args)
+        return out.getvalue()
 
     def remove_config(self, *args):
         """Calls trac-admin to remove the value for the given option
         in `trac.ini`."""
-        self._tracadmin('config', 'remove', *args)
+        self._execute_command('config', 'remove', *args)
 
     def _tracadmin(self, *args):
         """Internal utility method for calling trac-admin"""
@@ -239,6 +248,10 @@ class FunctionalTestEnvironment(object):
                             % (args, proc.returncode, err))
         else:
             return out
+
+    def _execute_command(self, *args):
+        env = self.get_trac_environment()
+        AdminCommandManager(env).execute_command(*args)
 
     def start(self):
         """Starts the webserver, and waits for it to come up."""
