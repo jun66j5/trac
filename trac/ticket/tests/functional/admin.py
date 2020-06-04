@@ -102,8 +102,8 @@ class TestAdminComponentDefault(FunctionalTestCaseSetup):
         tc.submit('clear', formname='component_table')
         tc.notfind('type="radio" name="default" checked="checked" value=".+"')
         self._tester.create_ticket()
-        tc.find('<th class="missing" id="h_component">\s*Component:\s*</th>'
-                '\s*<td headers="h_component">\s*</td>')
+        tc.find(r'<th class="missing" id="h_component">\s*Component:\s*</th>'
+                r'\s*<td headers="h_component">\s*</td>')
         self._testenv.remove_config('ticket', 'allowed_empty_fields')
 
 
