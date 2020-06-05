@@ -31,6 +31,7 @@ from trac.db.api import DatabaseManager
 from trac.env import open_environment
 from trac.perm import PermissionAdmin
 from trac.test import EnvironmentStub, get_dburi, rmtree
+from trac.tests.contentgen import random_unique_camel
 from trac.tests.functional import trac_source_tree
 from trac.tests.functional.better_twill import tc, ConnectError
 from trac.util import create_file, terminate
@@ -229,6 +230,12 @@ class FunctionalTestEnvironment(object):
         """Calls trac-admin to remove the value for the given option
         in `trac.ini`."""
         self._execute_command('config', 'remove', *args)
+
+    def add_milestone(self, name=None, due=None):
+        if name is None:
+            name = random_unique_camel()
+        self._execute_command('milestone', 'add', name, due)
+        return name
 
     def _tracadmin(self, *args):
         """Internal utility method for calling trac-admin"""

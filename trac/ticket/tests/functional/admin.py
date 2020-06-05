@@ -158,7 +158,7 @@ class TestAdminMilestoneAuthorization(AuthorizationTestCaseSetup):
                                 "Manage Milestones")
 
         # Test for regression of https://trac.edgewall.org/ticket/11618
-        name = self._tester.create_milestone()
+        name = self._testenv.add_milestone()
         try:
             self._testenv.grant_perm('user', 'TICKET_ADMIN')
             self._tester.go_to_front()
@@ -184,7 +184,7 @@ class TestAdminMilestoneSpace(FunctionalTestCaseSetup):
 class TestAdminMilestoneDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate milestone"""
-        name = self._tester.create_milestone()
+        name = self._testenv.add_milestone()
         self._tester.go_to_url(self._tester.url + "/admin/ticket/milestones")
         tc.formvalue('addmilestone', 'name', name)
         tc.submit()
@@ -197,9 +197,9 @@ class TestAdminMilestoneDuplicates(FunctionalTestCaseSetup):
 class TestAdminMilestoneListing(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin milestone listing."""
-        name1 = self._tester.create_milestone()
+        name1 = self._testenv.add_milestone()
         self._tester.create_ticket(info={'milestone': name1})
-        name2 = self._tester.create_milestone()
+        name2 = self._testenv.add_milestone()
 
         milestone_url = self._tester.url + '/admin/ticket/milestones'
         self._tester.go_to_url(milestone_url)
@@ -252,7 +252,7 @@ class TestAdminMilestoneListing(FunctionalTestCaseSetup):
 class TestAdminMilestoneDetail(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify milestone details"""
-        name = self._tester.create_milestone()
+        name = self._testenv.add_milestone()
 
         milestone_url = self._tester.url + '/admin/ticket/milestones'
         def go_to_milestone_detail():
@@ -315,7 +315,7 @@ class TestAdminMilestoneDue(FunctionalTestCaseSetup):
 class TestAdminMilestoneDetailDue(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify milestone duedate on detail page"""
-        name = self._tester.create_milestone()
+        name = self._testenv.add_milestone()
 
         # Modify the details of the milestone
         milestone_url = self._tester.url + "/admin/ticket/milestones"
@@ -335,7 +335,7 @@ class TestAdminMilestoneDetailDue(FunctionalTestCaseSetup):
 class TestAdminMilestoneDetailRename(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin rename milestone"""
-        name1 = self._tester.create_milestone()
+        name1 = self._testenv.add_milestone()
         name2 = random_unique_camel()
         tid = self._tester.create_ticket(info={'milestone': name1})
         milestone_url = self._tester.url + '/admin/ticket/milestones'
@@ -363,7 +363,7 @@ class TestAdminMilestoneDetailRename(FunctionalTestCaseSetup):
 class TestAdminMilestoneCompleted(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin milestone completed"""
-        name = self._tester.create_milestone()
+        name = self._testenv.add_milestone()
         milestone_url = self._tester.url + "/admin/ticket/milestones"
         self._tester.go_to_url(milestone_url)
         tc.follow(name)
@@ -376,7 +376,7 @@ class TestAdminMilestoneCompleted(FunctionalTestCaseSetup):
 class TestAdminMilestoneCompletedFuture(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin milestone completed in the future"""
-        name = self._tester.create_milestone()
+        name = self._testenv.add_milestone()
         milestone_url = self._tester.url + "/admin/ticket/milestones"
         self._tester.go_to_url(milestone_url)
         tc.follow(name)
@@ -396,7 +396,7 @@ class TestAdminMilestoneCompletedRetarget(FunctionalTestCaseSetup):
     """Admin milestone completed and verify that tickets are retargeted
     to the selected milestone"""
     def runTest(self):
-        name = self._tester.create_milestone()
+        name = self._testenv.add_milestone()
         tid1 = self._tester.create_ticket(info={'milestone': name})
         tc.click('#propertyform .collapsed .foldable a')
         tc.formvalue('propertyform', 'action', 'resolve')
@@ -409,7 +409,7 @@ class TestAdminMilestoneCompletedRetarget(FunctionalTestCaseSetup):
         self._tester.go_to_url(milestone_url)
         tc.find("There are no open tickets associated with this milestone.")
 
-        retarget_to = self._tester.create_milestone()
+        retarget_to = self._testenv.add_milestone()
 
         # Check that open tickets retargeted, closed not retargeted
         tid2 = self._tester.create_ticket(info={'milestone': name})
@@ -450,8 +450,7 @@ class TestAdminMilestoneCompletedRetarget(FunctionalTestCaseSetup):
 class TestAdminMilestoneRemove(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove milestone"""
-        name = "MilestoneRemove"
-        self._tester.create_milestone(name)
+        name = self._testenv.add_milestone()
         tid = self._tester.create_ticket(info={'milestone': name})
         milestone_url = self._tester.url + '/admin/ticket/milestones'
 
@@ -477,7 +476,7 @@ class TestAdminMilestoneRemoveMulti(FunctionalTestCaseSetup):
         name = []
         count = 3
         for i in range(count):
-            name.append(self._tester.create_milestone())
+            name.append(self._testenv.add_milestone())
         milestone_url = self._tester.url + '/admin/ticket/milestones'
         self._tester.go_to_url(milestone_url)
         for i in range(count):
@@ -522,8 +521,8 @@ class TestAdminMilestoneDefaults(FunctionalTestCaseSetup):
 
         milestone_url = self._tester.url + "/admin/ticket/milestones"
         tid = self._tester.create_ticket()
-        mid1 = self._tester.create_milestone()
-        mid2 = self._tester.create_milestone()
+        mid1 = self._testenv.add_milestone()
+        mid2 = self._testenv.add_milestone()
         self._tester.create_ticket(info={'milestone': mid2})
 
         # Set default ticket milestone
