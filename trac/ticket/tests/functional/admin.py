@@ -60,7 +60,8 @@ class TestAdminComponentAuthorization(AuthorizationTestCaseSetup):
 class TestAdminComponentDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate component"""
-        name = self._tester.create_component()
+        name = self._testenv.add_component()
+        self._tester.go_to_url('/admin/ticket/components')
         tc.formvalue('addcomponent', 'name', name)
         tc.submit()
         tc.notfind(internal_error)
@@ -70,7 +71,8 @@ class TestAdminComponentDuplicates(FunctionalTestCaseSetup):
 class TestAdminComponentRemoval(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove component"""
-        name = self._tester.create_component()
+        name = self._testenv.add_component()
+        self._tester.go_to_url('/admin/ticket/components')
         tc.formvalue('component_table', 'sel', name)
         tc.submit('remove')
         tc.notfind(name)
@@ -88,7 +90,8 @@ class TestAdminComponentNonRemoval(FunctionalTestCaseSetup):
 class TestAdminComponentDefault(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin set default component"""
-        name = self._tester.create_component()
+        name = self._testenv.add_component()
+        self._tester.go_to_url('/admin/ticket/components')
         tc.formvalue('component_table', 'default', name)
         tc.submit('apply')
         tc.find('type="radio" name="default" checked="checked" value="%s"' %
@@ -110,7 +113,8 @@ class TestAdminComponentDefault(FunctionalTestCaseSetup):
 class TestAdminComponentDetail(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin component detail"""
-        name = self._tester.create_component()
+        name = self._testenv.add_component()
+        self._tester.go_to_url('/admin/ticket/components')
         tc.follow(name)
         desc = 'Some component description'
         tc.formvalue('edit', 'description', desc)
@@ -140,8 +144,7 @@ class TestAdminComponentNoneDefined(FunctionalTestCaseSetup):
                     "user interface.")
         finally:
             for comp in components:
-                self._tester.create_component(comp.name, comp.owner,
-                                              comp.description)
+                name = self._testenv.add_component(comp.name, comp.owner)
 
 
 class TestAdminMilestone(FunctionalTestCaseSetup):

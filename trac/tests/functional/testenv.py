@@ -237,6 +237,12 @@ class FunctionalTestEnvironment(object):
         self._execute_command('milestone', 'add', name, due)
         return name
 
+    def add_component(self, name=None, owner=None):
+        if name is None:
+            name = random_unique_camel()
+        self._execute_command('component', 'add', name, owner)
+        return name
+
     def _tracadmin(self, *args):
         """Internal utility method for calling trac-admin"""
         console_py = os.path.join(self.trac_src, 'trac', 'admin', 'console.py')
