@@ -847,7 +847,8 @@ class TestAdminVersionAuthorization(AuthorizationTestCaseSetup):
 class TestAdminVersionDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate version"""
-        name = self._tester.create_version()
+        name = self._testenv.add_version()
+        self._tester.go_to_url('/admin/ticket/versions')
         tc.formvalue('addversion', 'name', name)
         tc.submit()
         tc.notfind(internal_error)
@@ -859,7 +860,8 @@ class TestAdminVersionDetail(FunctionalTestCaseSetup):
     # description is on the version details page.
     def runTest(self):
         """Admin version details"""
-        name = self._tester.create_version()
+        name = self._testenv.add_version()
+        self._tester.go_to_url('/admin/ticket/versions')
         tc.follow(name)
 
         desc = 'Some version description.'
@@ -873,7 +875,8 @@ class TestAdminVersionDetail(FunctionalTestCaseSetup):
 class TestAdminVersionDetailTime(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin version detail set time"""
-        name = self._tester.create_version()
+        name = self._testenv.add_version()
+        self._tester.go_to_url('/admin/ticket/versions')
         tc.follow(name)
 
         # Clear value and send ENTER to close the datepicker.
@@ -898,7 +901,8 @@ class TestAdminVersionDetailTime(FunctionalTestCaseSetup):
 class TestAdminVersionDetailCancel(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin version details"""
-        name = self._tester.create_version()
+        name = self._testenv.add_version()
+        self._tester.go_to_url('/admin/ticket/versions')
         tc.follow(name)
 
         desc = 'Some other version description.'
@@ -912,7 +916,8 @@ class TestAdminVersionDetailCancel(FunctionalTestCaseSetup):
 class TestAdminVersionRemove(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove version"""
-        name = self._tester.create_version()
+        name = self._testenv.add_version()
+        self._tester.go_to_url('/admin/ticket/versions')
         tc.find(name)
         tc.formvalue('version_table', 'sel', name)
         tc.submit('remove')
@@ -926,7 +931,8 @@ class TestAdminVersionRemoveMulti(FunctionalTestCaseSetup):
         name = []
         count = 3
         for i in range(count):
-            name.append(self._tester.create_version())
+            name.append(self._testenv.add_version())
+        self._tester.go_to_url('/admin/ticket/versions')
         for i in range(count):
             tc.find(name[i])
         for i in range(count):
