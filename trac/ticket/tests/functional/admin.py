@@ -150,7 +150,15 @@ class TestAdminComponentNoneDefined(FunctionalTestCaseSetup):
 class TestAdminMilestone(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create milestone"""
-        self._tester.create_milestone()
+        name = self._tester.create_milestone()
+
+        # Make sure it's on the roadmap.
+        tc.follow(r"\bRoadmap\b")
+        tc.url(self._tester.url + '/roadmap', regexp=False)
+        tc.find("Milestone:.*%s" % name)
+        tc.follow(r"\b%s\b" % name)
+        tc.url(self._tester.url + '/milestone/' + name, regexp=False)
+        tc.find('No date set')
 
 
 class TestAdminMilestoneAuthorization(AuthorizationTestCaseSetup):

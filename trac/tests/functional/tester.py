@@ -323,16 +323,6 @@ class FunctionalTester(object):
         tc.url(milestone_url, regexp=False)
         tc.find(name)
 
-        # Make sure it's on the roadmap.
-        tc.follow(r"\bRoadmap\b")
-        tc.url(self.url + "/roadmap", regexp=False)
-        tc.find('Milestone:.*%s' % name)
-        tc.follow(r"\b%s\b" % name)
-        tc.url('%s/milestone/%s' % (self.url, unicode_quote(name)),
-               regexp=False)
-        if not due:
-            tc.find('No date set')
-
         return name
 
     def attach_file_to_milestone(self, name, data=None, filename=None,
