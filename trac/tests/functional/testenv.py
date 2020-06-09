@@ -232,21 +232,30 @@ class FunctionalTestEnvironment(object):
         self._execute_command('config', 'remove', *args)
 
     def add_milestone(self, name=None, due=None):
-        if name is None:
-            name = random_unique_camel()
-        self._execute_command('milestone', 'add', name, due)
-        return name
+        return self._add_ticket_field_value('milestone', name, due)
 
     def add_component(self, name=None, owner=None):
-        if name is None:
-            name = random_unique_camel()
-        self._execute_command('component', 'add', name, owner)
-        return name
+        return self._add_ticket_field_value('component', name, owner)
 
     def add_version(self, name=None, time=None):
+        return self._add_ticket_field_value('version', name, time)
+
+    def add_severity(self, name=None):
+        return self._add_ticket_field_value('severity', name)
+
+    def add_priority(self, name=None):
+        return self._add_ticket_field_value('priority', name)
+
+    def add_resolution(self, name=None):
+        return self._add_ticket_field_value('resolution', name)
+
+    def add_ticket_type(self, name=None):
+        return self._add_ticket_field_value('ticket_type', name)
+
+    def _add_ticket_field_value(self, field, name, *args):
         if name is None:
             name = random_unique_camel()
-        self._execute_command('version', 'add', name, time)
+        self._execute_command(field, 'add', name, *args)
         return name
 
     def _tracadmin(self, *args):

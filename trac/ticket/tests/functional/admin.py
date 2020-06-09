@@ -613,7 +613,8 @@ class TestAdminPriorityAuthorization(AuthorizationTestCaseSetup):
 class TestAdminPriorityDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate priority"""
-        name = self._tester.create_priority()
+        name = self._testenv.add_priority()
+        self._tester.go_to_url('/admin/ticket/priority')
         self._tester.create_priority(name)
         tc.find('Priority %s already exists' % name)
 
@@ -621,7 +622,8 @@ class TestAdminPriorityDuplicates(FunctionalTestCaseSetup):
 class TestAdminPriorityModify(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify priority"""
-        name = self._tester.create_priority()
+        name = self._testenv.add_priority()
+        self._tester.go_to_url('/admin/ticket/priority')
         tc.find(name)
         tc.follow(name)
         tc.formvalue('edit', 'name', name * 2)
@@ -634,7 +636,8 @@ class TestAdminPriorityModify(FunctionalTestCaseSetup):
 class TestAdminPriorityRemove(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin remove priority"""
-        name = self._tester.create_priority()
+        name = self._testenv.add_priority()
+        self._tester.go_to_url('/admin/ticket/priority')
         tc.find(name)
         tc.formvalue('enumtable', 'sel', name)
         tc.submit('remove')
@@ -649,7 +652,8 @@ class TestAdminPriorityRemoveMulti(FunctionalTestCaseSetup):
         name = []
         count = 3
         for i in range(count):
-            name.append(self._tester.create_priority())
+            name.append(self._testenv.add_priority())
+        self._tester.go_to_url('/admin/ticket/priority')
         for i in range(count):
             tc.find(name[i])
         for i in range(count):
@@ -665,6 +669,7 @@ class TestAdminPriorityNonRemoval(FunctionalTestCaseSetup):
     @tc.javascript_disabled
     def runTest(self):
         """Admin remove no selected priority"""
+        name = self._testenv.add_priority()
         self._tester.go_to_url('/admin/ticket/priority')
         tc.submit('remove', formname='enumtable')
         tc.find('No priority selected')
@@ -673,14 +678,15 @@ class TestAdminPriorityNonRemoval(FunctionalTestCaseSetup):
 class TestAdminPriorityDefault(AdminEnumDefaultTestCaseSetup):
     def runTest(self):
         """Admin default priority"""
-        name = self._tester.create_priority()
+        name = self._testenv.add_priority()
         self.test_default('priority', name)
 
 
 class TestAdminPriorityDetail(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin modify priority details"""
-        name1 = self._tester.create_priority()
+        name1 = self._testenv.add_priority()
+        self._tester.go_to_url('/admin/ticket/priority')
 
         # Modify the details of the priority
         tc.follow(name1)
@@ -713,8 +719,9 @@ class TestAdminPriorityRenumber(FunctionalTestCaseSetup):
         max_priority = max([int(x) for x in valuesRE.findall(html)])
 
         name = "RenumberPriority"
-        self._tester.create_priority(name + '1')
-        self._tester.create_priority(name + '2')
+        self._testenv.add_priority(name + '1')
+        self._testenv.add_priority(name + '2')
+        self._tester.go_to_url('/admin/ticket/priority')
         tc.find(name + '1')
         tc.find(name + '2')
         tc.formvalue('enumtable',
@@ -759,7 +766,7 @@ class TestAdminResolutionAuthorization(AuthorizationTestCaseSetup):
 class TestAdminResolutionDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate resolution"""
-        name = self._tester.create_resolution()
+        name = self._testenv.add_resolution()
         self._tester.create_resolution(name)
         tc.find(re.escape('Resolution value &#34;%s&#34; already exists' %
                           name))
@@ -768,7 +775,7 @@ class TestAdminResolutionDuplicates(FunctionalTestCaseSetup):
 class TestAdminResolutionDefault(AdminEnumDefaultTestCaseSetup):
     def runTest(self):
         """Admin default resolution"""
-        name = self._tester.create_resolution()
+        name = self._testenv.add_resolution()
         self.test_default('resolution', name)
 
 
@@ -789,7 +796,7 @@ class TestAdminSeverityAuthorization(AuthorizationTestCaseSetup):
 class TestAdminSeverityDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate severity"""
-        name = self._tester.create_severity()
+        name = self._testenv.add_severity()
         self._tester.create_severity(name)
         tc.find(re.escape('Severity value &#34;%s&#34; already exists' % name))
 
@@ -797,7 +804,7 @@ class TestAdminSeverityDuplicates(FunctionalTestCaseSetup):
 class TestAdminSeverityDefault(AdminEnumDefaultTestCaseSetup):
     def runTest(self):
         """Admin default severity"""
-        name = self._tester.create_severity()
+        name = self._testenv.add_severity()
         self.test_default('severity', name)
 
 
@@ -818,7 +825,7 @@ class TestAdminTypeAuthorization(AuthorizationTestCaseSetup):
 class TestAdminTypeDuplicates(FunctionalTestCaseSetup):
     def runTest(self):
         """Admin create duplicate type"""
-        name = self._tester.create_type()
+        name = self._testenv.add_ticket_type()
         self._tester.create_type(name)
         tc.find(re.escape('Type value &#34;%s&#34; already exists' % name))
 
@@ -826,7 +833,7 @@ class TestAdminTypeDuplicates(FunctionalTestCaseSetup):
 class TestAdminTypeDefault(AdminEnumDefaultTestCaseSetup):
     def runTest(self):
         """Admin default type"""
-        name = self._tester.create_type()
+        name = self._testenv.add_ticket_type()
         self.test_default('type', name)
 
 
@@ -918,6 +925,7 @@ class TestAdminVersionRemove(FunctionalTestCaseSetup):
         """Admin remove version"""
         name = self._testenv.add_version()
         self._tester.go_to_url('/admin/ticket/versions')
+
         tc.find(name)
         tc.formvalue('version_table', 'sel', name)
         tc.submit('remove')
