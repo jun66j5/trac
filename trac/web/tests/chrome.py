@@ -1121,12 +1121,12 @@ class ChromeTemplateRenderingTestCase(unittest.TestCase):
                 <body>
                 <ul>
                 <li></li>
-                <li><span title="07/01/07 12:34:56">\d+ years ago</span></li>
-                <li><span title="07/01/07 12:34:56">\d+ years ago</span></li>
-                <li><span title="\d+ years ago">on 07/01/07</span></li>
-                <li><span title="\d+ years ago">on 07/01/07 at 12:34:56</span></li>
-                <li><span title="\d+ years ago">07/01/07</span></li>
-                <li><span title="\d+ years ago">07/01/07 12:34:56</span></li>
+                <li><span title="07/01/(20)?07 12:34:56">\d+ years ago</span></li>
+                <li><span title="07/01/(20)?07 12:34:56">\d+ years ago</span></li>
+                <li><span title="\d+ years ago">on 07/01/(20)?07</span></li>
+                <li><span title="\d+ years ago">on 07/01/(20)?07 at 12:34:56</span></li>
+                <li><span title="\d+ years ago">07/01/(20)?07</span></li>
+                <li><span title="\d+ years ago">07/01/(20)?07 12:34:56</span></li>
                 </ul>
                 </body>
                 </html>"""), content)

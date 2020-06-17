@@ -414,10 +414,10 @@ class ReportModuleTestCase(unittest.TestCase):
         self.assertRegex(rendered,
             r'<td class="date">\s*(12:00:42 AM|00:00:42)\s*</td>')
         self.assertRegex(rendered,
-            r'<td class="date">\s*(Jan 3, 1970|01/03/70)\s*</td>')
+            r'<td class="date">\s*(Jan 3, 1970|01/03/(19)?70)\s*</td>')
         self.assertRegex(rendered,
             r'<td class="date">\s*(Jan 4, 1970, 12:00:44 AM|'
-            r'01/04/70 00:00:44)\s*</td>')
+            r'01/04/(19)?70 00:00:44)\s*</td>')
 
 
 class ExecuteReportTestCase(unittest.TestCase):
