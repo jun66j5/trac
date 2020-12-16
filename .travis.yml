@@ -219,9 +219,9 @@ jobs:
   - {os: linux, python: '3.8', env: 'tracdb=postgresql', services: postgresql}
   - {os: linux, python: '3.8', env: 'tracdb=mysql', services: mysql}
   - {os: osx, language: generic, env: 'pyver=3.8 tracdb= build=minimum'}
-  - {os: osx, language: generic, env: 'pyver=3.8 tracdb='}
-  - {os: osx, language: generic, env: 'pyver=3.8 tracdb=sqlite'}
-  - {os: osx, language: generic, env: 'pyver=3.8 tracdb=postgresql'}
+    #- {os: osx, language: generic, env: 'pyver=3.8 tracdb='}
+    #- {os: osx, language: generic, env: 'pyver=3.8 tracdb=sqlite'}
+    #- {os: osx, language: generic, env: 'pyver=3.8 tracdb=postgresql'}
   - stage: deploy
     before_script: skip
     script: skip
