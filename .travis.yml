@@ -1,15 +1,12 @@
 version: ~> 1.0
 dist: bionic
 language: python
-python: 3.8
 addons:
   apt:
     packages: [libapr1-dev, libaprutil1-dev, liblz4-dev, libutf8proc-dev, swig,
                firefox-geckodriver, python3-tidylib]
   homebrew:
-    packages: [apr, apr-util, sqlite, zlib, lz4, utf8proc, swig, ccache, geckodriver,
-               tidy-html5]
-    update: true
+    packages: [python@3.9, subversion, geckodriver, tidy-html5]
   firefox: latest
 cache:
   ccache: true
@@ -31,17 +28,11 @@ before_install:
   } >"$HOME/.pip/pip.conf"
 - |
   if [ "$TRAVIS_OS_NAME" = osx ]; then
-    export PATH="/usr/local/opt/ccache/libexec:$PATH"
-    eval "$(pyenv init -)"
-    pyver_latest="$(pyenv install -l | grep -E "^[ ]*${pyver/./\\.}\.[0-9]+$" | tail -1 | tr -d '[:blank:]')"
-    venv="$HOME/venv-$pyver_latest"
-    pyenv install --skip-existing $pyver_latest
-    pyenv shell $pyver_latest
-    pip install --upgrade virtualenv
+    export PATH="$(brew --prefix python@3.9)/libexec/bin:$PATH"
+    PYTHONPATH="$(brew --prefix python@3.9)/libexec/pip/src" python -m pip install virtualenv
+    venv="$HOME/venv-$pyver"
     python -m virtualenv $venv
     source $venv/bin/activate
-    pyenv --version
-    pyenv versions
   fi
 - pip install --upgrade pip setuptools wheel
 - python --version
@@ -49,7 +40,7 @@ before_install:
 install:
 - set -e
 - |
-  if [ "$TRAVIS_BUILD_STAGE_NAME" = test ]; then
+  if [ "$TRAVIS_BUILD_STAGE_NAME" = Test ]; then
     requires='Jinja2 selenium pytidylib'
     if [ "$build" != minimum ]; then requires="$requires Babel Pygments docutils textile pytz"; fi
     if [ "$tracdb" = postgresql ]; then requires="$requires psycopg2"; fi
@@ -61,7 +52,7 @@ install:
   python -c 'import sys, pkg_resources as p; p.require(sys.argv[1:])' $requires
 - pip list
 - |
-  if [ "$build" != minimum -a "$TRAVIS_BUILD_STAGE_NAME" = test ]; then
+  if [ "$build" != minimum -a "$TRAVIS_BUILD_STAGE_NAME" = Test -a "$TRAVIS_OS_NAME" = linux ]; then
   (
     set -ex
     test -d "$HOME/src" || mkdir "$HOME/src"
@@ -88,15 +79,9 @@ install:
       set +ex
       cd "$HOME/work/subversion"
       set -ex
-      if [ "$TRAVIS_OS_NAME" = osx ]; then
-        apr_config="$(brew --prefix apr)/bin/apr-1-config"
-        apu_config="$(brew --prefix apr-util)/bin/apu-1-config"
-        swig_bin="$(brew --prefix swig)/bin/swig"
-      else
-        apr_config=/usr/bin/apr-1-config
-        apu_config=/usr/bin/apu-1-config
-        swig_bin=/usr/bin/swig
-      fi
+      apr_config=/usr/bin/apr-1-config
+      apu_config=/usr/bin/apu-1-config
+      swig_bin=/usr/bin/swig
       prefix="$(python -c 'import sys; print(sys.prefix)')"
       ./autogen.sh
       ./configure \
@@ -143,15 +128,16 @@ install:
 - echo "$tracdb_version"
 before_script:
 - |  # Link Subversion bindings to the virtualenv.
-  if [ "$TRAVIS_OS_NAME" = linux -a "$build" != minimum -a \
-       "$(/usr/bin/python -c "$print_version")" = "$(python -c "$print_version")" ]
-  then
-    print_sitelib='from distutils.sysconfig import get_python_lib; print(get_python_lib())'
-    sitelib_global="$(/usr/bin/python -c "$print_sitelib")"
-    sitelib_venv="$(python -c "$print_sitelib")"
-    ln -s "$sitelib_global/svn" "$sitelib_venv/svn"
-    ln -s "$sitelib_global/libsvn" "$sitelib_venv/libsvn"
-    python -c 'from svn import core'
+  if [ "$build" != minimum -a "$TRAVIS_OS_NAME" = osx ]; then
+    python_global="$(brew --prefix python@3.9)/libexec/bin/python"
+    if [ "$($python_global -c "$print_version")" = "$(python -c "$print_version")" ]; then
+      print_sitelib='from distutils.sysconfig import get_python_lib; print(get_python_lib())'
+      sitelib_global="$($python_global -c "$print_sitelib")"
+      sitelib_venv="$(python -c "$print_sitelib")"
+      ln -s "$sitelib_global/svn" "$sitelib_venv/svn"
+      ln -s "$sitelib_global/libsvn" "$sitelib_venv/libsvn"
+      python -c 'from svn import core'
+    fi
   fi
 - |
   case "$tracdb" in
@@ -210,18 +196,19 @@ notifications:
       secure: lIn4a3G6ww61t3o12DS4aWwEwD6Hl2kxcsZgkxvhU2MgzviJ5j3EBV5F/BlbQmR1BqM51qgDOXoQTO+y9cvzAYBkIy/gfLqZjAl0hfZep6iGZgl1cnUW4c5i9+wkF8PzTaQm+q9gwlIQ7JVedWw9jzHBIn80tCgTcavahAzyelk=
 jobs:
   include:
-  - {os: linux, python: '3.8', env: 'tracdb= build=minimum'}
+  - {os: linux, python: '3.9', env: 'tracdb= build=minimum'}
+  - {os: linux, python: '3.9', env: 'tracdb='}
   - {os: linux, python: '3.8', env: 'tracdb='}
   - {os: linux, python: '3.7', env: 'tracdb='}
   - {os: linux, python: '3.6', env: 'tracdb='}
   - {os: linux, python: '3.5', env: 'tracdb='}
-  - {os: linux, python: '3.8', env: 'tracdb=sqlite'}
-  - {os: linux, python: '3.8', env: 'tracdb=postgresql', services: postgresql}
-  - {os: linux, python: '3.8', env: 'tracdb=mysql', services: mysql}
-  - {os: osx, language: generic, env: 'pyver=3.8 tracdb= build=minimum'}
-    #- {os: osx, language: generic, env: 'pyver=3.8 tracdb='}
-    #- {os: osx, language: generic, env: 'pyver=3.8 tracdb=sqlite'}
-    #- {os: osx, language: generic, env: 'pyver=3.8 tracdb=postgresql'}
+  - {os: linux, python: '3.9', env: 'tracdb=sqlite'}
+  - {os: linux, python: '3.9', env: 'tracdb=postgresql', services: postgresql}
+  - {os: linux, python: '3.9', env: 'tracdb=mysql', services: mysql}
+  - {os: osx, osx_image: xcode12.2, language: generic, env: 'pyver=3.9 tracdb= build=minimum'}
+  - {os: osx, osx_image: xcode12.2, language: generic, env: 'pyver=3.9 tracdb='}
+  - {os: osx, osx_image: xcode12.2, language: generic, env: 'pyver=3.9 tracdb=sqlite'}
+  - {os: osx, osx_image: xcode12.2, language: generic, env: 'pyver=3.9 tracdb=postgresql'}
   - stage: deploy
     before_script: skip
     script: skip
