@@ -342,6 +342,8 @@ function Trac-Tests {
 
     Write-Step -Name TESTS -Skip $skipTests
 
+    $env:PYTHONLEGACYWINDOWSSTDIO = "y"
+
     $config = "$pyHome - $env:TRAC_TEST_DB_URI"
 
     if ("$env:TRAC_TEST_DB_URI" -eq '') {
