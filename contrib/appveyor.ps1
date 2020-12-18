@@ -359,7 +359,8 @@ function Trac-Tests {
         Write-Host "make $goal"
 
         Add-AppveyorTest -Name $name -Outcome Running
-        & make.exe $goal 2>&1 | Tee-Object -Variable make
+        # Enable verbose output to avoid to seem hanging job on appveyor
+        & make.exe testopts=-v $goal 2>&1 | Tee-Object -Variable make
 
         # Determine outcome Passed or Failed
         $outcome = 'Passed'
