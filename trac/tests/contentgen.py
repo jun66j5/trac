@@ -21,18 +21,8 @@ try:
         all_words = list(filter(isalpha, map(lambda v: v.strip(), f)))
         del f
 except IOError:
-    all_words = [
-        'one',
-        'two',
-        'three',
-        'four',
-        'five',
-        'six',
-        'seven',
-        'eight',
-        'nine',
-        'ten',
-    ]
+    with open('trac/tests/random_words.txt', 'r', encoding='utf-8') as f:
+        all_words = f.read().split()
 
 
 def random_word(min_length=1):
