@@ -59,7 +59,11 @@ import atexit
 import os
 import subprocess
 import unittest
-from pkg_resources import parse_version
+
+try:
+    from packaging.version import parse as parse_version
+except ImportError:
+    from pkg_resources import parse_version
 
 try:
     from svn import core

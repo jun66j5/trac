@@ -21,9 +21,13 @@ import io
 import re
 import sys
 
-from pkg_resources import parse_version as pv
 from collections import namedtuple
 from os.path import abspath, dirname, join, normpath
+
+try:
+    from packaging.version import parse as pv
+except ImportError:
+    from pkg_resources import parse_version as pv
 
 
 # Setup XHTML validation

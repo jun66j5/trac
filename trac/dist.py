@@ -24,11 +24,11 @@ time during install.
 from html.parser import HTMLParser
 import io
 import os
-import pkg_resources
 import re
 from tokenize import generate_tokens, COMMENT, NAME, OP, STRING
 
 import jinja2
+import jinja2.ext
 from jinja2.ext import babel_extract as jinja2_extractor
 
 from distutils import log as distlog
@@ -38,8 +38,7 @@ from distutils.errors import DistutilsOptionError
 from setuptools.command.install_lib import install_lib as _install_lib
 
 
-_jinja2_ext_with = pkg_resources.parse_version(jinja2.__version__) < \
-                   pkg_resources.parse_version('3')
+_jinja2_ext_with = hasattr(jinja2.ext, 'with_')
 
 
 def simplify_message(message):

@@ -16,7 +16,11 @@ import re
 import sys
 import textwrap
 import unittest
-from pkg_resources import parse_version
+
+try:
+    from packaging.version import parse as parse_version
+except ImportError:
+    from pkg_resources import parse_version
 
 from trac.mimeview.api import ImageRenderer, LineNumberAnnotator, Mimeview
 from trac.test import EnvironmentStub, MockRequest, makeSuite

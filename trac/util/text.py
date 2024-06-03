@@ -22,7 +22,6 @@ import base64
 import configparser
 import locale
 import os
-import pkg_resources
 import re
 import sys
 import textwrap
@@ -44,10 +43,10 @@ del Empty # shouldn't be used outside of Trac core
 
 # -- Jinja2
 
-_jinja2_ver = pkg_resources.parse_version(jinja2.__version__)
-_jinja2_exts = ['jinja2.ext.do', 'jinja2.ext.i18n']
-if _jinja2_ver < pkg_resources.parse_version('3'):
-    _jinja2_exts.append('jinja2.ext.with_')
+import jinja2.ext as _ext
+_jinja2_exts = ['jinja2.ext.%s' % name for name in ('do', 'i18n', 'with_')
+                                       if hasattr(_ext, name)]
+del _ext
 
 def jinja2env(**kwargs):
     """Creates a Jinja2 ``Environment`` configured with Trac conventions.
