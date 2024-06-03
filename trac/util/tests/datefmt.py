@@ -22,7 +22,7 @@ import unittest
 
 from trac.core import TracError
 from trac.test import locale_en, makeSuite
-from trac.util import datefmt
+from trac.util import datefmt, resource_path
 
 try:
     from babel import Locale
@@ -1488,10 +1488,9 @@ else:
                              datefmt.parse_date('2010-8-28', tz, zh_CN))
 
         def test_i18n_parse_date_roundtrip(self):
-            from pkg_resources import resource_listdir
-            locales = sorted(dirname
-                             for dirname in resource_listdir('trac', 'locale')
-                             if '.' not in dirname)
+            locales = sorted(c.name
+                             for c in resource_path('trac', 'locale').iterdir()
+                             if '.' not in c.name)
 
             tz = datefmt.timezone('GMT +2:00')
             t = datetime.datetime(2010, 8, 28, 11, 45, 56, 123456, datefmt.utc)

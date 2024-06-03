@@ -12,7 +12,6 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 import unittest
-from pkg_resources import resource_exists, resource_filename
 try:
     import babel
 except ImportError:
@@ -25,7 +24,7 @@ else:
         from babel.localedata import list as locale_identifiers
 
 from trac.test import EnvironmentStub, makeSuite, mkdtemp
-from trac.util import translation
+from trac.util import resource_filename, resource_path, translation
 
 
 class TranslationsProxyTestCase(unittest.TestCase):
@@ -44,9 +43,9 @@ class TranslationsProxyTestCase(unittest.TestCase):
     def _get_available_locales(self):
         return sorted(locale
                       for locale in translation.get_available_locales()
-                      if resource_exists('trac',
-                                         'locale/%s/LC_MESSAGES/messages.mo'
-                                         % locale))
+                      if resource_path('trac',
+                                       'locale/%s/LC_MESSAGES/messages.mo' %
+                                       locale).exists())
 
     def test_activate(self):
         locales = self._get_available_locales()

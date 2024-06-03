@@ -774,6 +774,28 @@ def import_namespace(globals_dict, module_name):
     globals_dict.pop('import_namespace', None)
 
 
+# -- resouces utils
+
+try:
+    from importlib.resources import files as resource_files
+except ImportError:
+    try:
+        from importlib_resources import files as resource_files
+    except ImportError:
+        import pathlib
+        def resource_files(package):
+            filename = pkg_resources.resource_filename(package, '.')
+            return pathlib.Path(filename)
+
+
+def resource_path(package, filename):
+    return resource_files(package).joinpath(filename)
+
+
+def resource_filename(package, filename):
+    return str(resource_path(package, filename))
+
+
 # -- setuptools utils
 
 def get_module_path(module):

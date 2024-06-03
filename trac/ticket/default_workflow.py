@@ -20,7 +20,6 @@ import io
 from configparser import ParsingError, RawConfigParser
 from collections import defaultdict
 from functools import partial
-from pkg_resources import resource_filename
 
 from trac.api import IEnvironmentSetupParticipant
 from trac.config import ConfigSection, Configuration, ConfigurationError
@@ -29,7 +28,8 @@ from trac.perm import PermissionCache, PermissionSystem
 from trac.resource import ResourceNotFound
 from trac.ticket.api import ITicketActionController, TicketSystem
 from trac.ticket.model import Component as TicketComponent, Resolution
-from trac.util import exception_to_unicode, get_reporter_id, sub_val, to_list
+from trac.util import (exception_to_unicode, get_reporter_id,
+                       resource_filename, sub_val, to_list)
 from trac.util.html import tag
 from trac.util.presentation import separated
 from trac.util.translation import _, tag_, cleandoc_

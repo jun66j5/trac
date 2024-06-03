@@ -12,7 +12,6 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 import os
-import pkg_resources
 import unittest
 
 from trac.search.web_ui import SearchModule
@@ -20,6 +19,7 @@ from trac.test import EnvironmentStub, MockRequest, makeSuite
 from trac.ticket.model import Ticket
 from trac.ticket.test import insert_ticket
 from trac.ticket.web_ui import TicketModule
+from trac.util import resource_filename
 from trac.wiki.admin import WikiAdmin
 from trac.wiki.web_ui import WikiModule
 from trac.web.api import RequestDone
@@ -32,8 +32,7 @@ class SearchModuleTestCase(unittest.TestCase):
         self.env = EnvironmentStub()
         self.search_module = SearchModule(self.env)
         self.chrome = Chrome(self.env)
-        pages_dir = pkg_resources.resource_filename('trac.wiki',
-                                                    'default-pages')
+        pages_dir = resource_filename('trac.wiki', 'default-pages')
         for page_name in ('WikiStart', 'TracModWSGI'):
             page = os.path.join(pages_dir, page_name)
             WikiAdmin(self.env).import_page(page, page_name)

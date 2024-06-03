@@ -15,7 +15,7 @@ from trac.attachment import Attachment
 from trac.core import Component, TracError, implements
 from trac.ticket.model import Ticket
 from trac.ticket.web_ui import TicketModule
-from trac.util import get_reporter_id
+from trac.util import get_reporter_id, resource_filename
 from trac.util.datefmt import from_utimestamp
 from trac.util.translation import _
 from trac.web.api import IRequestFilter, IRequestHandler
@@ -43,11 +43,9 @@ class TicketDeleter(Component):
     # ITemplateProvider methods
 
     def get_htdocs_dirs(self):
-        from pkg_resources import resource_filename
         yield 'ticketopt', resource_filename(__name__, 'htdocs')
 
     def get_templates_dirs(self):
-        from pkg_resources import resource_filename
         return [resource_filename(__name__, 'templates')]
 
     # IRequestFilter methods

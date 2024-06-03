@@ -16,7 +16,6 @@
 # Author: Jonas Borgström <jonas@edgewall.com>
 #         Christopher Lenz <cmlenz@gmx.de>
 
-import pkg_resources
 import re
 
 from trac.attachment import AttachmentModule, Attachment
@@ -27,7 +26,7 @@ from trac.perm import IPermissionPolicy, IPermissionRequestor
 from trac.resource import *
 from trac.search import ISearchSource, search_to_sql, shorten_result
 from trac.timeline.api import ITimelineEventProvider
-from trac.util import as_int, get_reporter_id
+from trac.util import as_int, get_reporter_id, resource_filename
 from trac.util.datefmt import from_utimestamp, to_utimestamp
 from trac.util.html import tag
 from trac.util.text import shorten_line
@@ -192,7 +191,7 @@ class WikiModule(Component):
         return []
 
     def get_templates_dirs(self):
-        return [pkg_resources.resource_filename('trac.wiki', 'templates')]
+        return [resource_filename('trac.wiki', 'templates')]
 
     # Internal methods
 

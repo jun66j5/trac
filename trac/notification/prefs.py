@@ -14,7 +14,6 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 from operator import itemgetter
-from pkg_resources import resource_filename
 
 from trac.core import Component, implements, ExtensionPoint
 from trac.notification.api import (INotificationDistributor,
@@ -23,7 +22,7 @@ from trac.notification.api import (INotificationDistributor,
                                    NotificationSystem)
 from trac.notification.model import Subscription
 from trac.prefs.api import IPreferencePanelProvider
-from trac.util import as_int
+from trac.util import as_int, resource_filename
 from trac.util.html import tag
 from trac.util.translation import _, cleandoc_
 from trac.web.chrome import Chrome, ITemplateProvider, add_notice
@@ -130,8 +129,7 @@ class NotificationPreferences(Component):
         return []
 
     def get_templates_dirs(self):
-        resource_dir = resource_filename('trac.notification', 'templates')
-        return [resource_dir]
+        return [resource_filename('trac.notification', 'templates')]
 
     # Internal methods
 

@@ -13,7 +13,7 @@
 
 """Utilities for text translation with gettext."""
 
-import pkg_resources
+import os
 import re
 
 from trac.util.concurrency import ThreadLocal, threading
@@ -138,11 +138,13 @@ try:
             self._current.args = (get_locale, env_path)
 
         def activate(self, locale, env_path=None):
-            try:
-                locale_dir = pkg_resources.resource_filename('trac', 'locale')
-            except Exception:
+            from trac.util import resource_path
+
+            locale_dir = resource_path('trac', 'locale')
+            if not locale_dir.exists():
                 self._activate_failed = True
                 return
+            locale_dir = str(locale_dir)
             t = Translations.load(locale_dir, locale or 'en_US')
             if not isinstance(t, Translations):
                 t = self._null_translations
@@ -341,15 +343,14 @@ try:
         """Return a list of locale identifiers of the locales for which
         translations are available.
         """
-        try:
-            locales = [dirname for dirname
-                       in pkg_resources.resource_listdir('trac', 'locale')
-                       if '.' not in dirname
-                       and pkg_resources.resource_exists(
-                        'trac', 'locale/%s/LC_MESSAGES/messages.mo' % dirname)]
-            return locales
-        except Exception:
+        from trac.util import resource_path
+
+        dir_ = resource_path('trac', 'locale')
+        if not dir_.is_dir():
             return []
+        return [child.name for child in dir_.iterdir()
+                           if '.' not in child.name and
+                           child.joinpath('LC_MESSAGES/messages.mo').exists()]
 
     def get_negotiated_locale(preferred_locales):
         def normalize(locale_ids):

@@ -22,7 +22,7 @@ from trac.admin import AdminCommandError, IAdminCommandProvider, get_dir_list
 from trac.config import ConfigSection, Option
 from trac.core import *
 from trac.resource import IResourceManager, Resource, ResourceNotFound
-from trac.util import as_bool, native_path
+from trac.util import as_bool, native_path, resource_filename
 from trac.util.concurrency import get_thread_id, threading
 from trac.util.datefmt import time_now, utc
 from trac.util.text import exception_to_unicode, printout, to_unicode
@@ -514,7 +514,6 @@ class RepositoryManager(Component):
         return []
 
     def get_templates_dirs(self):
-        from pkg_resources import resource_filename
         return [resource_filename('trac.versioncontrol', 'templates')]
 
     # Public API methods

@@ -17,7 +17,6 @@
 # Author: Jonas Borgström <jonas@edgewall.com>
 #         Christopher Lenz <cmlenz@gmx.de>
 
-import pkg_resources
 import re
 from datetime import datetime, timedelta
 
@@ -25,6 +24,7 @@ from trac.config import IntOption, BoolOption
 from trac.core import *
 from trac.perm import IPermissionRequestor
 from trac.timeline.api import ITimelineEventProvider
+from trac.util import resource_filename
 from trac.util.datefmt import (datetime_now, format_date, format_datetime,
                                format_time, localtz, parse_date,
                                pretty_timedelta, to_datetime, to_utimestamp,
@@ -266,7 +266,7 @@ class TimelineModule(Component):
         return []
 
     def get_templates_dirs(self):
-        return [pkg_resources.resource_filename('trac.timeline', 'templates')]
+        return [resource_filename('trac.timeline', 'templates')]
 
     # IRequestFilter methods
 

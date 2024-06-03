@@ -14,7 +14,6 @@ import io
 import os
 import re
 from datetime import datetime
-from pkg_resources import resource_filename
 
 import pygments
 from pygments.formatters.html import HtmlFormatter
@@ -26,7 +25,7 @@ from trac.core import *
 from trac.config import ConfigSection, ListOption, Option
 from trac.mimeview.api import IHTMLPreviewRenderer, Mimeview
 from trac.prefs import IPreferencePanelProvider
-from trac.util import get_pkginfo, lazy
+from trac.util import get_pkginfo, lazy, resource_filename
 from trac.util.datefmt import http_date, localtz
 from trac.util.html import Markup
 from trac.util.translation import _

@@ -27,7 +27,6 @@ import datetime
 import itertools
 import operator
 import os.path
-import pkg_resources
 import pprint
 import re
 from functools import partial
@@ -46,8 +45,9 @@ from trac.core import *
 from trac.mimeview.api import RenderingContext, get_mimetype
 from trac.perm import IPermissionRequestor
 from trac.resource import *
-from trac.util import as_bool, as_int, get_pkginfo, get_reporter_id, html, \
-                      pathjoin, presentation, to_list, translation
+from trac.util import (as_bool, as_int, get_pkginfo, get_reporter_id, html,
+                       pathjoin, presentation, resource_filename, to_list,
+                       translation)
 from trac.util.html import (Element, Markup, escape, plaintext, tag,
                             to_fragment, valid_html_bytes)
 from trac.util.text import (exception_to_unicode, is_obfuscated,
@@ -740,7 +740,7 @@ class Chrome(Component):
     # ITemplateProvider methods
 
     def get_htdocs_dirs(self):
-        return [('common', pkg_resources.resource_filename('trac', 'htdocs')),
+        return [('common', resource_filename('trac', 'htdocs')),
                 ('shared', self.shared_htdocs_dir),
                 ('site', self.env.htdocs_dir)]
 
@@ -748,7 +748,7 @@ class Chrome(Component):
         return list(filter(None, [
             self.env.templates_dir,
             self.shared_templates_dir,
-            pkg_resources.resource_filename('trac', 'templates'),
+            resource_filename('trac', 'templates'),
         ]))
 
     # IWikiSyntaxProvider methods

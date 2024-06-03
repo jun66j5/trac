@@ -16,10 +16,10 @@ import argparse
 import re
 import sys
 from contextlib import closing
-from pkg_resources import resource_listdir, resource_string
 
 from trac.loader import load_components
 from trac.test import EnvironmentStub, Mock, MockPerm
+from trac.util import resource_path
 from trac.util.html import Element
 from trac.util.text import printout
 from trac.web.chrome import web_context
@@ -185,9 +185,10 @@ def download_default_pages(names, prefix, strict):
 
 
 def main():
-    all_pages = sorted(name for name
-                            in resource_listdir('trac.wiki', 'default-pages')
-                            if not name.startswith('.'))
+    all_pages = sorted(c.name
+                       for c
+                       in resource_path('trac.wiki', 'default-pages').iterdir()
+                       if not c.name.startswith('.'))
     args = parse_args(all_pages)
     if args.pages:
         pages = sorted(args.pages)
@@ -202,8 +203,8 @@ def main():
     with env.db_transaction:
         for name in all_pages:
             wiki = WikiPage(env, name)
-            wiki.text = resource_string('trac.wiki', 'default-pages/' +
-                                        name).decode('utf-8')
+            wiki.text = resource_path('trac.wiki', 'default-pages/' + name) \
+                        .read_text('utf-8')
             if wiki.text:
                 wiki.save('trac', '')
             else:

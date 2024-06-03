@@ -22,7 +22,6 @@ import gc
 import io
 import locale
 import os
-import pkg_resources
 from pprint import pformat, pprint
 import re
 import sys
@@ -40,8 +39,9 @@ from trac.env import open_environment
 from trac.loader import get_plugin_info, match_plugins_to_frames
 from trac.perm import PermissionCache, PermissionError
 from trac.resource import ResourceNotFound
-from trac.util import arity, get_frame_info, get_last_traceback, hex_entropy, \
-                      lazy, read_file, safe_repr, translation
+from trac.util import (arity, get_frame_info, get_last_traceback, hex_entropy,
+                       lazy, read_file, resource_filename, safe_repr,
+                       translation)
 from trac.util.concurrency import get_thread_id
 from trac.util.datefmt import format_datetime, localtz, timezone, user_time
 from trac.util.html import tag, valid_html_bytes
@@ -307,7 +307,7 @@ class RequestDispatcher(Component):
         return []
 
     def get_templates_dirs(self):
-        return [pkg_resources.resource_filename('trac.web', 'templates')]
+        return [resource_filename('trac.web', 'templates')]
 
     # Internal methods
 
@@ -807,7 +807,7 @@ def send_project_index(environ, start_response, parent_dir=None,
                        env_paths=None):
     req = Request(environ, start_response)
 
-    loadpaths = [pkg_resources.resource_filename('trac', 'templates')]
+    loadpaths = [resource_filename('trac', 'templates')]
     if req.environ.get('trac.env_index_template'):
         env_index_template = req.environ['trac.env_index_template']
         tmpl_path, template = os.path.split(env_index_template)

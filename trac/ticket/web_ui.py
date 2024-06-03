@@ -18,7 +18,6 @@ import csv
 from datetime import datetime
 import functools
 import io
-import pkg_resources
 import re
 
 from trac.attachment import AttachmentModule
@@ -37,7 +36,8 @@ from trac.ticket.api import TicketSystem, ITicketManipulator, TicketFieldList
 from trac.ticket.notification import TicketChangeEvent
 from trac.ticket.roadmap import group_milestones
 from trac.timeline.api import ITimelineEventProvider
-from trac.util import as_bool, as_int, get_reporter_id, lazy, to_list
+from trac.util import (as_bool, as_int, get_reporter_id, lazy,
+                       resource_filename, to_list)
 from trac.util.datefmt import (
     datetime_now, format_datetime, format_date_or_datetime, from_utimestamp,
     get_date_format_hint, get_datetime_format_hint, parse_date, to_utimestamp,
@@ -167,7 +167,7 @@ class TicketModule(Component):
         return []
 
     def get_templates_dirs(self):
-        return [pkg_resources.resource_filename('trac.ticket', 'templates')]
+        return [resource_filename('trac.ticket', 'templates')]
 
     # ISearchSource methods
 

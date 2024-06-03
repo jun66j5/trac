@@ -16,7 +16,6 @@
 
 import itertools
 import os
-import pkg_resources
 import re
 import shutil
 from functools import partial
@@ -28,6 +27,7 @@ from trac.loader import get_plugin_info
 from trac.log import LOG_LEVELS, LOG_LEVEL_ALIASES, LOG_LEVEL_ALIASES_MAP
 from trac.perm import IPermissionRequestor, PermissionExistsError, \
                       PermissionSystem
+from trac.util import resource_filename
 from trac.util.datefmt import all_timezones, pytz
 from trac.util.html import tag
 from trac.util.text import exception_to_unicode, unicode_from_base64, \
@@ -122,7 +122,7 @@ class AdminModule(Component):
         return []
 
     def get_templates_dirs(self):
-        return [pkg_resources.resource_filename('trac.admin', 'templates')]
+        return [resource_filename('trac.admin', 'templates')]
 
     # Internal methods
 

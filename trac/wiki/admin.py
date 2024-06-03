@@ -12,7 +12,6 @@
 # history and logs, available at https://trac.edgewall.org/.
 
 import os
-import pkg_resources
 import sys
 
 from trac.admin import *
@@ -20,7 +19,7 @@ from trac.api import IEnvironmentSetupParticipant
 from trac.core import *
 from trac.wiki import model
 from trac.wiki.api import WikiSystem
-from trac.util import lazy, read_file
+from trac.util import lazy, read_file, resource_filename
 from trac.util.datefmt import format_datetime, from_utimestamp
 from trac.util.text import path_to_unicode, print_table, printout, \
                            to_unicode, unicode_quote, unicode_unquote
@@ -87,7 +86,7 @@ class WikiAdmin(Component):
 
     @lazy
     def default_pages_dir(self):
-        return pkg_resources.resource_filename('trac.wiki', 'default-pages')
+        return resource_filename('trac.wiki', 'default-pages')
 
     def get_wiki_list(self, prefix=None):
         return sorted(WikiSystem(self.env).get_pages(prefix))

@@ -203,15 +203,16 @@ class RegressionTestTicket11515(FunctionalTestCaseSetup):
         """Test for regression of https://trac.edgewall.org/ticket/11515
         Show a notice message with new language setting after it is changed.
         """
+        from trac.util import resource_path
         from trac.util.translation import has_babel, get_available_locales
-        from pkg_resources import resource_exists, resource_filename
 
         if not has_babel:
             print("SKIP: RegressionTestTicket11515 (Babel not installed)")
             return
-        if not resource_exists('trac', 'locale'):
+        locale_dir = resource_path('trac', 'locale')
+        if not locale_dir.exists():
             return
-        locale_dir = resource_filename('trac', 'locale')
+        locale_dir = str(locale_dir)
         from babel.support import Translations
         string = 'Your preferences have been saved.'
         translated = None

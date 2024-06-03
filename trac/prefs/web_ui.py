@@ -15,12 +15,11 @@
 # Author: Daniel Lundin <daniel@edgewall.com>
 
 import math
-import pkg_resources
 import re
 
 from trac.core import *
 from trac.prefs.api import IPreferencePanelProvider
-from trac.util import as_float, lazy
+from trac.util import as_float, lazy, resource_filename
 from trac.util.datefmt import all_timezones, get_timezone, localtz
 from trac.util.html import tag
 from trac.util.translation import _, Locale, deactivate,\
@@ -124,7 +123,7 @@ class PreferencesModule(Component):
         return []
 
     def get_templates_dirs(self):
-        return [pkg_resources.resource_filename('trac.prefs', 'templates')]
+        return [resource_filename('trac.prefs', 'templates')]
 
     # Internal methods
 

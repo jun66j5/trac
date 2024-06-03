@@ -14,13 +14,13 @@
 #
 # Author: Jonas Borgström <jonas@edgewall.com>
 
-import pkg_resources
 import re
 
 from trac.config import IntOption, ListOption
 from trac.core import *
 from trac.perm import IPermissionRequestor
 from trac.search.api import ISearchSource
+from trac.util import resource_filename
 from trac.util.datefmt import format_datetime, user_time
 from trac.util.html import Markup, escape, find_element, tag
 from trac.util.presentation import Paginator
@@ -121,7 +121,7 @@ class SearchModule(Component):
         return []
 
     def get_templates_dirs(self):
-        return [pkg_resources.resource_filename('trac.search', 'templates')]
+        return [resource_filename('trac.search', 'templates')]
 
     # IWikiSyntaxProvider methods
 

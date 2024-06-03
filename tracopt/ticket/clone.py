@@ -12,6 +12,7 @@
 # history and logs, available at https://trac.edgewall.org/log/.
 
 from trac.core import Component, implements
+from trac.util import resource_filename
 from trac.web.api import IRequestFilter
 from trac.web.chrome import ITemplateProvider, add_script, add_script_data
 
@@ -45,7 +46,6 @@ class TicketCloneButton(Component):
     # ITemplateProvider methods
 
     def get_htdocs_dirs(self):
-        from pkg_resources import resource_filename
         yield 'ticketopt', resource_filename(__name__, 'htdocs')
 
     def get_templates_dirs(self):
