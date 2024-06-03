@@ -23,7 +23,6 @@ import argparse
 import functools
 import importlib
 import os
-import pkg_resources
 import socket
 import ssl
 import sys
@@ -391,5 +390,4 @@ def main():
 
 
 if __name__ == '__main__':
-    pkg_resources.require('Trac==%s' % VERSION)
     main()

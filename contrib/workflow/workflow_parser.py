@@ -17,9 +17,6 @@ import sys
 import getopt
 import locale
 
-import pkg_resources
-pkg_resources.require('Trac')
-
 from trac.config import Configuration
 from trac.ticket.default_workflow import parse_workflow_config
 

@@ -35,7 +35,6 @@ try:
 except ImportError:
     version = "< 3.2"
 
-from trac import __version__ as VERSION
 from trac.web.wsgi import WSGIGateway, _ErrorsWrapper
 
 
@@ -145,7 +144,6 @@ def handler(req):
             if egg_cache:
                 pkg_resources.set_extraction_path(egg_cache)
             importlib.reload(sys.modules['trac.web'])
-    pkg_resources.require('Trac==%s' % VERSION)
     gateway = ModPythonGateway(req, req.get_options())
     from trac.web.main import dispatch_request
     gateway.run(dispatch_request)

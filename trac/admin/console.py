@@ -15,7 +15,6 @@
 import cmd
 import io
 import os
-import pkg_resources
 import re
 import sys
 import textwrap
@@ -533,5 +532,4 @@ def run(args=None):
 
 
 if __name__ == '__main__':
-    pkg_resources.require('Trac==%s' % TRAC_VERSION)
     sys.exit(run())

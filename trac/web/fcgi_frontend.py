@@ -16,10 +16,8 @@
 # Author: Matthew Good <trac@matt-good.net>
 
 import os
-import pkg_resources
 import urllib.parse
 
-from trac import __version__ as VERSION
 from trac.web.main import dispatch_request
 
 use_flup = os.environ.get('TRAC_USE_FLUP', False)
@@ -54,5 +52,4 @@ def run():
     WSGIServer(dispatch_request, **params).run()
 
 if __name__ == '__main__':
-    pkg_resources.require('Trac==%s' % VERSION)
     run()
