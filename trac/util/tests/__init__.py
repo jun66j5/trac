@@ -14,7 +14,6 @@
 import doctest
 import importlib
 import os.path
-import pkg_resources
 import random
 import re
 import sys
@@ -243,10 +242,11 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
         self.assertEqual(pkginfo, util.get_pkginfo(tracopt))
 
     def test_get_pkginfo_babel(self):
+        from trac.util import get_distribution
         try:
             import babel
             import babel.core
-            dist = pkg_resources.get_distribution('Babel')
+            dist = get_distribution('Babel')
         except:
             pass
         else:
@@ -255,10 +255,10 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
             self.assertEqual(pkginfo, util.get_pkginfo(babel.core))
 
     def test_get_pkginfo_pymysql(self):
+        from trac.util import get_distribution
         try:
             import pymysql
-            dist = pkg_resources.get_distribution('pymysql')
-            dist.get_metadata('top_level.txt')
+            dist = get_distribution('pymysql')
         except:
             pass
         else:
@@ -269,10 +269,11 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
     def test_get_pkginfo_psycopg2(self):
         # python-psycopg2 deb package doesn't provide SOURCES.txt and
         # top_level.txt
+        from trac.util import get_distribution
         try:
             import psycopg2
             import psycopg2.extensions
-            dist = pkg_resources.get_distribution('psycopg2')
+            dist = get_distribution('psycopg2')
         except:
             pass
         else:
@@ -283,7 +284,10 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
     def test_file_metadata(self):
         pkgname = 'TestModule_' + util.hex_entropy(16)
         modname = pkgname.lower()
-        with open(os.path.join(self.dir, pkgname + '-0.1.egg-info'), 'w',
+        infodir = os.path.join(self.dir, pkgname + '-0.1.egg-info')
+        sources = ('__init__.py', 'bar.py', 'foo.py')
+        os.mkdir(infodir)
+        with open(os.path.join(infodir, 'PKG-INFO'), 'w',
                   encoding='utf-8') as f:
             f.write('Metadata-Version: 1.1\n'
                     'Name: %(pkgname)s\n'
@@ -298,8 +302,12 @@ class SetuptoolsUtilsTestCase(unittest.TestCase):
                     'Provides: %(modname)s\n'
                     'Provides: %(modname)s.foo\n'
                     % {'pkgname': pkgname, 'modname': modname})
+        with open(os.path.join(infodir, 'SOURCES.txt'), 'w',
+                  encoding='utf-8') as f:
+            for name in sources:
+                f.write('%s/%s\n' % (modname, name))
         os.mkdir(os.path.join(self.dir, modname))
-        for name in ('__init__.py', 'bar.py', 'foo.py'):
+        for name in sources:
             with open(os.path.join(self.dir, modname, name), 'w',
                       encoding='utf-8') as f:
                 f.write('# -*- coding: utf-8 -*-\n')

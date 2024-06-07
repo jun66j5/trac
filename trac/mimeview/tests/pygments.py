@@ -17,14 +17,9 @@ import sys
 import textwrap
 import unittest
 
-try:
-    from packaging.version import parse as parse_version
-except ImportError:
-    from pkg_resources import parse_version
-
 from trac.mimeview.api import ImageRenderer, LineNumberAnnotator, Mimeview
 from trac.test import EnvironmentStub, MockRequest, makeSuite
-from trac.util import get_pkginfo
+from trac.util import get_pkginfo, parse_version
 from trac.web.chrome import Chrome, web_context
 from trac.wiki.formatter import format_to_html
 

@@ -18,7 +18,6 @@ from ctypes.util import find_library
 import ctypes
 import os
 import re
-from pkg_resources import DistributionNotFound
 from subprocess import Popen, PIPE
 
 from trac.core import *
@@ -26,7 +25,7 @@ from trac.config import Option
 from trac.db.api import ConnectionBase, IDatabaseConnector, \
                         parse_connection_uri
 from trac.db.util import ConnectionWrapper, IterableCursor
-from trac.util import get_pkginfo, lazy
+from trac.util import PackageNotFoundError, get_pkginfo, lazy
 from trac.util.compat import close_fds
 from trac.util.html import Markup
 from trac.util.text import empty, exception_to_unicode, to_unicode
@@ -39,7 +38,7 @@ try:
     from psycopg2.extensions import register_type, UNICODE, \
                                     register_adapter, AsIs, QuotedString
 except ImportError:
-    raise DistributionNotFound('psycopg2>=2.0 or psycopg2-binary', ['Trac'])
+    raise PackageNotFoundError('psycopg2>=2.0 or psycopg2-binary')
 else:
     register_type(UNICODE)
     register_adapter(Markup, lambda markup: QuotedString(str(markup)))

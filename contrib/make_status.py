@@ -10,9 +10,9 @@
 
 import importlib
 import io
-import pkg_resources
 import warnings
 
+from trac.util import get_distribution
 from trac.util.text import print_table, printout
 
 def _svn_version():
@@ -22,7 +22,7 @@ def _svn_version():
     return '%d.%d.%d' % version + str(core.SVN_VER_TAG, 'utf-8')
 
 def _pytidylib_version():
-    version = pkg_resources.get_distribution('pytidylib').version
+    version = get_distribution('pytidylib').version
     try:
         import tidylib
         tidy = tidylib.Tidy()
@@ -46,7 +46,7 @@ def _pytidylib_version():
     return '%s (%s)' % (version, info) if info else version
 
 def _pysqlite3_version():
-    return pkg_resources.get_distribution('pysqlite3').version
+    return get_distribution('pysqlite3').version
 
 
 PACKAGES = [

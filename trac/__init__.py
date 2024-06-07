@@ -11,9 +11,28 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
-from pkg_resources import DistributionNotFound, get_distribution
+__all__ = ['__version__']
 
 try:
-    __version__ = get_distribution('Trac').version
-except DistributionNotFound:
+    import importlib_metadata as _metadata
+except ImportError:
+    try:
+        import importlib.metadata as _metadata
+    except ImportError:
+        _metadata = None
+
+if _metadata:
+    PackageNotFoundError = _metadata.PackageNotFoundError
+    distribution = _metadata.distribution
+else:
+    from pkg_resources import (
+        DistributionNotFound as PackageNotFoundError,
+        get_distribution as distribution,
+    )
+
+try:
+    __version__ = distribution('Trac').version
+except PackageNotFoundError:
     __version__ = '1.6.1'
+
+del _metadata, PackageNotFoundError, distribution

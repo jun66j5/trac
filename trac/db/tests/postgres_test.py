@@ -11,17 +11,17 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
-import pkg_resources
 import re
 import unittest
 
 from trac.db.api import DatabaseManager
 from trac.db.schema import Table, Column, Index
 from trac.test import EnvironmentStub, get_dburi, makeSuite
+from trac.util import PackageNotFoundError
 try:
     from trac.db.postgres_backend import (PostgreSQLConnector, _version_tuple,
                                           assemble_pg_dsn)
-except pkg_resources.DistributionNotFound:
+except PackageNotFoundError:
     PostgreSQLConnector = _version_tuple = assemble_pg_dsn = None
 
 

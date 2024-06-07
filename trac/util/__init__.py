@@ -24,7 +24,7 @@ import hashlib
 import importlib
 import io
 import os
-import pkg_resources
+import pathlib
 import posixpath
 import random
 import re
@@ -36,6 +36,67 @@ import tempfile
 import urllib.parse
 import unicodedata
 import zipfile
+
+
+def _import_metadata():
+
+    def has_required_features(mod):
+        return all(hasattr(mod, name)
+                   for name in ('Distribution', 'EntryPoint', 'EntryPoints',
+                                'PackageNotFoundError', 'distribution',
+                                'distributions', 'entry_points')) and \
+               all(hasattr(mod.EntryPoint, name)
+                   for name in ('module', 'attr', 'dist', 'load')) and \
+               all(hasattr(mod.Distribution, name)
+                   for name in ('name', 'version', 'locate_file', 'read_text'))
+
+    for name in ('importlib_metadata', 'importlib.metadata'):
+        try:
+            mod = importlib.import_module(name)
+        except ImportError:
+            continue
+        if has_required_features(mod):
+            return mod
+    return None
+
+
+def _import_resources():
+
+    def has_required_features(mod):
+        return hasattr(mod, 'files')
+
+    for name in ('importlib_resources', 'importlib.resources'):
+        try:
+            mod = importlib.import_module(name)
+        except ImportError:
+            continue
+        if has_required_features(mod):
+            return mod
+    return None
+
+
+_metadata = _import_metadata()
+_resources = _import_resources()
+
+if _metadata is None or _resources is None:
+    try:
+        import pkg_resources as _pkg_resources
+    except ImportError:
+        raise ImportError(
+            "The required importlib.metadata and/or importlib.resources are "
+            "not available. Install 'importlib_metadata,importlib_resources' "
+            "or 'setuptools<81'.")
+else:
+    _pkg_resources = None
+
+try:
+    from packaging.version import parse as parse_version
+except ImportError:
+    try:
+        from pkg_resources import parse_version
+    except ImportError:
+        raise ImportError("No supported version parser is available. "
+                          "Install 'packaging' or 'setuptools<81'.")
 
 from trac.util.datefmt import time_now, to_datetime, to_timestamp, utc
 from trac.util.text import exception_to_unicode, getpreferredencoding, \
@@ -774,26 +835,32 @@ def import_namespace(globals_dict, module_name):
     globals_dict.pop('import_namespace', None)
 
 
+# -- metadata utils
+
+if _metadata:
+    PackageNotFoundError = _metadata.PackageNotFoundError
+    get_distribution = _metadata.distribution
+    find_distributions = lambda path: _metadata.distributions(path=[path])
+else:
+    PackageNotFoundError = _pkg_resources.DistributionNotFound
+    get_distribution = _pkg_resources.get_distribution
+    find_distributions = lambda path: \
+                         _pkg_resources.find_distributions(path, only=True)
+
+
 # -- resouces utils
 
-try:
-    from importlib.resources import files as resource_files
-except ImportError:
-    try:
-        from importlib_resources import files as resource_files
-    except ImportError:
-        import pathlib
-        def resource_files(package):
-            filename = pkg_resources.resource_filename(package, '.')
-            return pathlib.Path(filename)
-
-
-def resource_path(package, filename):
-    return resource_files(package).joinpath(filename)
+if _resources:
+    def resource_path(package, filename):
+        return _resources.files(package).joinpath(filename)
+else:
+    def resource_path(package, filename):
+        filename = _pkg_resources.resource_filename(package, filename)
+        return pathlib.Path(filename)
 
 
 def resource_filename(package, filename):
-    return str(resource_path(package, filename))
+    return os.fspath(resource_path(package, filename))
 
 
 # -- setuptools utils
@@ -819,8 +886,28 @@ def get_sources(path):
     """Return a dictionary mapping Python module source paths to the
     distributions that contain them.
     """
+    if _metadata:
+        return _metadata_get_sources(path)
+    else:
+        return _pkg_resources_get_sources(path)
+
+
+def _metadata_get_sources(path):
     sources = {}
-    for dist in pkg_resources.find_distributions(path, only=True):
+    for dist in _metadata.distributions(path=[path]):
+        toplevels = dist.read_text('top_level.txt')
+        if toplevels is None:
+            continue
+        toplevels = [top + '/' for top in toplevels.splitlines()]
+        sources.update((src, dist)
+                       for src in map(str, dist.files or ())
+                       if any(src.startswith(top) for top in toplevels))
+    return sources
+
+
+def _pkg_resources_get_sources(path):
+    sources = {}
+    for dist in _pkg_resources.find_distributions(path, only=True):
         if not dist.has_metadata('top_level.txt'):
             continue
         toplevels = dist.get_metadata_lines('top_level.txt')
@@ -840,6 +927,17 @@ def get_sources(path):
     return sources
 
 
+def _is_metadata_dist(dist):
+    """Return `True` if `dist` is a distribution of `importlib.metadata`
+    or `importlib_metadata`, rather than `pkg_resources`.
+
+    The type isn't checked with `isinstance()` because the distribution
+    can be an instance of either module, e.g. `importlib_metadata`
+    installs its finder into `sys.meta_path`.
+    """
+    return hasattr(dist, 'read_text') and hasattr(dist, 'locate_file')
+
+
 def get_pkginfo(dist):
     """Get a dictionary containing package information for a package
 
@@ -855,49 +953,106 @@ def get_pkginfo(dist):
     import types
     from trac.util.translation import _
 
-    def parse_pkginfo(dist, name):
-        return email.message_from_string(dist.get_metadata(name))
+    if _metadata:
+        def get_location(dist):
+            return str(dist.locate_file(''))
+
+        def get_resource(dist, name):
+            return dist.read_text(name)
+
+        def get_resource_lines(dist, name):
+            data = dist.read_text(name)
+            if data is None:
+                return None
+            return data.splitlines()
+
+        def get_metadata(dist):
+            return dist.metadata
+    else:
+        def get_location(dist):
+            return dist.location
+
+        def get_resource(dist, name):
+            if not dist.has_metadata(name):
+                return None
+            return dist.get_metadata(name)
+
+        def get_resource_lines(dist, name):
+            if not dist.has_metadata(name):
+                return None
+            return dist.get_metadata_lines(name)
+
+        def get_metadata(dist):
+            try:
+                name = 'METADATA' if dist.has_metadata('METADATA') else \
+                       'PKG-INFO'
+                return email.message_from_string(dist.get_metadata(name))
+            except IOError as e:
+                err = to_unicode(e)
+            except email.errors.MessageError as e:
+                err = to_unicode(e)
+            msg = _("Failed to parse %(metadata)s file for %(dist)s: %(err)s",
+                    metadata=name, dist=dist, err=err)
+            raise RuntimeError(msg)
+
+    def has_resource(dist, module, resource_name):
+        if _is_metadata_dist(dist):
+            files = dist.files
+            return bool(files) and resource_name in map(str, files)
+
+        # installed by easy_install
+        if get_location(dist).endswith('.egg'):
+            return dist.has_resource(resource_name)
+
+        # installed by pip
+        lines = get_resource_lines(dist, 'installed-files.txt')
+        if lines is not None:
+            resource_name = os.path.normpath('../' + resource_name)
+            return any(resource_name == os.path.normpath(name)
+                       for name in lines)
+
+        # *.egg-info/SOURCES.txt
+        lines = get_resource_lines(dist, 'SOURCES.txt')
+        if lines is not None:
+            resource_name = os.path.normpath(resource_name)
+            return any(resource_name == os.path.normpath(name)
+                       for name in lines)
+
+        # *.dist-info/RECORD
+        data = get_resource(dist, 'RECORD')
+        if data is not None:
+            with io.StringIO(data) as f:
+                return any(resource_name == row[0] for row in csv.reader(f))
+
+        data = get_resource(dist, 'PKG-INFO')
+        if data is not None:
+            try:
+                pkginfo = email.message_from_string(data)
+                provides = pkginfo.get_all('Provides', ())
+                names = module.__name__.split('.')
+                if any('.'.join(names[:n + 1]) in provides
+                       for n in range(len(names))):
+                    return True
+            except (IOError, email.errors.MessageError):
+                pass
+
+        toplevel = resource_name.split('/')[0]
+        lines = get_resource_lines(dist, 'top_level.txt')
+        if lines is not None:
+            return toplevel in lines
+
+        return dist.key == toplevel.lower()
 
     if isinstance(dist, types.ModuleType):
-        def has_resource(dist, module, resource_name):
-            if dist.location.endswith('.egg'):  # installed by easy_install
-                return dist.has_resource(resource_name)
-            if dist.has_metadata('installed-files.txt'):  # installed by pip
-                resource_name = os.path.normpath('../' + resource_name)
-                return any(resource_name == os.path.normpath(name)
-                           for name
-                           in dist.get_metadata_lines('installed-files.txt'))
-            if dist.has_metadata('SOURCES.txt'):
-                resource_name = os.path.normpath(resource_name)
-                return any(resource_name == os.path.normpath(name)
-                           for name in dist.get_metadata_lines('SOURCES.txt'))
-            if dist.has_metadata('RECORD'):  # *.dist-info/RECORD
-                with io.StringIO(dist.get_metadata('RECORD')) as f:
-                    reader = csv.reader(f)
-                    return any(resource_name == row[0] for row in reader)
-            if dist.has_metadata('PKG-INFO'):
-                try:
-                    pkginfo = parse_pkginfo(dist, 'PKG-INFO')
-                    provides = pkginfo.get_all('Provides', ())
-                    names = module.__name__.split('.')
-                    if any('.'.join(names[:n + 1]) in provides
-                           for n in range(len(names))):
-                        return True
-                except (IOError, email.errors.MessageError):
-                    pass
-            toplevel = resource_name.split('/')[0]
-            if dist.has_metadata('top_level.txt'):
-                return toplevel in dist.get_metadata_lines('top_level.txt')
-            return dist.key == toplevel.lower()
         module = dist
         module_path = get_module_path(module)
-        resource_name = module.__name__.replace('.', '/')
+        resource_name = module.__spec__.name.replace('.', '/')
         if os.path.basename(module.__file__) in ('__init__.py', '__init__.pyc',
                                                  '__init__.pyo'):
             resource_name += '/__init__.py'
         else:
             resource_name += '.py'
-        for dist in pkg_resources.find_distributions(module_path, only=True):
+        for dist in find_distributions(module_path):
             if os.path.isfile(module_path) or \
                     has_resource(dist, module, resource_name):
                 break
@@ -910,19 +1065,12 @@ def get_pkginfo(dist):
     info = {}
     def normalize(attr):
         return attr.lower().replace('-', '_')
-    metadata = 'METADATA' if dist.has_metadata('METADATA') else 'PKG-INFO'
     try:
-        pkginfo = parse_pkginfo(dist, metadata)
+        pkginfo = get_metadata(dist)
         for attr in [key for key in attrs if key in pkginfo]:
             info[normalize(attr)] = pkginfo[attr]
-    except IOError as e:
-        err = _("Failed to read %(metadata)s file for %(dist)s: %(err)s",
-                metadata=metadata, dist=dist, err=to_unicode(e))
-        for attr in attrs:
-            info[normalize(attr)] = err
-    except email.errors.MessageError as e:
-        err = _("Failed to parse %(metadata)s file for %(dist)s: %(err)s",
-                metadata=metadata, dist=dist, err=to_unicode(e))
+    except RuntimeError as e:
+        err = to_unicode(e)
         for attr in attrs:
             info[normalize(attr)] = err
     return info

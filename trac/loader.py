@@ -24,7 +24,7 @@ import sys
 
 from trac.core import ComponentMeta
 from trac.util import get_doc, get_module_metadata, get_module_path, \
-                      get_pkginfo, get_sources
+                      get_pkginfo, get_sources, find_distributions
 from trac.util.text import exception_to_unicode, to_unicode
 
 __all__ = ['load_components']
@@ -232,8 +232,7 @@ def match_plugins_to_frames(plugins, frames):
                   if f['filename'].startswith('build/')]
 
     def find_egg_frame_index(plugin):
-        for dist in pkg_resources.find_distributions(plugin['path'],
-                                                     only=True):
+        for dist in find_distributions(plugin['path']):
             try:
                 sources = dist.get_metadata('SOURCES.txt')
                 for src in sources.splitlines():

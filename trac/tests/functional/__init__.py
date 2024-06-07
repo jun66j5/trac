@@ -61,11 +61,6 @@ import subprocess
 import unittest
 
 try:
-    from packaging.version import parse as parse_version
-except ImportError:
-    from pkg_resources import parse_version
-
-try:
     from svn import core
 except ImportError:
     has_svn = False
@@ -80,7 +75,7 @@ else:
 import trac
 from trac.test import TestSetup, TestCaseSetup
 from trac.tests.functional.better_twill import b, tc, selenium
-from trac.util import create_file, read_file
+from trac.util import create_file, parse_version, read_file
 
 
 internal_error = 'Trac detected an internal error:'
