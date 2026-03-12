@@ -17,11 +17,19 @@
 
 try:
     import os
-    import pkg_resources
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', module='pkg_resources')
+        try:
+            import pkg_resources
+        except ImportError:
+            pkg_resources = None
+
     if 'TRAC_ENV' not in os.environ and \
        'TRAC_ENV_PARENT_DIR' not in os.environ:
         os.environ['TRAC_ENV'] = ${repr(env.path)}
-    if 'PYTHON_EGG_CACHE' not in os.environ:
+    if 'PYTHON_EGG_CACHE' not in os.environ and pkg_resources:
         if 'TRAC_ENV' in os.environ:
             egg_cache = os.path.join(os.environ['TRAC_ENV'], '.egg-cache')
         elif 'TRAC_ENV_PARENT_DIR' in os.environ:
