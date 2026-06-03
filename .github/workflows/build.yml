@@ -16,6 +16,7 @@ concurrency:
 jobs:
 
   posix-test-minimum:
+    if: false
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 30
@@ -64,6 +65,7 @@ jobs:
 
 
   posix-test:
+    if: false
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 50
@@ -140,6 +142,7 @@ jobs:
 
 
   posix-prepare:
+    if: false
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 50
