@@ -8,8 +8,8 @@ init_postgresql() {
         sudo systemctl start postgresql.service
         ;;
       macos-*)
-        brew install -q postgresql@14
-        brew services start postgresql@14
+        brew install -q postgresql
+        brew services start postgresql
         for i in $(seq 1 15); do
             psql -U "$LOGNAME" postgres -t -c 'SELECT version()' && break
             sleep 1
@@ -118,7 +118,7 @@ run_tests() {
     } >Makefile.cfg
     make Trac.egg-info compile
     rc=0
-    make unit-test || rc=$?
+    make unit-test testopts=-v || rc=$?
     if [ "$MATRIX_TESTS" = functional ]; then
         make functional-test testopts=-v || rc=$?
     fi

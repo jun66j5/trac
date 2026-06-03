@@ -15,7 +15,7 @@ pip list --format=freeze
 } >Makefile.cfg
 make Trac.egg-info
 rc=0
-make unit-test || rc=$?
+make unit-test testopts=-v || rc=$?
 if [ "$MATRIX_TESTS" = functional ]; then
     make functional-test testopts=-v || rc=$?
 fi
