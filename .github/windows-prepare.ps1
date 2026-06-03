@@ -19,6 +19,10 @@ $pydir = "$svndir\python\$pyver"
 $venvdir = "$($env:LocalAppData)\venv"
 $python = "$($env:pythonLocation)\python.exe"
 & $python -m venv $venvdir
+$python = "$venvdir\scripts\python.exe"
+& $python -m pip install --upgrade pip
+& $python -m pip install -r .github\requirements.txt
+& $python -m pip list --format=freeze
 
 $env:PATH = "$svndir\bin;$pydir\bin;$($env:PATH)"
 $env:PYTHONPATH = "$pydir\lib;$($env:PYTHONPATH)"

@@ -41,12 +41,8 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Set up pip cache
-      uses: actions/cache@v5
-      with:
-        path: ~/.cache/pip
-        key: ${{ matrix.os }}--pip-py${{ matrix.python-version }}--${{ hashFiles('.github/requirements-minimum.txt') }}
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements*.txt'
 
     - name: Run tests
       run: . .github/posix-test-minimum.sh
@@ -108,15 +104,11 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements*.txt'
 
-    - name: Set up pip cache
-      uses: actions/cache@v5
-      with:
-        path: ~/.cache/pip
-        key: ${{ matrix.os }}--pip-py${{ matrix.python-version }}--${{ hashFiles('.github/requirements.txt') }}
-
-    - name: Set up svn python cache
-      uses: actions/cache@v5
+    - name: Restore svn python cache
+      uses: actions/cache/restore@v5
       with:
         path: |
           ~/venv/lib/libsvn_*
@@ -181,12 +173,8 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Set up pip cache
-      uses: actions/cache@v5
-      with:
-        path: ~/.cache/pip
-        key: ${{ matrix.os }}--pip-py${{ matrix.python-version }}--${{ hashFiles('.github/requirements.txt') }}
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements*.txt'
 
     - name: Set up svn python cache
       uses: actions/cache@v5
@@ -232,12 +220,8 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Set up pip cache
-      uses: actions/cache@v5
-      with:
-        path: ~\AppData\Local\pip\Cache
-        key: ${{ matrix.os }}--pip-py${{ matrix.python-version }}--${{ hashFiles('.github/requirements-minimum.txt') }}
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements*.txt'
 
     - name: Run tests
       run: . .github\windows-test-minimum.ps1
@@ -294,15 +278,11 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements*.txt'
 
-    - name: Set up pip cache
-      uses: actions/cache@v5
-      with:
-        path: ~\AppData\Local\pip\Cache
-        key: ${{ matrix.os }}--pip-py${{ matrix.python-version }}--${{ hashFiles('.github/requirements.txt') }}
-
-    - name: Set up svn cache
-      uses: actions/cache@v5
+    - name: Restore svn cache
+      uses: actions/cache/restore@v5
       with:
         path: ~\AppData\Local\subversion-${{ matrix.subversion-version }}\${{ matrix.architecture }}
         key: ${{ matrix.os }}--${{ matrix.architecture }}-svn${{ matrix.subversion-version }}-py${{ matrix.python-version }}
@@ -362,12 +342,8 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Set up pip cache
-      uses: actions/cache@v5
-      with:
-        path: ~\AppData\Local\pip\Cache
-        key: ${{ matrix.os }}--pip-py${{ matrix.python-version }}--${{ hashFiles('.github/requirements.txt') }}
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements*.txt'
 
     - name: Set up svn cache
       uses: actions/cache@v5
@@ -380,7 +356,10 @@ jobs:
       with:
         path: |
           ~\AppData\Local\vcpkg\archives
-          ~\AppData\Local\vcpkg\downloads\7z*
+          ~\AppData\Local\vcpkg\downloads\cmake-*.zip
+          ~\AppData\Local\vcpkg\downloads\7z*.exe
+          ~\AppData\Local\vcpkg\downloads\tools\7zr-*
+          ~\AppData\Local\vcpkg\downloads\PowerShell-*.zip
         key: ${{ matrix.os }}--${{ matrix.architecture }}-vcpkg--${{ hashFiles('.github/vcpkg.txt') }}
 
     - name: Set up msbuild
@@ -431,12 +410,8 @@ jobs:
       uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Set up pip cache
-      uses: actions/cache@v5
-      with:
-        path: ~/.cache/pip
-        key: ${{ matrix.os }}--pip-py${{ matrix.python-version }}--${{ hashFiles('.github/requirements.txt') }}
+        cache: 'pip'
+        cache-dependency-path: '.github/requirements*.txt'
 
     - name: Build release packages
       run: . .github/release.sh
