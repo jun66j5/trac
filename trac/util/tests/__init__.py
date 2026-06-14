@@ -113,6 +113,16 @@ class PathTestCase(unittest.TestCase):
         self.assertFalse(util.is_path_below('../sub/repos',
                                             os.path.join(os.getcwd())))
 
+    def test_is_path_below_root_parent(self):
+        root = os.sep
+        self.assertTrue(util.is_path_below(os.path.join(root, 'trac'), root))
+
+        if os.name == 'nt':
+            root = os.path.abspath(root)
+            self.assertTrue(os.path.splitdrive(root)[0])
+            self.assertTrue(util.is_path_below(os.path.join(root, 'trac'),
+                                               root))
+
     def test_native_path(self):
         self.assertIsNone(util.native_path(None))
         if os.name == 'posix':
