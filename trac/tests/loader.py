@@ -13,7 +13,6 @@
 
 import glob
 import os
-import pkg_resources
 import shutil
 import subprocess
 import sys
@@ -102,6 +101,10 @@ class LoadComponentsTestCase(unittest.TestCase):
             ComponentMeta.deregister(c)
 
     def _cleanup_working_set(self):
+        if loader._metadata:
+            self._cleanup_sys_path()
+            return
+        import pkg_resources
         ws = pkg_resources.working_set
         for plugin_name in os.listdir(self.env.plugins_dir):
             plugin_path = os.path.join(self.env.plugins_dir, plugin_name)
@@ -113,6 +116,14 @@ class LoadComponentsTestCase(unittest.TestCase):
             if plugin_path in ws.entry_keys:
                 del ws.entry_keys[plugin_path]
                 ws.entries.remove(plugin_path)
+
+    def _cleanup_sys_path(self):
+        plugins_dir = os.path.normcase(self.env.plugins_dir)
+        for path in list(sys.path):
+            path_ = os.path.normcase(path)
+            if path_ == plugins_dir or \
+                    os.path.dirname(path_) == plugins_dir:
+                sys.path.remove(path)
 
     def _build_egg_file(self, module_name):
         plugin_src = os.path.join(self.env.path, 'plugin_src')
@@ -136,7 +147,8 @@ class LoadComponentsTestCase(unittest.TestCase):
         """Load entry points with extras
 
         Entry points with absent dependencies should not be found in
-        the component registry.
+        the component registry when `pkg_resources` is used. Extras are
+        ignored when `importlib.metadata` is used.
         """
         egg_file_src = self._build_egg_file('plugin1')
         egg_file_dst = os.path.join(self.env.plugins_dir,
@@ -152,8 +164,36 @@ class LoadComponentsTestCase(unittest.TestCase):
         registry = ComponentMeta._registry
         self.assertIn(ComponentA, ComponentMeta._components)
         self.assertIn(ComponentA, registry.get(IEnvironmentSetupParticipant))
-        self.assertNotIn(ComponentB, ComponentMeta._components)
-        self.assertNotIn(ComponentB, registry.get(IEnvironmentSetupParticipant))
+        if loader._metadata:
+            self.assertIn(ComponentB, ComponentMeta._components)
+            self.assertIn(ComponentB,
+                          registry.get(IEnvironmentSetupParticipant))
+        else:
+            self.assertNotIn(ComponentB, ComponentMeta._components)
+            self.assertNotIn(ComponentB,
+                             registry.get(IEnvironmentSetupParticipant))
+
+    def test_get_plugin_info_from_egg(self):
+        """Plugin information is retrieved from the distribution"""
+        egg_file_src = self._build_egg_file('plugin2')
+        egg_filename = os.path.basename(egg_file_src)
+        egg_file_dst = os.path.join(self.env.plugins_dir, egg_filename)
+        shutil.copyfile(egg_file_src, egg_file_dst)
+
+        loader.load_components(self.env)
+        from plugin2 import ComponentA, ComponentB
+        self.components.append(ComponentA)
+        self.components.append(ComponentB)
+
+        plugins = [p for p in loader.get_plugin_info(self.env)
+                     if p['name'] == 'plugin2']
+        self.assertEqual(1, len(plugins))
+        plugin = plugins[0]
+        self.assertEqual('1.0', plugin['version'])
+        self.assertEqual(egg_filename, plugin['plugin_filename'])
+        self.assertEqual(os.path.normcase(egg_file_dst),
+                         os.path.normcase(plugin['path']))
+        self.assertEqual(['plugin2'], list(plugin['modules']))
 
     def test_component_loaded_once(self):
         create_file(os.path.join(self.env.plugins_dir,

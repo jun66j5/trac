@@ -14,20 +14,33 @@
 #
 # Author: Christopher Lenz <cmlenz@gmx.de>
 
-from glob import glob
+from glob import glob, escape as glob_escape
 import importlib.util
 import os.path
-import pkg_resources
-from pkg_resources import working_set, DistributionNotFound, \
-                          VersionConflict, UnknownExtra
+import re
 import sys
 
 from trac.core import ComponentMeta
 from trac.util import get_doc, get_module_metadata, get_module_path, \
-                      get_pkginfo, get_sources, find_distributions
+                      get_pkginfo, get_sources, find_distributions, \
+                      parse_version, _metadata
 from trac.util.text import exception_to_unicode, to_unicode
 
 __all__ = ['load_components']
+
+
+if _metadata:
+    _not_found_errors = ()
+    _import_errors = (ImportError,)
+    _version_conflict_errors = ()
+else:
+    import pkg_resources
+    from pkg_resources import working_set, DistributionNotFound, \
+                              VersionConflict, UnknownExtra
+
+    _not_found_errors = (DistributionNotFound,)
+    _import_errors = (ImportError, UnknownExtra, VersionConflict)
+    _version_conflict_errors = (VersionConflict,)
 
 
 def _enable_plugin(env, module):
@@ -36,56 +49,170 @@ def _enable_plugin(env, module):
         env.enable_component(module)
 
 
+def _log_load_error(env, item, e):
+    ue = exception_to_unicode(e)
+    if isinstance(e, _not_found_errors):
+        env.log.debug('Skipping "%s": %s', item, ue)
+    elif isinstance(e, _import_errors):
+        env.log.error('Skipping "%s": %s', item, ue)
+    else:
+        env.log.error('Skipping "%s": %s', item,
+                      exception_to_unicode(e, traceback=True))
+
+
+def _deregister_components(module_name, attrs):
+    """Remove components for the entry point from the registry."""
+    for name in attrs:
+        for c in ComponentMeta._components:
+            if c.__module__ == module_name and c.__name__ == name:
+                ComponentMeta.deregister(c)
+
+
 def load_eggs(entry_point_name):
     """Loader that loads any eggs on the search path and `sys.path`."""
     def _load_eggs(env, search_path, auto_enable=None):
-        # Note that the following doesn't seem to support unicode search_path
-        distributions, errors = working_set.find_plugins(
-            pkg_resources.Environment(search_path)
-        )
-        for dist in distributions:
-            if dist not in working_set:
-                env.log.debug('Adding plugin "%s" from "%s"',
-                              dist, dist.location)
-                working_set.add(dist)
-
-        def _log_error(item, e):
-            ue = exception_to_unicode(e)
-            if isinstance(e, DistributionNotFound):
-                env.log.debug('Skipping "%s": %s', item, ue)
-            elif isinstance(e, (ImportError, UnknownExtra, VersionConflict)):
-                env.log.error('Skipping "%s": %s', item, ue)
-            else:
-                env.log.error('Skipping "%s": %s', item,
-                              exception_to_unicode(e, traceback=True))
-
-        for dist, e in errors.items():
-            _log_error(dist, e)
-
-        def deregister_components(entry_point):
-            """Remove components for `entry_point` from the registry."""
-            for name in entry_point.attrs:
-                for c in ComponentMeta._components:
-                    if c.__module__ == entry_point.module_name and \
-                            c.__name__ == name:
-                        ComponentMeta.deregister(c)
-
         if auto_enable:
             auto_enable = os.path.normcase(auto_enable)
-        for entry in sorted(working_set.iter_entry_points(entry_point_name),
-                            key=lambda entry: entry.name):
-            env.log.debug('Loading plugin "%s" from "%s"',
-                          entry.name, entry.dist.location)
-            try:
-                entry.load(require=True)
-            except Exception as e:
-                _log_error(entry, e)
-                deregister_components(entry)
-            else:
-                if os.path.normcase(os.path.dirname(entry.dist.location)) == \
-                        auto_enable:
-                    _enable_plugin(env, entry.module_name)
+        if _metadata:
+            _load_eggs_metadata(env, entry_point_name, search_path,
+                                auto_enable)
+        else:
+            _load_eggs_pkg_resources(env, entry_point_name, search_path,
+                                     auto_enable)
     return _load_eggs
+
+
+def _load_eggs_pkg_resources(env, entry_point_name, search_path,
+                             auto_enable):
+    # Note that the following doesn't seem to support unicode search_path
+    distributions, errors = working_set.find_plugins(
+        pkg_resources.Environment(search_path)
+    )
+    for dist in distributions:
+        if dist not in working_set:
+            env.log.debug('Adding plugin "%s" from "%s"',
+                          dist, dist.location)
+            working_set.add(dist)
+
+    for dist, e in errors.items():
+        _log_load_error(env, dist, e)
+
+    for entry in sorted(working_set.iter_entry_points(entry_point_name),
+                        key=lambda entry: entry.name):
+        env.log.debug('Loading plugin "%s" from "%s"',
+                      entry.name, entry.dist.location)
+        try:
+            entry.load(require=True)
+        except Exception as e:
+            _log_load_error(env, entry, e)
+            _deregister_components(entry.module_name, entry.attrs)
+        else:
+            if os.path.normcase(os.path.dirname(entry.dist.location)) == \
+                    auto_enable:
+                _enable_plugin(env, entry.module_name)
+
+
+def _load_eggs_metadata(env, entry_point_name, search_path, auto_enable):
+    for entry, dist in _find_plugins(env, search_path):
+        if entry not in sys.path:
+            env.log.debug('Adding plugin "%s %s" from "%s"',
+                          dist.name, dist.version, entry)
+            sys.path.insert(0, entry)
+
+    for entry in sorted(_metadata.entry_points(group=entry_point_name),
+                        key=lambda entry: entry.name):
+        location = _dist_location(entry.dist)
+        env.log.debug('Loading plugin "%s" from "%s"', entry.name, location)
+        try:
+            entry.load()
+        except Exception as e:
+            _log_load_error(env, entry, e)
+            _deregister_components(entry.module,
+                                   entry.attr.split('.') if entry.attr
+                                   else ())
+        else:
+            if os.path.normcase(os.path.dirname(location)) == auto_enable:
+                _enable_plugin(env, entry.module)
+
+
+def _find_plugins(env, search_path):
+    """Yield `(path_entry, distribution)` tuples for the newest version of
+    each distribution found in the eggs and the directories on the search
+    path.
+    """
+    def version_key(dist):
+        try:
+            return parse_version(dist.version)
+        except Exception:
+            return parse_version('0')
+
+    candidates = {}
+    for path in search_path:
+        entries = sorted(glob(os.path.join(glob_escape(path), '*.egg')))
+        entries.append(path)
+        for entry in entries:
+            for dist in _metadata.distributions(path=[entry]):
+                name = _normalize_name(dist.name)
+                if name in candidates and \
+                        version_key(candidates[name][1]) >= version_key(dist):
+                    continue
+                candidates[name] = (entry, dist)
+
+    for name, (entry, dist) in sorted(candidates.items()):
+        try:
+            installed = _metadata.distribution(dist.name)
+        except _metadata.PackageNotFoundError:
+            pass
+        else:
+            location = _dist_location(installed)
+            if os.path.normcase(location) != \
+                    os.path.normcase(_dist_location(dist)):
+                env.log.debug('Skipping "%s %s" from "%s": "%s %s" is '
+                              'already installed in "%s"', dist.name,
+                              dist.version, entry, installed.name,
+                              installed.version, location)
+                continue
+        yield entry, dist
+
+
+def _normalize_name(name):
+    return re.sub(r'[-_.]+', '-', name).lower()
+
+
+def _safe_name(name):
+    """Convert an arbitrary string to a standard distribution name, same
+    as `pkg_resources.safe_name()`.
+    """
+    return re.sub(r'[^A-Za-z0-9.]+', '-', name)
+
+
+def _dist_location(dist):
+    """Return the base location of the `importlib.metadata` distribution,
+    e.g. `site-packages` directory or `*.egg` path.
+    """
+    return os.path.normpath(str(dist.locate_file('')))
+
+
+def _dist_info(dist):
+    """Return `(name, version, location)` of the distribution provided by
+    either `importlib.metadata` or `pkg_resources`.
+    """
+    if hasattr(dist, 'project_name'):  # pkg_resources
+        return dist.project_name, dist.version, dist.location
+    return dist.metadata['Name'], dist.version, _dist_location(dist)
+
+
+def _read_metadata_text(dist, name):
+    """Return the contents of the metadata file of the distribution
+    provided by either `importlib.metadata` or `pkg_resources`, or `None`
+    if the file is not found.
+    """
+    if hasattr(dist, 'read_text'):  # importlib.metadata
+        return dist.read_text(name)
+    try:
+        return dist.get_metadata(name)
+    except (KeyError, OSError):
+        return None
 
 
 def load_py_files():
@@ -111,7 +238,7 @@ def load_py_files():
                 try:
                     if plugin_name not in sys.modules:
                         load_source(plugin_name, plugin_file)
-                except (ImportError, VersionConflict) as e:
+                except (ImportError,) + _version_conflict_errors as e:
                     env.log.error('Skipping "%s": %s', plugin_name,
                                   exception_to_unicode(e))
                 except (Exception, SystemExit) as e:
@@ -150,11 +277,6 @@ def get_plugin_info(env, include_core=False):
         dist = sources.get(name.replace('.', '/') + '.py')
         if dist is None:
             dist = sources.get(name.replace('.', '/') + '/__init__.py')
-        if dist is None:
-            # This is a plain Python source file, not an egg
-            dist = pkg_resources.Distribution(project_name=name,
-                                              version='',
-                                              location=module.__file__)
         return dist
 
     plugins_dir = env.plugins_dir
@@ -163,19 +285,24 @@ def get_plugin_info(env, include_core=False):
         module = sys.modules[component.__module__]
 
         dist = find_distribution(module)
+        if dist is not None:
+            name, version, location = _dist_info(dist)
+        else:
+            # This is a plain Python source file, not an egg
+            name, version, location = _safe_name(module.__name__), '', \
+                                      module.__file__
         plugin_filename = None
-        if os.path.normcase(os.path.realpath(os.path.dirname(dist.location))) \
+        if os.path.normcase(os.path.realpath(os.path.dirname(location))) \
                 == plugins_dir:
-            plugin_filename = os.path.basename(dist.location)
+            plugin_filename = os.path.basename(location)
 
-        if dist.project_name not in plugins:
+        if name not in plugins:
             readonly = True
-            if plugin_filename and os.access(dist.location,
+            if plugin_filename and os.access(location,
                                              os.F_OK + os.W_OK):
                 readonly = False
             # retrieve plugin metadata
-            info = get_pkginfo(dist)
-            version = dist.version
+            info = get_pkginfo(dist) if dist is not None else {}
             if info:
                 # Info found; set all those fields to "None" that have the
                 # value "UNKNOWN" as this is the value for fields that
@@ -191,15 +318,15 @@ def get_plugin_info(env, include_core=False):
                 info = get_module_metadata(module)
                 version = info['version']
 
-            plugins[dist.project_name] = {
-                'name': dist.project_name, 'version': version,
-                'path': dist.location, 'plugin_filename': plugin_filename,
+            plugins[name] = {
+                'name': name, 'version': version,
+                'path': location, 'plugin_filename': plugin_filename,
                 'readonly': readonly, 'info': info, 'modules': {},
             }
-        modules = plugins[dist.project_name]['modules']
+        modules = plugins[name]['modules']
         if module.__name__ not in modules:
             summary, description = get_doc(module)
-            plugins[dist.project_name]['modules'][module.__name__] = {
+            plugins[name]['modules'][module.__name__] = {
                 'summary': summary, 'description': description,
                 'components': {},
             }
@@ -233,17 +360,16 @@ def match_plugins_to_frames(plugins, frames):
 
     def find_egg_frame_index(plugin):
         for dist in find_distributions(plugin['path']):
-            try:
-                sources = dist.get_metadata('SOURCES.txt')
-                for src in sources.splitlines():
-                    if src.endswith('.py'):
-                        nsrc = src.replace('\\', '/')
-                        for i, f in egg_frames:
-                            if f['filename'].endswith(nsrc):
-                                plugin['frame_idx'] = i
-                                return
-            except KeyError:
-                pass    # Metadata not found
+            sources = _read_metadata_text(dist, 'SOURCES.txt')
+            if sources is None:
+                continue    # Metadata not found
+            for src in sources.splitlines():
+                if src.endswith('.py'):
+                    nsrc = src.replace('\\', '/')
+                    for i, f in egg_frames:
+                        if f['filename'].endswith(nsrc):
+                            plugin['frame_idx'] = i
+                            return
 
     for plugin in plugins:
         base, ext = os.path.splitext(plugin['path'].replace('\\', '/'))
