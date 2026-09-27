@@ -11,7 +11,9 @@
 # individuals. For the exact contribution history, see the revision
 # history and logs, available at https://trac.edgewall.org/log/.
 
+import gc
 import glob
+import importlib
 import os
 import shutil
 import subprocess
@@ -124,6 +126,13 @@ class LoadComponentsTestCase(unittest.TestCase):
             if path_ == plugins_dir or \
                     os.path.dirname(path_) == plugins_dir:
                 sys.path.remove(path)
+                sys.path_importer_cache.pop(path, None)
+        # `importlib.metadata` caches `zipfile.Path` instances for *.egg
+        # files, which keep the files opened and prevent removing them
+        # on Windows. Clear the caches and collect the instances to
+        # close the files.
+        importlib.invalidate_caches()
+        gc.collect()
 
     def _build_egg_file(self, module_name):
         plugin_src = os.path.join(self.env.path, 'plugin_src')
