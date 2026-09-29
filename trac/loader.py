@@ -19,6 +19,7 @@ import importlib.util
 import os.path
 import re
 import sys
+import warnings
 
 from trac.core import ComponentMeta
 from trac.util import get_doc, get_module_metadata, get_module_path, \
@@ -29,18 +30,35 @@ from trac.util.text import exception_to_unicode, to_unicode
 __all__ = ['load_components']
 
 
-if _metadata:
-    _not_found_errors = ()
-    _import_errors = (ImportError,)
-    _version_conflict_errors = ()
-else:
-    import pkg_resources
+def _import_pkg_resources():
+    with warnings.catch_warnings():
+        # Suppress "pkg_resources is deprecated as an API" warning. The
+        # warning is attributed to the importer rather than pkg_resources
+        # module, so it is filtered by the message.
+        warnings.filterwarnings('ignore',
+                                message=r'pkg_resources is deprecated')
+        try:
+            import pkg_resources
+        except ImportError:
+            return None
+    return pkg_resources
+
+
+# Prefer pkg_resources if available because importlib.metadata doesn't
+# support extracting *.egg files for the plugins
+_pkg_resources = _import_pkg_resources()
+
+if _pkg_resources:
     from pkg_resources import working_set, DistributionNotFound, \
                               VersionConflict, UnknownExtra
 
     _not_found_errors = (DistributionNotFound,)
     _import_errors = (ImportError, UnknownExtra, VersionConflict)
     _version_conflict_errors = (VersionConflict,)
+else:
+    _not_found_errors = ()
+    _import_errors = (ImportError,)
+    _version_conflict_errors = ()
 
 
 def _enable_plugin(env, module):
@@ -73,12 +91,12 @@ def load_eggs(entry_point_name):
     def _load_eggs(env, search_path, auto_enable=None):
         if auto_enable:
             auto_enable = os.path.normcase(auto_enable)
-        if _metadata:
-            _load_eggs_metadata(env, entry_point_name, search_path,
-                                auto_enable)
-        else:
+        if _pkg_resources:
             _load_eggs_pkg_resources(env, entry_point_name, search_path,
                                      auto_enable)
+        else:
+            _load_eggs_metadata(env, entry_point_name, search_path,
+                                auto_enable)
     return _load_eggs
 
 
@@ -86,7 +104,7 @@ def _load_eggs_pkg_resources(env, entry_point_name, search_path,
                              auto_enable):
     # Note that the following doesn't seem to support unicode search_path
     distributions, errors = working_set.find_plugins(
-        pkg_resources.Environment(search_path)
+        _pkg_resources.Environment(search_path)
     )
     for dist in distributions:
         if dist not in working_set:

@@ -103,11 +103,10 @@ class LoadComponentsTestCase(unittest.TestCase):
             ComponentMeta.deregister(c)
 
     def _cleanup_working_set(self):
-        if loader._metadata:
+        if not loader._pkg_resources:
             self._cleanup_sys_path()
             return
-        import pkg_resources
-        ws = pkg_resources.working_set
+        ws = loader._pkg_resources.working_set
         for plugin_name in os.listdir(self.env.plugins_dir):
             plugin_path = os.path.join(self.env.plugins_dir, plugin_name)
             if plugin_path not in ws.entry_keys and os.name == 'nt':
@@ -173,7 +172,7 @@ class LoadComponentsTestCase(unittest.TestCase):
         registry = ComponentMeta._registry
         self.assertIn(ComponentA, ComponentMeta._components)
         self.assertIn(ComponentA, registry.get(IEnvironmentSetupParticipant))
-        if loader._metadata:
+        if not loader._pkg_resources:
             self.assertIn(ComponentB, ComponentMeta._components)
             self.assertIn(ComponentB,
                           registry.get(IEnvironmentSetupParticipant))
