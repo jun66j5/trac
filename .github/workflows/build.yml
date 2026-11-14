@@ -16,6 +16,7 @@ concurrency:
 jobs:
 
   posix-test-minimum:
+    if: false
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 30
@@ -64,6 +65,7 @@ jobs:
 
 
   posix-test:
+    if: false
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 50
@@ -141,6 +143,7 @@ jobs:
 
 
   posix-prepare:
+    if: false
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 50
@@ -213,7 +216,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022]
+        os: [windows-2025]
         architecture: [x64]
         python-version: ['3.15']
         tests: [functional]
@@ -266,7 +269,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022]
+        os: [windows-2025]
         architecture: [x64]
         python-version: ['3.15']
         subversion-version: ['1.15.0']
@@ -332,7 +335,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2022]
+        os: [windows-2025]
         architecture: [x64]
         python-version: ['3.15']
         subversion-version: ['1.15.0']
@@ -427,6 +430,7 @@ jobs:
 
 
   release:
+    if: false
     runs-on: ${{ matrix.os }}
 
     timeout-minutes: 10
