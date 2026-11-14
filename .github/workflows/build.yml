@@ -267,7 +267,7 @@ jobs:
         os: [windows-2022]
         architecture: [x64]
         python-version: ['3.14']
-        subversion-version: ['1.14.5']
+        subversion-version: ['1.15.0']
         tracdb: ['', sqlite, postgresql, mysql]
         include:
         - {tracdb: '', tests: functional}
@@ -333,7 +333,7 @@ jobs:
         os: [windows-2022]
         architecture: [x64]
         python-version: ['3.14']
-        subversion-version: ['1.14.5']
+        subversion-version: ['1.15.0']
 
     env:
       MATRIX_ARCH: ${{ matrix.architecture }}
